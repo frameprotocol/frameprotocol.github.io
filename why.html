@@ -117,6 +117,39 @@
       font-size: clamp(1.2rem, 3.5vw, 1.6rem);
       line-height: 1.4;
     }
+    .table-wrap {
+      overflow-x: auto;
+      margin: 0 0 clamp(18px, 2.6vh, 26px);
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: clamp(0.9rem, 2.1vw, 1.05rem);
+      line-height: 1.55;
+    }
+    thead th {
+      text-align: left;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      background: #000000;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    th, td {
+      border: 1px solid #e2e2e2;
+      padding: 10px 14px;
+      vertical-align: top;
+    }
+    tbody td:first-child { width: 46%; color: #444444; }
+    tbody td:last-child { font-weight: 500; }
+    tbody tr:nth-child(even) td { background: #fafafa; }
+    .note {
+      font-weight: 600;
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      line-height: 1.7;
+      margin: clamp(10px, 2vh, 18px) 0 clamp(14px, 2vh, 20px);
+    }
   </style>
 </head>
 <body>
@@ -274,6 +307,24 @@ Applications</div>
     <p>This is how real benefit reaches the world: transparent supply chains, verifiable digital ownership, self-sovereign identity, open financial tools, and public infrastructure that anyone can audit and build upon.</p>
     <p>When the hard parts become shared abstractions, small teams can ship powerful, trustworthy applications—and an entire ecosystem of dApps can grow on common ground instead of walled gardens.</p>
 
+    <h2>Identity, Moved Up a Layer</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Today</th><th>With FRAME</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Every application has its own account system.</td><td>One FRAME identity can be used across every application through capabilities.</td></tr>
+          <tr><td>Logging into every service means creating another username, password, or OAuth account.</td><td>Most dApps can use your existing FRAME identity with no additional account creation.</td></tr>
+          <tr><td>If you delete an account, you often lose access to your data.</td><td>Your identity belongs to your FRAME, not to the application using it.</td></tr>
+          <tr><td>Custom account systems require every application to implement authentication from scratch.</td><td>dApps can create application-specific identities as abstractions on top of your FRAME identity when needed, without creating a completely separate trust model.</td></tr>
+          <tr><td>Identity is usually controlled by the service provider.</td><td>Identity is user-owned, while dApps may define their own profiles, roles, organizations, guilds, workspaces, or characters as optional application-level abstractions.</td></tr>
+          <tr><td>Applications cannot easily share identity or permissions.</td><td>Capabilities allow applications to securely share identity and permissions without sharing passwords or credentials.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The important idea is that FRAME doesn't eliminate application-specific identities—it moves them up a layer.</p>
+
     <h2>Built for AI</h2>
     <p>Artificial intelligence is becoming another consumer of information—not a replacement for it.</p>
     <p>AI models should not maintain their own disconnected representation of reality.</p>
@@ -314,6 +365,42 @@ Applications</div>
     <p>Instead of building increasingly complicated systems that translate between hundreds of disconnected models, FRAME proposes something simpler:</p>
     <p class="spaced">Build one foundation.</p>
     <p>Let every application stand on it.</p>
+
+    <h2>The Internet Today vs. FRAME</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Today</th><th>With FRAME</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Every application has its own account system.</td><td>One identity can be used across every FRAME application through capabilities.</td></tr>
+          <tr><td>Every application stores its own copy of your data.</td><td>Data exists once and can be understood by many applications.</td></tr>
+          <tr><td>Every service has its own API.</td><td>Applications communicate through a common kernel and shared data model.</td></tr>
+          <tr><td>Data is constantly copied, synchronized, and converted.</td><td>Applications reference the same underlying reality instead of duplicating it.</td></tr>
+          <tr><td>Passwords are the primary form of authentication.</td><td>Fine-grained capabilities determine what software is allowed to access.</td></tr>
+          <tr><td>Applications own your data.</td><td>You own your FRAME; applications request permission to use your data.</td></tr>
+          <tr><td>Cloud providers own the infrastructure.</td><td>Anyone can contribute storage and compute through user-owned FRAME nodes.</td></tr>
+          <tr><td>AI builds its own disconnected understanding of information.</td><td>AI works directly with the same shared reality as every other application.</td></tr>
+          <tr><td>Every app reinvents permissions, storage, and synchronization.</td><td>Those services are provided once by the FRAME kernel.</td></tr>
+          <tr><td>Applications rarely work together naturally.</td><td>Applications can interoperate because they speak the same language.</td></tr>
+          <tr><td>Data formats vary between every platform.</td><td>FrameUnits provide a common representation for all applications.</td></tr>
+          <tr><td>Reality is fragmented across databases.</td><td>Reality has a single authoritative source.</td></tr>
+          <tr><td>Rendering often becomes the data model.</td><td>Rendering is simply one view of reality.</td></tr>
+          <tr><td>Compute pipelines often become authoritative.</td><td>Compute produces results; reality stores them.</td></tr>
+          <tr><td>Applications lock users into their own ecosystems.</td><td>Applications become interchangeable interfaces to the same data.</td></tr>
+          <tr><td>Migrating between computers is often difficult.</td><td>A FRAME can be cloned or migrated between devices with minimal friction.</td></tr>
+          <tr><td>Running software usually depends on a specific operating system or cloud platform.</td><td>FRAME can run on bare metal, desktop, servers, containers, or entirely in the browser.</td></tr>
+          <tr><td>Every company builds another backend.</td><td>The kernel provides common infrastructure, letting developers focus on applications.</td></tr>
+          <tr><td>Collaboration requires every service to integrate with every other service.</td><td>Collaboration happens naturally because applications share the same foundation.</td></tr>
+          <tr><td>Trust depends heavily on centralized providers.</td><td>Trust can be distributed across user-owned FRAME instances.</td></tr>
+          <tr><td>Software is organized around websites and services.</td><td>Software is organized around capabilities and shared reality.</td></tr>
+          <tr><td>Most cloud services require an internet connection to function fully.</td><td>FRAME is local-first and synchronizes when needed rather than requiring constant connectivity.</td></tr>
+          <tr><td>Every new application starts by rebuilding authentication, storage, and APIs.</td><td>New applications start by building on an existing kernel.</td></tr>
+          <tr><td>Infrastructure is often hidden behind proprietary platforms.</td><td>The kernel and protocols are open, inspectable, and extensible.</td></tr>
+          <tr><td>The web connects applications.</td><td>FRAME connects data, compute, devices, AI, and applications through one shared operating model.</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <h2>The Goal</h2>
     <p class="spaced">FRAME isn't trying to replace every application.</p>
