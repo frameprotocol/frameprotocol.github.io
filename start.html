@@ -111,8 +111,9 @@
     <p class="status">No FRAME found.</p>
     <p class="prompt">Create one?</p>
     <div class="actions">
-      <button class="btn" type="button">Create Local FRAME</button>
-      <button class="btn" type="button">Import FRAME</button>
+      <a class="btn" href="/create.html">Create Local FRAME</a>
+      <label class="btn" for="importFile">Import FRAME</label>
+      <input id="importFile" type="file" accept=".frame,.json,application/json,*/*" hidden />
       <a class="btn" href="/connect.html">Connect to Existing FRAME</a>
     </div>
   </main>
