@@ -39,7 +39,7 @@
     }
     .nav {
       position: fixed;
-      top: calc(50% - 2in);
+      top: calc(50% - 1in);
       left: 0;
       right: 0;
       display: flex;
@@ -62,19 +62,21 @@
     .nav .side:hover { text-decoration: underline; }
 
     .begin-wrap {
-      align-self: center;
-      position: relative;
-      margin-top: clamp(24px, 5vh, 44px);
+      position: fixed;
+      left: 50%;
+      bottom: clamp(28px, 8vh, 72px);
+      transform: translateX(-50%);
     }
     .begin-glow {
       position: absolute;
       inset: -24px -48px;
       z-index: -1;
-      border-radius: 60px;
       filter: blur(30px);
       opacity: 0.45;
       background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
       background-size: 200% auto;
+      -webkit-mask: radial-gradient(ellipse at center, #000 30%, transparent 72%);
+      mask: radial-gradient(ellipse at center, #000 30%, transparent 72%);
       animation: rainbow-move 6s linear infinite;
     }
     .nav-begin {
@@ -144,12 +146,12 @@
   </div>
   <nav class="nav">
     <a class="side nav-why" href="/why.html">Why?</a>
-    <div class="begin-wrap">
-      <span class="begin-glow"></span>
-      <a class="nav-begin" href="/begin.html">Begin</a>
-    </div>
     <a class="side nav-how" href="/how.html">How it works</a>
   </nav>
+  <div class="begin-wrap">
+    <span class="begin-glow"></span>
+    <a class="nav-begin" href="/begin.html">Begin</a>
+  </div>
   <script>
     (function () {
       const phrases = [
