@@ -144,12 +144,7 @@
       var BAR_WIDTH = 34;
 
       function humanBytes(n) {
-        if (n === null || n === undefined || isNaN(n)) return "unknown";
-        var units = ["B", "KB", "MB", "GB", "TB", "PB"];
-        var i = 0, v = n;
-        while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-        var dp = (v >= 100 || i === 0) ? 0 : (v >= 10 ? 1 : 2);
-        return v.toFixed(dp) + " " + units[i];
+        return FRAME.humanBytesLong ? FRAME.humanBytesLong(n) : n + " bytes";
       }
 
       function barHTML(used, total) {

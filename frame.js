@@ -119,6 +119,30 @@ window.FRAME = (function () {
     return v.toFixed(dp) + " " + units[i];
   }
 
+  function humanBytesLong(n) {
+    if (n === null || n === undefined || isNaN(n)) return "unknown";
+    var units = ["bytes", "kilobytes", "megabytes", "gigabytes", "terabytes", "petabytes"];
+    var i = 0, v = n;
+    while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+    var dp = (v >= 100 || i === 0) ? 0 : (v >= 10 ? 1 : 2);
+    var val = v.toFixed(dp);
+    var unit = units[i];
+    if (i === 0 && Number(val) === 1) unit = "byte";
+    return val + " " + unit;
+  }
+
+  function localStorageEntries() {
+    var out = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        var v = localStorage.getItem(k) || "";
+        out.push({ name: k, bytes: (k.length + v.length) * 2 });
+      }
+    } catch (e) {}
+    return out;
+  }
+
   function localStorageBytes() {
     var total = 0;
     try {
@@ -197,7 +221,9 @@ window.FRAME = (function () {
     randomDigits: randomDigits,
     randomAlnum: randomAlnum,
     humanBytes: humanBytes,
+    humanBytesLong: humanBytesLong,
     localStorageBytes: localStorageBytes,
+    localStorageEntries: localStorageEntries,
     browserName: browserName
   };
 })();
