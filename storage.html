@@ -88,6 +88,17 @@
     }
     .ios-caption b { color: #000000; }
 
+    .verify { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+    .vbtn {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem;
+      border: 1.5px solid #000000; background: #ffffff; color: #000000; border-radius: 999px;
+      padding: 7px 15px; cursor: pointer; transition: background 0.12s ease, color 0.12s ease;
+    }
+    .vbtn:hover { background: #000000; color: #ffffff; }
+    .vout { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: #666666; }
+    .vout.ok { color: #0f7a3d; font-weight: 700; }
+    .vout.bad { color: #c0392b; font-weight: 700; }
+
     .kv { font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem); color: #444444; margin-top: 10px; }
     .kv b { color: #000000; }
     .note { color: #888888; font-size: 0.8rem; margin-top: 8px; line-height: 1.4; }
@@ -373,6 +384,43 @@
         note.className = "note";
         note.textContent = "Each square is one stored item. Hover or tap a square for details. Browsers report an allowance (a share of free disk), not the computer's true capacity.";
         dev.appendChild(note);
+
+        // Verify signatures of stored dApp data (FRAME_SIGNATURE_V1).
+        var verify = document.createElement("div");
+        verify.className = "verify";
+        var vbtn = document.createElement("button");
+        vbtn.className = "vbtn";
+        vbtn.type = "button";
+        vbtn.textContent = "Verify dApp signatures";
+        var vout = document.createElement("span");
+        vout.className = "vout";
+        verify.appendChild(vbtn);
+        verify.appendChild(vout);
+        dev.appendChild(verify);
+
+        vbtn.addEventListener("click", function () {
+          var recs = [];
+          FRAME.localStorageEntries().forEach(function (e) {
+            if (e.name.indexOf("frame.dapp.") !== 0) return;
+            var d = null; try { d = JSON.parse(localStorage.getItem(e.name)); } catch (x) {}
+            if (d) recs.push(d);
+          });
+          if (recs.length === 0) { vout.textContent = "no dApp data to verify"; vout.className = "vout"; return; }
+          vout.textContent = "verifying\u2026"; vout.className = "vout";
+          var ok = 0, bad = 0, pending = recs.length;
+          recs.forEach(function (d) {
+            var signer = (d.signature && d.signedBy) ? FRAME.getById(d.signedBy) : null;
+            var payload = d.state ? JSON.stringify(d.state) : "";
+            function fin() { pending--; if (pending === 0) {
+              vout.textContent = ok + " verified" + (bad ? ", " + bad + " failed" : "");
+              vout.className = "vout " + (bad ? "bad" : "ok");
+            } }
+            if (!signer || !signer.publicKey) { bad++; fin(); return; }
+            FRAME.verifyData(signer.publicKey, payload, d.signature)
+              .then(function (r) { if (r) ok++; else bad++; fin(); })
+              .catch(function () { bad++; fin(); });
+          });
+        });
 
         thisDevice.appendChild(dev);
       }

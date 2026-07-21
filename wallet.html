@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000; -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+    .panel { width: min(92vw, 560px); }
+    .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem); margin: 0; text-align: center; }
+    .subtitle { color: #666666; font-weight: 500; text-align: center; margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem); }
+    .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
+
+    .balance { border: 1px solid #e6e6e6; border-radius: 16px; padding: clamp(18px, 3vw, 26px); text-align: center; margin-bottom: 16px; }
+    .balance .amt { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(2rem, 9vw, 2.8rem); }
+    .balance .cur { color: #b45309; }
+    .balance .sub { color: #888888; font-size: 0.82rem; margin-top: 4px; }
+
+    .feat { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(14px, 2.2vw, 20px); margin-bottom: 12px; }
+    .feat h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.02rem; margin: 0 0 8px; }
+    .row { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: #333333; display: grid; grid-template-columns: 96px 1fr; gap: 4px 12px; margin-top: 4px; align-items: start; }
+    .row .k { color: #999999; }
+    .row .v { word-break: break-all; }
+    .copy { border: 0; background: none; color: #1a73e8; font-family: inherit; font-size: 0.72rem; cursor: pointer; padding: 0; margin-left: 6px; }
+
+    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      try {
+        var idents = FRAME.getIdentities();
+        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
+        var active = FRAME.getActive();
+        if (!active) { window.location.replace("/identity.html"); return; }
+        if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); }
+      } catch (e) {}
+    })();
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <h2 class="title">Wallet</h2>
+    <p class="subtitle">Your identity is your account. No seed phrase, no third party.</p>
+    <div class="divider"></div>
+
+    <div class="balance">
+      <div class="amt">0.00 <span class="cur">FRAME</span></div>
+      <div class="sub">No ledger connected. Balances appear once your FRAME joins a network.</div>
+    </div>
+
+    <div class="feat">
+      <h3>Account</h3>
+      <div class="row"><span class="k">identity</span><span class="v" id="wId">&mdash;</span></div>
+      <div class="row"><span class="k">created</span><span class="v" id="wCreated">&mdash;</span></div>
+      <div class="row"><span class="k">scheme</span><span class="v" id="wAlg">&mdash;</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>Public key</h3>
+      <div class="row"><span class="k">address</span><span class="v" id="wPub">&mdash;<button class="copy" id="wCopy" type="button">copy</button></span></div>
+      <div class="row"><span class="k">private key</span><span class="v">held locally, never displayed or exported</span></div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var active = null; try { active = FRAME.getActive(); } catch (e) {}
+      if (!active) return;
+      document.getElementById("wId").textContent = active.frameId;
+      document.getElementById("wCreated").textContent = active.createdAt || "\u2014";
+      document.getElementById("wAlg").textContent = active.publicKey ? ("FRAME_SIGNATURE_V1 \u00b7 " + FRAME.keyAlgLabel(active.publicKey)) : "no key material";
+      var pub = active.publicKey || "\u2014";
+      document.getElementById("wPub").childNodes[0].nodeValue = pub.length > 44 ? pub.slice(0, 44) + "\u2026" : pub;
+      var copy = document.getElementById("wCopy");
+      copy.addEventListener("click", function () {
+        try {
+          navigator.clipboard.writeText(active.publicKey || "");
+          copy.textContent = "copied";
+          setTimeout(function () { copy.textContent = "copy"; }, 1200);
+        } catch (e) {}
+      });
+    })();
+  </script>
+</body>
+</html>

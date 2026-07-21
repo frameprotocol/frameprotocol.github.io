@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000; -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+    .panel { width: min(92vw, 560px); }
+    .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem); margin: 0; text-align: center; }
+    .subtitle { color: #666666; font-weight: 500; text-align: center; margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem); }
+    .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
+
+    .feat { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(14px, 2.2vw, 20px); margin-bottom: 12px; }
+    .feat h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.02rem; margin: 0 0 10px; }
+    .node { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 0.82rem; padding: 6px 0; }
+    .node .dot { width: 9px; height: 9px; border-radius: 50%; background: #17a34a; flex: 0 0 auto; box-shadow: 0 0 0 3px rgba(23,163,74,0.15); }
+    .node .dot.off { background: #bbbbbb; box-shadow: none; }
+    .node .meta { margin-left: auto; color: #999999; }
+    .row { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: #333333; display: grid; grid-template-columns: 120px 1fr; gap: 4px 12px; margin-top: 4px; }
+    .row .k { color: #999999; }
+    .row .v { word-break: break-all; }
+    .note { color: #888888; font-size: 0.82rem; margin-top: 8px; line-height: 1.5; }
+
+    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      try {
+        var idents = FRAME.getIdentities();
+        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
+        var active = FRAME.getActive();
+        if (!active) { window.location.replace("/identity.html"); return; }
+        if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); }
+      } catch (e) {}
+    })();
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <h2 class="title">Personal Cloud</h2>
+    <p class="subtitle">Your own storage and compute, shared across FRAMEs you trust.</p>
+    <div class="divider"></div>
+
+    <div class="feat">
+      <h3>Nodes</h3>
+      <div class="node"><span class="dot"></span><span id="thisNode">this browser</span><span class="meta">online</span></div>
+      <div class="node"><span class="dot off"></span><span>no trusted peers yet</span><span class="meta">&mdash;</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>Shared storage</h3>
+      <div class="row"><span class="k">used here</span><span class="v" id="cUsed">&mdash;</span></div>
+      <div class="row"><span class="k">allowance</span><span class="v" id="cQuota">&mdash;</span></div>
+      <div class="row"><span class="k">pooled</span><span class="v" id="cPooled">&mdash;</span></div>
+      <div class="note">When you connect trusted FRAMEs, their free space is pooled here into one user-owned cloud, with no central provider.</div>
+    </div>
+
+    <div class="feat">
+      <h3>Compute</h3>
+      <div class="row"><span class="k">local cores</span><span class="v" id="cCores">&mdash;</span></div>
+      <div class="row"><span class="k">shared jobs</span><span class="v">0 running &middot; 0 queued</span></div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var active = null; try { active = FRAME.getActive(); } catch (e) {}
+      document.getElementById("thisNode").textContent = "this browser (" + FRAME.browserName() + ")";
+      document.getElementById("cCores").textContent = (navigator.hardwareConcurrency || "unknown") + "";
+
+      function hb(n) { return FRAME.humanBytesLong ? FRAME.humanBytesLong(n) : n + " bytes"; }
+      function fill(usage, quota) {
+        document.getElementById("cUsed").textContent = hb(usage);
+        document.getElementById("cQuota").textContent = quota ? hb(quota) : "not reported";
+        document.getElementById("cPooled").textContent = hb(usage) + " across 1 node";
+      }
+      var local = FRAME.localStorageBytes();
+      if (navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then(function (est) {
+          fill(Math.max(est.usage || 0, local), est.quota || 0);
+        }).catch(function () { fill(local, 0); });
+      } else { fill(local, 0); }
+    })();
+  </script>
+</body>
+</html>
