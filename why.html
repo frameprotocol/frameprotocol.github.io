@@ -483,6 +483,27 @@ Applications</div>
     </section>
 
     <section class="sec">
+      <div class="sec-head"><h2>Governance, as an Abstraction</h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Governance isn't hard-coded into the kernel—it's expressed abstractly through capabilities.</p>
+        <p>FRAME doesn't impose a single way to make decisions.</p>
+        <p>Because every permission in FRAME is a capability, governance simply becomes the question of who is allowed to grant, revoke, or change those capabilities.</p>
+        <p>That turns governance into an abstraction that applications build on top of, rather than something baked rigidly into the foundation.</p>
+        <p>dApps and communities can define their own models:</p>
+        <ul>
+          <li>Voting, quorums, and proposals</li>
+          <li>Roles, councils, and multisig approvals</li>
+          <li>DAOs, guilds, workspaces, and organizations</li>
+          <li>Time-locked, delegated, or revocable authority</li>
+        </ul>
+        <p>Each of these is just a pattern for deciding how capabilities are issued and withdrawn.</p>
+        <p>A governance decision—on-chain or off—resolves into a concrete change in permissions that FRAME then enforces.</p>
+        <p>Because those changes are verifiable, governance becomes transparent and auditable: anyone can confirm who authorized what, and applications can trust the outcome without trusting a central operator.</p>
+        <p>The same kernel can host a solo user granting themselves capabilities and a global community coordinating through elaborate governance—without changing how FRAME works underneath.</p>
+      </div>
+    </section>
+
+    <section class="sec">
       <div class="sec-head"><h2>Identity, Moved Up a Layer</h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">One identity you own, with application-level roles layered on top.</p>
