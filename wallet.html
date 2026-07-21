@@ -26,22 +26,94 @@
       font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
       font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
     }
-    .panel { width: min(92vw, 560px); }
+    .panel { width: min(92vw, 620px); }
     .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem); margin: 0; text-align: center; }
     .subtitle { color: #666666; font-weight: 500; text-align: center; margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem); }
     .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
 
-    .balance { border: 1px solid #e6e6e6; border-radius: 16px; padding: clamp(18px, 3vw, 26px); text-align: center; margin-bottom: 16px; }
-    .balance .amt { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(2rem, 9vw, 2.8rem); }
-    .balance .cur { color: #b45309; }
-    .balance .sub { color: #888888; font-size: 0.82rem; margin-top: 4px; }
+    .tabs {
+      display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 18px; border-bottom: 1px solid #eeeeee; padding-bottom: 2px;
+    }
+    .tab {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.88rem;
+      border: 0; background: none; color: #888888; padding: 10px 14px; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -3px;
+    }
+    .tab:hover { color: #000000; }
+    .tab.on { color: #000000; border-bottom-color: #000000; }
+    .pane { display: none; }
+    .pane.on { display: block; }
 
-    .feat { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(14px, 2.2vw, 20px); margin-bottom: 12px; }
-    .feat h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.02rem; margin: 0 0 8px; }
-    .row { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: #333333; display: grid; grid-template-columns: 96px 1fr; gap: 4px 12px; margin-top: 4px; align-items: start; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .summary { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: #444444; }
+    .btn {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.82rem;
+      border: 1.5px solid #000000; background: #ffffff; color: #000000; border-radius: 999px;
+      padding: 7px 15px; cursor: pointer; transition: background 0.12s ease, color 0.12s ease;
+    }
+    .btn:hover { background: #000000; color: #ffffff; }
+    .btn.ghost { border-color: #cccccc; color: #555555; }
+    .btn.ghost:hover { border-color: #000000; color: #ffffff; background: #000000; }
+    .btn.danger { border-color: #c0392b; color: #c0392b; }
+    .btn.danger:hover { background: #c0392b; color: #ffffff; }
+    .btn.sm { padding: 5px 11px; font-size: 0.74rem; }
+
+    .card { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(14px, 2.2vw, 18px); margin-bottom: 12px; }
+    .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .card-name { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.02rem; }
+    .badge {
+      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 999px; background: #f2f2f2; color: #555555;
+    }
+    .badge.btc { background: #fff3e0; color: #b45309; }
+    .badge.eth { background: #eef0ff; color: #4f46e5; }
+    .badge.sol { background: #f3e8ff; color: #7c3aed; }
+    .badge.frame { background: #e9f7ef; color: #0f7a3d; }
+    .badge.custom { background: #f4f4f5; color: #555555; }
+
+    .row { font-family: 'Space Mono', monospace; font-size: 0.76rem; color: #333333; display: grid; grid-template-columns: 92px 1fr; gap: 4px 12px; margin-top: 4px; align-items: start; }
     .row .k { color: #999999; }
     .row .v { word-break: break-all; }
     .copy { border: 0; background: none; color: #1a73e8; font-family: inherit; font-size: 0.72rem; cursor: pointer; padding: 0; margin-left: 6px; }
+    .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+    .form { display: grid; gap: 10px; margin-bottom: 16px; }
+    .form.hidden { display: none; }
+    .form label { font-size: 0.78rem; font-weight: 600; color: #555555; display: block; margin-bottom: 4px; }
+    .form input, .form select, .form textarea {
+      width: 100%; border: 1.5px solid #000000; border-radius: 10px; padding: 10px 12px;
+      font-family: 'Space Mono', monospace; font-size: 0.86rem; background: #ffffff;
+    }
+    .form textarea { min-height: 64px; resize: vertical; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+    .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 0.72rem; font-family: 'Space Mono', monospace; margin-left: auto; }
+    .pill svg { width: 12px; height: 12px; }
+    .pill.ok { background: #e9f7ef; color: #0f7a3d; }
+    .pill.bad { background: #fdecec; color: #c0392b; }
+    .pill.pending { background: #fff7e0; color: #a97400; }
+    .pill.run { background: #e8f0fe; color: #1a73e8; }
+    .pill.done { background: #e9f7ef; color: #0f7a3d; }
+    .pill.queued { background: #f4f4f5; color: #555555; }
+
+    .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .task:last-child { border-bottom: 0; }
+    .task input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; accent-color: #000000; cursor: pointer; flex: 0 0 auto; }
+    .task .body { flex: 1 1 auto; min-width: 0; }
+    .task .txt { font-size: 0.95rem; line-height: 1.35; }
+    .task.done .txt { text-decoration: line-through; color: #999999; }
+    .task .meta { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: #aaaaaa; margin-top: 3px; }
+    .task .del { border: 0; background: none; color: #c0392b; cursor: pointer; font-size: 0.78rem; font-weight: 600; padding: 2px 4px; }
+
+    .add-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .add-row input { flex: 1 1 auto; border: 1.5px solid #000000; border-radius: 10px; padding: 10px 12px; font-family: inherit; font-size: 0.92rem; }
+
+    .empty { border: 1px dashed #cccccc; border-radius: 14px; padding: 28px; text-align: center; color: #888888; font-size: 0.92rem; }
+    .ident-card { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(14px, 2.2vw, 18px); margin-bottom: 16px; background: #fafafa; }
+    .ident-card h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 0.95rem; margin: 0 0 8px; }
 
     .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
     .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
@@ -71,45 +143,490 @@
 
   <main class="panel">
     <h2 class="title">Wallet</h2>
-    <p class="subtitle">Your identity is your account. No seed phrase, no third party.</p>
+    <p class="subtitle">Wallets, receipts, jobs, and tasks, one place.</p>
     <div class="divider"></div>
 
-    <div class="balance">
-      <div class="amt">0.00 <span class="cur">FRAME</span></div>
-      <div class="sub">No ledger connected. Balances appear once your FRAME joins a network.</div>
-    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab on" data-tab="wallets" type="button">Wallets</button>
+      <button class="tab" data-tab="receipts" type="button">Receipts</button>
+      <button class="tab" data-tab="jobs" type="button">Jobs</button>
+      <button class="tab" data-tab="tasks" type="button">Tasks</button>
+    </nav>
 
-    <div class="feat">
-      <h3>Account</h3>
-      <div class="row"><span class="k">identity</span><span class="v" id="wId">&mdash;</span></div>
-      <div class="row"><span class="k">created</span><span class="v" id="wCreated">&mdash;</span></div>
-      <div class="row"><span class="k">scheme</span><span class="v" id="wAlg">&mdash;</span></div>
-    </div>
+    <!-- WALLETS -->
+    <section class="pane on" id="pane-wallets">
+      <div class="ident-card">
+        <h3>FRAME identity account</h3>
+        <div class="row"><span class="k">identity</span><span class="v" id="wId">&mdash;</span></div>
+        <div class="row"><span class="k">scheme</span><span class="v" id="wAlg">&mdash;</span></div>
+        <div class="row"><span class="k">address</span><span class="v" id="wPub">&mdash;<button class="copy" id="wCopy" type="button">copy</button></span></div>
+      </div>
 
-    <div class="feat">
-      <h3>Public key</h3>
-      <div class="row"><span class="k">address</span><span class="v" id="wPub">&mdash;<button class="copy" id="wCopy" type="button">copy</button></span></div>
-      <div class="row"><span class="k">private key</span><span class="v">held locally, never displayed or exported</span></div>
-    </div>
+      <div class="toolbar">
+        <span class="summary" id="walletSummary">0 wallets</span>
+        <button class="btn" id="addWalletBtn" type="button">Add wallet</button>
+      </div>
+
+      <form class="form hidden card" id="walletForm">
+        <div class="form-row">
+          <div>
+            <label for="wName">Name</label>
+            <input id="wName" type="text" placeholder="Main ETH" maxlength="48" required />
+          </div>
+          <div>
+            <label for="wChain">Chain</label>
+            <select id="wChain">
+              <option value="btc">Bitcoin</option>
+              <option value="eth" selected>Ethereum</option>
+              <option value="sol">Solana</option>
+              <option value="frame">FRAME</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label for="wAddress">Address / public key</label>
+          <input id="wAddress" type="text" placeholder="0x… or bc1… or fid_…" required />
+        </div>
+        <div>
+          <label for="wNote">Note (optional)</label>
+          <textarea id="wNote" placeholder="Hardware wallet, exchange deposit, etc."></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit">Save wallet</button>
+          <button class="btn ghost" id="cancelWallet" type="button">Cancel</button>
+        </div>
+      </form>
+
+      <div id="walletList"></div>
+    </section>
+
+    <!-- RECEIPTS -->
+    <section class="pane" id="pane-receipts">
+      <div class="toolbar">
+        <span class="summary" id="receiptSummary">Checking&hellip;</span>
+        <button class="btn" id="reverify" type="button">Re-verify all</button>
+      </div>
+      <div id="receiptList"></div>
+    </section>
+
+    <!-- JOBS -->
+    <section class="pane" id="pane-jobs">
+      <div class="toolbar">
+        <span class="summary" id="jobSummary">0 jobs</span>
+        <button class="btn" id="addJobBtn" type="button">Enqueue job</button>
+      </div>
+      <form class="form hidden card" id="jobForm">
+        <div>
+          <label for="jTitle">Job</label>
+          <input id="jTitle" type="text" placeholder="Sync storage to peer" maxlength="80" required />
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit">Enqueue</button>
+          <button class="btn ghost" id="cancelJob" type="button">Cancel</button>
+        </div>
+      </form>
+      <div id="jobList"></div>
+    </section>
+
+    <!-- TASKS -->
+    <section class="pane" id="pane-tasks">
+      <form class="add-row" id="taskForm">
+        <input id="taskInput" type="text" placeholder="Add a task…" maxlength="120" autocomplete="off" />
+        <button class="btn" type="submit">Add</button>
+      </form>
+      <div class="toolbar">
+        <span class="summary" id="taskSummary">0 tasks</span>
+        <button class="btn ghost sm" id="clearDone" type="button">Clear done</button>
+      </div>
+      <div id="taskList"></div>
+    </section>
   </main>
 
   <script>
     (function () {
-      var active = null; try { active = FRAME.getActive(); } catch (e) {}
-      if (!active) return;
-      document.getElementById("wId").textContent = active.frameId;
-      document.getElementById("wCreated").textContent = active.createdAt || "\u2014";
-      document.getElementById("wAlg").textContent = active.publicKey ? ("FRAME_SIGNATURE_V1 \u00b7 " + FRAME.keyAlgLabel(active.publicKey)) : "no key material";
-      var pub = active.publicKey || "\u2014";
-      document.getElementById("wPub").childNodes[0].nodeValue = pub.length > 44 ? pub.slice(0, 44) + "\u2026" : pub;
-      var copy = document.getElementById("wCopy");
-      copy.addEventListener("click", function () {
+      var KEY = "frame.dapp.wallet";
+      var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+      var active = null;
+      try { active = FRAME.getActive(); } catch (e) {}
+
+      var state = {
+        wallets: [],
+        jobs: [],
+        tasks: [],
+        activeWalletId: null
+      };
+
+      function load() {
         try {
-          navigator.clipboard.writeText(active.publicKey || "");
-          copy.textContent = "copied";
-          setTimeout(function () { copy.textContent = "copy"; }, 1200);
+          var d = JSON.parse(localStorage.getItem(KEY) || "null");
+          if (d && d.state) {
+            state.wallets = Array.isArray(d.state.wallets) ? d.state.wallets : [];
+            state.jobs = Array.isArray(d.state.jobs) ? d.state.jobs : [];
+            state.tasks = Array.isArray(d.state.tasks) ? d.state.tasks : [];
+            state.activeWalletId = d.state.activeWalletId || null;
+          }
         } catch (e) {}
+      }
+
+      function persist() {
+        var payload;
+        try {
+          var d = JSON.parse(localStorage.getItem(KEY) || "null") || {
+            name: "Wallet", version: "1.0.0", installedAt: new Date().toISOString()
+          };
+          d.state = {
+            wallets: state.wallets,
+            jobs: state.jobs,
+            tasks: state.tasks,
+            activeWalletId: state.activeWalletId
+          };
+          d.updatedAt = new Date().toISOString();
+          payload = JSON.stringify(d.state);
+          localStorage.setItem(KEY, JSON.stringify(d));
+        } catch (e) {}
+        if (payload !== undefined && active && active.privateKey && active.publicKey) {
+          FRAME.signData(active.privateKey, payload).then(function (sig) {
+            return FRAME.verifyData(active.publicKey, payload, sig).then(function (ok) {
+              if (!ok) return;
+              try {
+                var d = JSON.parse(localStorage.getItem(KEY) || "null") || {};
+                d.signature = sig;
+                d.signedBy = active.frameId;
+                d.sigAlg = FRAME.keyAlgLabel(active.publicKey);
+                d.sigScheme = "FRAME_SIGNATURE_V1";
+                localStorage.setItem(KEY, JSON.stringify(d));
+              } catch (e) {}
+            });
+          }).catch(function () {});
+        }
+      }
+
+      function uid() {
+        return "w" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+      }
+      function shorten(s, n) { s = String(s || ""); return s.length > n ? s.slice(0, n) + "\u2026" : s; }
+      function esc(s) {
+        return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      /* ---- Tabs ---- */
+      function showTab(name) {
+        document.querySelectorAll(".tab").forEach(function (t) {
+          t.classList.toggle("on", t.getAttribute("data-tab") === name);
+        });
+        document.querySelectorAll(".pane").forEach(function (p) {
+          p.classList.toggle("on", p.id === "pane-" + name);
+        });
+        if (name === "receipts") renderReceipts();
+        if (history.replaceState) history.replaceState(null, "", "#" + name);
+      }
+      document.querySelectorAll(".tab").forEach(function (t) {
+        t.addEventListener("click", function () { showTab(t.getAttribute("data-tab")); });
       });
+
+      /* ---- Identity header ---- */
+      if (active) {
+        document.getElementById("wId").textContent = active.frameId;
+        document.getElementById("wAlg").textContent = active.publicKey
+          ? ("FRAME_SIGNATURE_V1 \u00b7 " + FRAME.keyAlgLabel(active.publicKey))
+          : "no key material";
+        var pub = active.publicKey || "\u2014";
+        document.getElementById("wPub").childNodes[0].nodeValue = pub.length > 44 ? pub.slice(0, 44) + "\u2026" : pub;
+        document.getElementById("wCopy").addEventListener("click", function () {
+          try {
+            navigator.clipboard.writeText(active.publicKey || "");
+            var c = document.getElementById("wCopy");
+            c.textContent = "copied";
+            setTimeout(function () { c.textContent = "copy"; }, 1200);
+          } catch (e) {}
+        });
+      }
+
+      /* ---- Wallets ---- */
+      var walletForm = document.getElementById("walletForm");
+      document.getElementById("addWalletBtn").addEventListener("click", function () {
+        walletForm.classList.remove("hidden");
+        document.getElementById("wName").focus();
+      });
+      document.getElementById("cancelWallet").addEventListener("click", function () {
+        walletForm.classList.add("hidden");
+        walletForm.reset();
+      });
+      walletForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var name = document.getElementById("wName").value.trim();
+        var chain = document.getElementById("wChain").value;
+        var address = document.getElementById("wAddress").value.trim();
+        var note = document.getElementById("wNote").value.trim();
+        if (!name || !address) return;
+        var w = {
+          id: uid(), name: name, chain: chain, address: address, note: note,
+          createdAt: new Date().toISOString()
+        };
+        state.wallets.unshift(w);
+        if (!state.activeWalletId) state.activeWalletId = w.id;
+        persist();
+        walletForm.reset();
+        walletForm.classList.add("hidden");
+        renderWallets();
+      });
+
+      function chainLabel(c) {
+        return ({ btc: "Bitcoin", eth: "Ethereum", sol: "Solana", frame: "FRAME", custom: "Custom" })[c] || c;
+      }
+
+      function renderWallets() {
+        var list = document.getElementById("walletList");
+        document.getElementById("walletSummary").textContent = state.wallets.length + " wallet" + (state.wallets.length === 1 ? "" : "s");
+        list.innerHTML = "";
+        if (state.wallets.length === 0) {
+          list.innerHTML = '<div class="empty">No crypto wallets yet. Add Bitcoin, Ethereum, Solana, FRAME, or a custom address.</div>';
+          return;
+        }
+        state.wallets.forEach(function (w) {
+          var card = document.createElement("div");
+          card.className = "card";
+          var isActive = state.activeWalletId === w.id;
+          card.innerHTML =
+            '<div class="card-head">' +
+              '<span class="card-name">' + esc(w.name) + '</span>' +
+              '<span class="badge ' + esc(w.chain) + '">' + esc(chainLabel(w.chain)) + '</span>' +
+              (isActive ? '<span class="badge frame">active</span>' : "") +
+            '</div>' +
+            '<div class="row"><span class="k">address</span><span class="v">' + esc(shorten(w.address, 48)) +
+              '<button class="copy" data-copy="' + esc(w.address) + '" type="button">copy</button></span></div>' +
+            (w.note ? '<div class="row"><span class="k">note</span><span class="v">' + esc(w.note) + '</span></div>' : "") +
+            '<div class="row"><span class="k">added</span><span class="v">' + esc(w.createdAt || "\u2014") + '</span></div>' +
+            '<div class="actions">' +
+              (isActive ? "" : '<button class="btn sm" data-use="' + esc(w.id) + '" type="button">Use</button>') +
+              '<button class="btn ghost sm danger" data-del="' + esc(w.id) + '" type="button">Remove</button>' +
+            '</div>';
+          list.appendChild(card);
+        });
+        list.querySelectorAll("[data-copy]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            try {
+              navigator.clipboard.writeText(b.getAttribute("data-copy"));
+              b.textContent = "copied";
+              setTimeout(function () { b.textContent = "copy"; }, 1200);
+            } catch (e) {}
+          });
+        });
+        list.querySelectorAll("[data-use]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            state.activeWalletId = b.getAttribute("data-use");
+            persist(); renderWallets();
+          });
+        });
+        list.querySelectorAll("[data-del]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-del");
+            state.wallets = state.wallets.filter(function (x) { return x.id !== id; });
+            if (state.activeWalletId === id) state.activeWalletId = state.wallets[0] ? state.wallets[0].id : null;
+            persist(); renderWallets();
+          });
+        });
+      }
+
+      /* ---- Receipts ---- */
+      function collectReceipts() {
+        var out = [];
+        FRAME.localStorageEntries().forEach(function (e) {
+          if (e.name.indexOf("frame.dapp.") !== 0) return;
+          var d = null; try { d = JSON.parse(localStorage.getItem(e.name)); } catch (x) {}
+          if (!d) return;
+          out.push({ key: e.name, d: d });
+        });
+        return out;
+      }
+
+      function renderReceipts() {
+        var listEl = document.getElementById("receiptList");
+        var summaryEl = document.getElementById("receiptSummary");
+        var records = collectReceipts();
+        listEl.innerHTML = "";
+        if (records.length === 0) {
+          listEl.innerHTML = '<div class="empty">No dApp receipts yet. Use Calculator or Wallet to create signed state.</div>';
+          summaryEl.textContent = "0 receipts";
+          return;
+        }
+        var verifiedCount = 0, total = 0, pending = records.length;
+        records.forEach(function (rec) {
+          var d = rec.d;
+          var card = document.createElement("div");
+          card.className = "card";
+          var hasSig = !!(d.signature && d.signedBy);
+          var signer = hasSig ? FRAME.getById(d.signedBy) : null;
+          var pubKey = signer ? signer.publicKey : null;
+          var payload = d.state ? JSON.stringify(d.state) : "";
+          var alg = d.sigAlg || (pubKey ? FRAME.keyAlgLabel(pubKey) : "unknown");
+          card.innerHTML =
+            '<div class="card-head">' +
+              '<span class="card-name">' + esc(d.name || rec.key) + '</span>' +
+              '<span class="pill pending">verifying\u2026</span>' +
+            '</div>' +
+            '<div class="row"><span class="k">dApp</span><span class="v">' + esc(rec.key) + '</span></div>' +
+            '<div class="row"><span class="k">scheme</span><span class="v">' + esc(d.sigScheme || "\u2014") + ' \u00b7 ' + esc(alg) + '</span></div>' +
+            '<div class="row"><span class="k">signed by</span><span class="v">' + esc(d.signedBy || "unsigned") + '</span></div>' +
+            '<div class="row"><span class="k">updated</span><span class="v">' + esc(d.updatedAt || "\u2014") + '</span></div>' +
+            '<div class="row"><span class="k">signature</span><span class="v">' + esc(d.signature ? shorten(d.signature, 60) : "\u2014") + '</span></div>';
+          listEl.appendChild(card);
+          var pill = card.querySelector(".pill");
+          total++;
+          function done() {
+            pending--;
+            if (pending === 0) summaryEl.textContent = verifiedCount + " of " + total + " verified";
+          }
+          if (!hasSig) { pill.className = "pill pending"; pill.textContent = "unsigned"; done(); return; }
+          if (!pubKey) { pill.className = "pill bad"; pill.textContent = "signer not found"; done(); return; }
+          FRAME.verifyData(pubKey, payload, d.signature).then(function (ok) {
+            if (ok) { pill.className = "pill ok"; pill.innerHTML = CHECK + "verified"; verifiedCount++; }
+            else { pill.className = "pill bad"; pill.textContent = "invalid"; }
+            done();
+          }).catch(function () { pill.className = "pill bad"; pill.textContent = "error"; done(); });
+        });
+      }
+      document.getElementById("reverify").addEventListener("click", renderReceipts);
+
+      /* ---- Jobs ---- */
+      var jobForm = document.getElementById("jobForm");
+      document.getElementById("addJobBtn").addEventListener("click", function () {
+        jobForm.classList.remove("hidden");
+        document.getElementById("jTitle").focus();
+      });
+      document.getElementById("cancelJob").addEventListener("click", function () {
+        jobForm.classList.add("hidden");
+        jobForm.reset();
+      });
+      jobForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var title = document.getElementById("jTitle").value.trim();
+        if (!title) return;
+        state.jobs.unshift({
+          id: uid(), title: title, status: "queued",
+          createdAt: new Date().toISOString()
+        });
+        persist();
+        jobForm.reset();
+        jobForm.classList.add("hidden");
+        renderJobs();
+      });
+
+      function renderJobs() {
+        var list = document.getElementById("jobList");
+        var queued = state.jobs.filter(function (j) { return j.status === "queued"; }).length;
+        var running = state.jobs.filter(function (j) { return j.status === "running"; }).length;
+        var done = state.jobs.filter(function (j) { return j.status === "done"; }).length;
+        document.getElementById("jobSummary").textContent =
+          state.jobs.length + " jobs \u00b7 " + running + " running \u00b7 " + queued + " queued \u00b7 " + done + " done";
+        list.innerHTML = "";
+        if (state.jobs.length === 0) {
+          list.innerHTML = '<div class="empty">No jobs yet. Enqueue a job to track work against your FRAME.</div>';
+          return;
+        }
+        state.jobs.forEach(function (j) {
+          var card = document.createElement("div");
+          card.className = "card";
+          var st = j.status || "queued";
+          card.innerHTML =
+            '<div class="card-head">' +
+              '<span class="card-name">' + esc(j.title) + '</span>' +
+              '<span class="pill ' + (st === "done" ? "done" : st === "running" ? "run" : "queued") + '">' + esc(st) + '</span>' +
+            '</div>' +
+            '<div class="row"><span class="k">created</span><span class="v">' + esc(j.createdAt || "\u2014") + '</span></div>' +
+            '<div class="actions">' +
+              (st === "queued" ? '<button class="btn sm" data-run="' + esc(j.id) + '" type="button">Start</button>' : "") +
+              (st === "running" ? '<button class="btn sm" data-finish="' + esc(j.id) + '" type="button">Complete</button>' : "") +
+              '<button class="btn ghost sm danger" data-jdel="' + esc(j.id) + '" type="button">Remove</button>' +
+            '</div>';
+          list.appendChild(card);
+        });
+        list.querySelectorAll("[data-run]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-run");
+            state.jobs.forEach(function (j) { if (j.id === id) j.status = "running"; });
+            persist(); renderJobs();
+          });
+        });
+        list.querySelectorAll("[data-finish]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-finish");
+            state.jobs.forEach(function (j) { if (j.id === id) j.status = "done"; });
+            persist(); renderJobs();
+          });
+        });
+        list.querySelectorAll("[data-jdel]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-jdel");
+            state.jobs = state.jobs.filter(function (j) { return j.id !== id; });
+            persist(); renderJobs();
+          });
+        });
+      }
+
+      /* ---- Tasks ---- */
+      document.getElementById("taskForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var input = document.getElementById("taskInput");
+        var text = input.value.trim();
+        if (!text) return;
+        state.tasks.unshift({ id: uid(), text: text, done: false, createdAt: new Date().toISOString() });
+        input.value = "";
+        persist();
+        renderTasks();
+      });
+      document.getElementById("clearDone").addEventListener("click", function () {
+        state.tasks = state.tasks.filter(function (t) { return !t.done; });
+        persist();
+        renderTasks();
+      });
+
+      function renderTasks() {
+        var list = document.getElementById("taskList");
+        var open = state.tasks.filter(function (t) { return !t.done; }).length;
+        document.getElementById("taskSummary").textContent =
+          open + " open \u00b7 " + state.tasks.length + " total";
+        list.innerHTML = "";
+        if (state.tasks.length === 0) {
+          list.innerHTML = '<div class="empty">No tasks yet. Add one above.</div>';
+          return;
+        }
+        state.tasks.forEach(function (t) {
+          var row = document.createElement("div");
+          row.className = "task" + (t.done ? " done" : "");
+          row.innerHTML =
+            '<input type="checkbox" ' + (t.done ? "checked" : "") + ' data-tog="' + esc(t.id) + '" />' +
+            '<div class="body"><div class="txt">' + esc(t.text) + '</div>' +
+            '<div class="meta">' + esc(t.createdAt || "") + '</div></div>' +
+            '<button class="del" data-tdel="' + esc(t.id) + '" type="button">delete</button>';
+          list.appendChild(row);
+        });
+        list.querySelectorAll("[data-tog]").forEach(function (c) {
+          c.addEventListener("change", function () {
+            var id = c.getAttribute("data-tog");
+            state.tasks.forEach(function (t) { if (t.id === id) t.done = !!c.checked; });
+            persist(); renderTasks();
+          });
+        });
+        list.querySelectorAll("[data-tdel]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-tdel");
+            state.tasks = state.tasks.filter(function (t) { return t.id !== id; });
+            persist(); renderTasks();
+          });
+        });
+      }
+
+      /* ---- Boot ---- */
+      load();
+      if (!localStorage.getItem(KEY)) persist();
+      renderWallets();
+      renderJobs();
+      renderTasks();
+
+      var hash = (location.hash || "").replace(/^#/, "");
+      if (hash === "receipts" || hash === "jobs" || hash === "tasks" || hash === "wallets") showTab(hash);
     })();
   </script>
 </body>

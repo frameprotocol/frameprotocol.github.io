@@ -63,10 +63,16 @@
         var active = FRAME.getActive();
         if (!active) { window.location.replace("/identity.html"); return; }
         if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); return; }
-        // Register the calculator dApp in storage so it appears on the storage map.
+        // Register installed dApps in storage so they appear on the storage map.
         if (!localStorage.getItem("frame.dapp.calculator")) {
           localStorage.setItem("frame.dapp.calculator", JSON.stringify({
             name: "Calculator", version: "1.0.0", installedAt: new Date().toISOString(), state: { display: "0" }
+          }));
+        }
+        if (!localStorage.getItem("frame.dapp.wallet")) {
+          localStorage.setItem("frame.dapp.wallet", JSON.stringify({
+            name: "Wallet", version: "1.0.0", installedAt: new Date().toISOString(),
+            state: { wallets: [], jobs: [], tasks: [], activeWalletId: null }
           }));
         }
       } catch (e) {}
@@ -111,19 +117,17 @@
 
       // Installed user dApps (persist to your FRAME storage).
       var installed = [
-        { id: "frame.dapp.calculator", name: "Calculator", href: "/calculator.html", color: "#ff8a00", icon: IC.calc }
+        { id: "frame.dapp.calculator", name: "Calculator", href: "/calculator.html", color: "#ff8a00", icon: IC.calc },
+        { id: "frame.dapp.wallet", name: "Wallet", href: "/wallet.html", color: "#b45309", icon: IC.wallet }
       ];
 
       // Real FRAME system dApp catalog (ids match ui/src/dapps/system/*).
+      // Wallet absorbs tasks, jobs, and receipt audit into one dApp.
       var system = [
         { id: "frame.system.welcome", name: "Welcome", href: "/", color: "#1a73e8", icon: IC.home },
-        { id: "frame.system.tasks", name: "Tasks", color: "#17a34a", icon: IC.tasks },
         { id: "frame.system.terminal", name: "Terminal", color: "#111111", icon: IC.term },
         { id: "frame.system.storage_explorer", name: "Storage", href: "/storage.html", color: "#0891b2", icon: IC.storage },
         { id: "frame.system.network_monitor", name: "Network", color: "#7c5cff", icon: IC.net },
-        { id: "frame.system.job_dashboard", name: "Jobs", color: "#d97706", icon: IC.jobs },
-        { id: "frame.system.receipt_audit", name: "Receipts", href: "/receipts.html", color: "#0f7a3d", icon: IC.receipt },
-        { id: "frame.system.wallet", name: "Wallet", href: "/wallet.html", color: "#b45309", icon: IC.wallet },
         { id: "frame.system.dapp_manager", name: "dApp Manager", href: "/dapps.html", color: "#e11d48", icon: IC.grid },
         { id: "frame.system.distributions", name: "Distributions", color: "#9b59b6", icon: IC.package },
         { id: "frame.system.personal_cloud", name: "Personal Cloud", href: "/cloud.html", color: "#0ea5e9", icon: IC.cloud },
