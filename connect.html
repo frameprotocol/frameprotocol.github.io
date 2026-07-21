@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: #ffffff;
+      min-height: 100%;
+    }
+    body {
+      color: #000000;
+      -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(56px, 10vh, 88px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      margin: 0;
+      z-index: 6;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      color: #000000;
+      font-size: clamp(18px, 5vw, 40px);
+      letter-spacing: 0.08em;
+      line-height: 1;
+    }
+
+    .panel {
+      width: min(90vw, 620px);
+      margin: 0 auto;
+    }
+    .title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      font-size: clamp(1.5rem, 6vw, 2.1rem);
+      margin: 0;
+      text-align: center;
+    }
+    .subtitle {
+      color: #666666;
+      font-weight: 500;
+      text-align: center;
+      margin: 8px 0 clamp(20px, 4vh, 28px);
+      font-size: clamp(0.95rem, 3.2vw, 1.05rem);
+    }
+    .divider {
+      width: 100%;
+      height: 0;
+      border-top: 1.5px solid #000000;
+      margin: clamp(16px, 3vh, 24px) 0 clamp(20px, 4vh, 28px);
+    }
+
+    /* Global search */
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1.5px solid #000000;
+      padding: clamp(11px, 2.2vh, 14px) 14px;
+    }
+    .search svg { width: 20px; height: 20px; flex: none; }
+    .search input {
+      border: 0;
+      outline: 0;
+      width: 100%;
+      background: transparent;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(0.95rem, 3.4vw, 1.05rem);
+      color: #000000;
+    }
+    .search input::placeholder { color: #999999; }
+
+    .section-label {
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      color: #888888;
+      margin: clamp(22px, 4vh, 30px) 0 12px;
+    }
+
+    .methods {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(10px, 1.8vh, 14px);
+    }
+    .method {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+      background: #ffffff;
+      color: #000000;
+      border: 1.5px solid #000000;
+      padding: clamp(12px, 2.2vh, 16px) 15px;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    button.method { font: inherit; }
+    .method:hover { background: #000000; color: #ffffff; }
+    .method:hover .m-desc { color: #cccccc; }
+    .m-ic {
+      flex: none;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .m-ic svg { width: 22px; height: 22px; }
+    .m-body { flex: 1; min-width: 0; }
+    .m-title {
+      font-weight: 600;
+      font-size: clamp(0.98rem, 3.4vw, 1.08rem);
+      letter-spacing: 0.01em;
+    }
+    .m-desc {
+      color: #666666;
+      font-weight: 400;
+      font-size: clamp(0.82rem, 3vw, 0.92rem);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    /* Scanning cards (non-interactive container) */
+    .scan { cursor: default; flex-direction: column; align-items: stretch; }
+    .scan:hover { background: #ffffff; color: #000000; }
+    .scan:hover .m-desc { color: #666666; }
+    .scan-head { display: flex; align-items: flex-start; gap: 14px; }
+    .chip {
+      margin-left: auto;
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #000000;
+      padding: 3px 9px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #17a34a;
+      animation: pulse 1.3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+    .detected {
+      margin-top: 12px;
+      border-top: 1px dashed #cccccc;
+    }
+    .dev {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 2px;
+      border-bottom: 1px solid #eeeeee;
+    }
+    .dev:last-child { border-bottom: 0; }
+    .dev .d-name { font-weight: 500; font-size: 0.95rem; }
+    .dev .d-meta { color: #999999; font-size: 0.8rem; margin-left: auto; white-space: nowrap; }
+    .dev .d-ic { width: 16px; height: 16px; flex: none; color: #888888; }
+
+    /* Inline input methods */
+    .field-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .field {
+      flex: 1;
+      min-width: 0;
+      border: 1.5px solid #000000;
+      padding: 11px 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      background: #ffffff;
+      color: #000000;
+    }
+    .field::placeholder { color: #999999; }
+    .go {
+      flex: none;
+      border: 1.5px solid #000000;
+      background: #000000;
+      color: #ffffff;
+      padding: 0 18px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .corner {
+      position: fixed;
+      width: clamp(28px, 6vw, 56px);
+      height: clamp(28px, 6vw, 56px);
+      border-color: #000000;
+      border-style: solid;
+      border-width: 0;
+      pointer-events: none;
+    }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <h2 class="title">Connect to a FRAME</h2>
+    <p class="subtitle">Find and pair with an existing FRAME.</p>
+    <div class="divider"></div>
+
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search by name, FRAME ID, or address" aria-label="Search for a FRAME" />
+    </div>
+
+    <div class="section-label">Discover nearby</div>
+    <div class="methods">
+
+      <!-- Bluetooth scan -->
+      <div class="method scan">
+        <div class="scan-head">
+          <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg></span>
+          <div class="m-body">
+            <div class="m-title">Search Nearby &middot; Bluetooth</div>
+            <div class="m-desc">Find FRAMEs broadcasting over Bluetooth Low Energy.</div>
+          </div>
+          <span class="chip"><span class="dot"></span> Scanning</span>
+        </div>
+        <div class="detected">
+          <div class="dev"><svg class="d-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="d-name">FRAME-a1f3</span><span class="d-meta">-48 dBm</span></div>
+          <div class="dev"><svg class="d-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="d-name">studio-frame</span><span class="d-meta">-63 dBm</span></div>
+        </div>
+      </div>
+
+      <!-- Wi-Fi scan -->
+      <div class="method scan">
+        <div class="scan-head">
+          <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a15 15 0 0 1 20 0"/><path d="M5 12a10 10 0 0 1 14 0"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><line x1="12" y1="19" x2="12.01" y2="19"/></svg></span>
+          <div class="m-body">
+            <div class="m-title">Search Nearby &middot; Wi-Fi</div>
+            <div class="m-desc">Discover FRAMEs advertising on the same Wi-Fi network.</div>
+          </div>
+          <span class="chip"><span class="dot"></span> Scanning</span>
+        </div>
+        <div class="detected">
+          <div class="dev"><svg class="d-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12a10 10 0 0 1 14 0"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/></svg><span class="d-name">living-room.local</span><span class="d-meta">192.168.1.24</span></div>
+          <div class="dev"><svg class="d-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12a10 10 0 0 1 14 0"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/></svg><span class="d-name">office-frame.local</span><span class="d-meta">192.168.1.51</span></div>
+        </div>
+      </div>
+
+      <!-- LAN scan -->
+      <div class="method scan">
+        <div class="scan-head">
+          <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+          <div class="m-body">
+            <div class="m-title">Local Network (LAN)</div>
+            <div class="m-desc">Scan every device on your local subnet for FRAMEs.</div>
+          </div>
+          <span class="chip"><span class="dot"></span> Scanning</span>
+        </div>
+        <div class="detected">
+          <div class="dev"><svg class="d-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="d-name">nas-frame</span><span class="d-meta">192.168.1.7</span></div>
+        </div>
+      </div>
+
+      <!-- mDNS -->
+      <button class="method" type="button">
+        <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M4.9 4.9a10 10 0 0 0 0 14.2M19.1 4.9a10 10 0 0 1 0 14.2M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4"/></svg></span>
+        <div class="m-body">
+          <div class="m-title">Auto-Discover (mDNS / Bonjour)</div>
+          <div class="m-desc">Zero-config discovery of FRAMEs announcing themselves.</div>
+        </div>
+      </button>
+
+    </div>
+
+    <div class="section-label">Direct pairing</div>
+    <div class="methods">
+
+      <!-- QR -->
+      <button class="method" type="button">
+        <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="17"/><line x1="17" y1="14" x2="17" y2="14"/><line x1="20" y1="14" x2="20" y2="17"/><line x1="14" y1="20" x2="20" y2="20"/><line x1="20" y1="17" x2="20" y2="20"/></svg></span>
+        <div class="m-body">
+          <div class="m-title">Scan QR Code</div>
+          <div class="m-desc">Point your camera at a FRAME's pairing QR code.</div>
+        </div>
+      </button>
+
+      <!-- NFC -->
+      <button class="method" type="button">
+        <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a8 8 0 0 0 0 8"/><path d="M9.5 6.5a12 12 0 0 0 0 11"/><path d="M14 4v16l4-3V7z"/></svg></span>
+        <div class="m-body">
+          <div class="m-title">NFC Tap</div>
+          <div class="m-desc">Tap two devices together to pair instantly.</div>
+        </div>
+      </button>
+
+      <!-- USB -->
+      <button class="method" type="button">
+        <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="20"/><polyline points="9 6 12 3 15 6"/><circle cx="12" cy="21" r="1"/><path d="M12 14l-4-2v-2"/><rect x="6.5" y="8" width="3" height="2"/><path d="M12 11l4-2"/><circle cx="16" cy="9" r="1"/></svg></span>
+        <div class="m-body">
+          <div class="m-title">USB / Direct Cable</div>
+          <div class="m-desc">Connect over a wired link with no network needed.</div>
+        </div>
+      </button>
+
+    </div>
+
+    <div class="section-label">Enter details</div>
+    <div class="methods">
+
+      <!-- IP / hostname -->
+      <div class="method scan">
+        <div class="scan-head">
+          <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h8M6 12h.01M18 12h.01M8 16h8"/></svg></span>
+          <div class="m-body">
+            <div class="m-title">IP Address or Hostname</div>
+            <div class="m-desc">Type an address like 192.168.1.20 or frame.local.</div>
+            <div class="field-row">
+              <input class="field" type="text" placeholder="192.168.1.20 : 7000" aria-label="IP address or hostname" />
+              <button class="go" type="button">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invite / pairing code -->
+      <div class="method scan">
+        <div class="scan-head">
+          <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span>
+          <div class="m-body">
+            <div class="m-title">Invite Link or Pairing Code</div>
+            <div class="m-desc">Paste a share link or a short one-time pairing code.</div>
+            <div class="field-row">
+              <input class="field" type="text" placeholder="frame://invite/… or 8-digit code" aria-label="Invite link or pairing code" />
+              <button class="go" type="button">Pair</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRAME ID -->
+      <div class="method scan">
+        <div class="scan-head">
+          <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.2"/><line x1="14" y1="10" x2="18" y2="10"/><line x1="14" y1="14" x2="18" y2="14"/></svg></span>
+          <div class="m-body">
+            <div class="m-title">Connect by FRAME ID</div>
+            <div class="m-desc">Look up a known FRAME by its public identifier.</div>
+            <div class="field-row">
+              <input class="field" type="text" placeholder="frame:1a2b3c4d…" aria-label="FRAME ID" />
+              <button class="go" type="button">Find</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section-label">Remote</div>
+    <div class="methods">
+
+      <!-- Cloud relay -->
+      <button class="method" type="button">
+        <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.5A4 4 0 0 0 6.5 19z"/></svg></span>
+        <div class="m-body">
+          <div class="m-title">Cloud Relay</div>
+          <div class="m-desc">Reach a FRAME anywhere through an encrypted relay.</div>
+        </div>
+      </button>
+
+      <!-- Peer / P2P -->
+      <button class="method" type="button">
+        <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><line x1="7.7" y1="7.7" x2="10.3" y2="16.3"/><line x1="16.3" y1="7.7" x2="13.7" y2="16.3"/><line x1="8" y1="6" x2="16" y2="6"/></svg></span>
+        <div class="m-body">
+          <div class="m-title">Peer-to-Peer (Direct)</div>
+          <div class="m-desc">Establish a direct encrypted link between two FRAMEs.</div>
+        </div>
+      </button>
+
+    </div>
+  </main>
+</body>
+</html>

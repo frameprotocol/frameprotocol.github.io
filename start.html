@@ -26,6 +26,19 @@
       overflow: auto;
     }
     .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      margin: 0;
+      z-index: 5;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      color: #000000;
+      font-size: clamp(18px, 5vw, 40px);
+      letter-spacing: 0.08em;
+      line-height: 1;
+    }
 
     .panel {
       width: min(88vw, 380px);
@@ -35,32 +48,19 @@
       text-align: center;
       padding: 24px 0;
     }
-    .title {
-      margin: 0;
+    .status {
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
-      letter-spacing: 0.08em;
-      line-height: 1;
-      font-size: clamp(2.6rem, 10vw, 3.6rem);
-    }
-    .divider {
-      width: 100%;
-      height: 0;
-      border-top: 1.5px solid #000000;
-      margin: clamp(16px, 3vh, 24px) 0 clamp(20px, 4vh, 30px);
-    }
-    .status {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 600;
-      font-size: clamp(1.05rem, 4vw, 1.25rem);
+      letter-spacing: 0.02em;
+      font-size: clamp(1.5rem, 6vw, 2rem);
       margin: 0;
     }
     .prompt {
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 500;
-      color: #555555;
+      color: #666666;
       font-size: clamp(0.95rem, 3.4vw, 1.1rem);
-      margin: 6px 0 clamp(22px, 4vh, 32px);
+      margin: 8px 0 clamp(22px, 4vh, 32px);
     }
     .actions {
       width: 100%;
@@ -69,12 +69,15 @@
       gap: clamp(12px, 2vh, 16px);
     }
     .btn {
+      display: block;
       width: 100%;
       box-sizing: border-box;
       padding: clamp(12px, 2.4vh, 16px) 18px;
       background: #ffffff;
       color: #000000;
       border: 1.5px solid #000000;
+      text-align: center;
+      text-decoration: none;
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 600;
       letter-spacing: 0.02em;
@@ -103,15 +106,14 @@
   <span class="corner tr"></span>
   <span class="corner bl"></span>
   <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
   <main class="panel">
-    <h1 class="title"><a class="home-link" href="/">FRAME</a></h1>
-    <div class="divider"></div>
     <p class="status">No FRAME found.</p>
     <p class="prompt">Create one?</p>
     <div class="actions">
       <button class="btn" type="button">Create Local FRAME</button>
       <button class="btn" type="button">Import FRAME</button>
-      <button class="btn" type="button">Connect to Existing FRAME</button>
+      <a class="btn" href="/connect.html">Connect to Existing FRAME</a>
     </div>
   </main>
 </body>
