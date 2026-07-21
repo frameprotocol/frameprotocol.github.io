@@ -3,50 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>frame</title>
+  <title>frame - how</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    * { box-sizing: border-box; }
     html, body {
-      height: 100%;
       margin: 0;
-      overflow: hidden;
-    }
-    body {
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
       background: #ffffff;
       color: #000000;
+      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
-    .stage {
-      margin-top: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: clamp(12px, 2.5vh, 24px);
-      padding: 8px 0 0 8px;
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    h1 {
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 84px;
+      background: linear-gradient(to bottom, #ffffff 55%, rgba(255, 255, 255, 0));
+      pointer-events: none;
+      z-index: 6;
+    }
+    .brand {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      margin: 0;
+      z-index: 8;
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
       color: #000000;
       font-size: clamp(18px, 5vw, 40px);
       letter-spacing: 0.08em;
       line-height: 1;
-      margin: 0;
-      text-align: left;
     }
-    .home-link {
-      color: inherit;
-      text-decoration: none;
-    }
+    .home-link { color: inherit; text-decoration: none; }
 
     .corner {
       position: fixed;
@@ -55,20 +56,205 @@
       border-color: #000000;
       border-style: solid;
       border-width: 0;
+      z-index: 10;
+      pointer-events: none;
     }
     .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
     .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
     .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
     .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: clamp(88px, 14vh, 120px) clamp(24px, 6vw, 48px) clamp(96px, 16vh, 140px);
+    }
+
+    .sec { margin: 0 0 clamp(40px, 7vh, 64px); }
+    .sec-head {
+      display: flex;
+      align-items: flex-end;
+      column-gap: clamp(12px, 2vw, 20px);
+      margin-left: calc(-1 * clamp(24px, 6vw, 96px));
+      padding-left: 0;
+    }
+    .sec-head h2 {
+      margin: 0;
+      flex: 0 1 auto;
+      text-align: left;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.4rem, 4.5vw, 2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+    .sec-head .hline {
+      flex: 1 1 24px;
+      min-width: 24px;
+      height: 0;
+      border-top: 1px solid #000000;
+      margin-bottom: 0;
+    }
+    .sec-body {
+      border-right: 1px solid #000000;
+      text-align: left;
+      padding: clamp(16px, 2.6vh, 24px) clamp(16px, 3vw, 28px) clamp(24px, 3.8vh, 36px) 0;
+    }
+
+    .lede .sec-head h2 {
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      line-height: 1.05;
+    }
+
+    p {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      font-weight: 400;
+      line-height: 1.7;
+      margin: 0 0 clamp(14px, 2vh, 20px);
+    }
+    p.lead {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.15rem, 3vw, 1.5rem);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      margin: 0 0 clamp(16px, 2.6vh, 24px);
+    }
+    .sec-body > *:last-child { margin-bottom: 0; }
+    p.spaced { margin-bottom: clamp(10px, 1.4vh, 14px); }
+    ul {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      line-height: 1.7;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+      padding-left: 1.3em;
+      list-style-position: outside;
+    }
+    ul li { margin-bottom: 6px; }
+
+    .footer-note {
+      text-align: center;
+      margin: clamp(48px, 8vh, 80px) 0 0;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      line-height: 1.4;
+    }
+
+    .site-footer {
+      border-top: 1px solid #000000;
+      padding: clamp(40px, 7vh, 88px) clamp(24px, 6vw, 64px) clamp(64px, 10vh, 120px);
+    }
+    .foot-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .foot-kicker {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      margin: 0 0 clamp(12px, 2vh, 18px);
+    }
+    .foot-tag {
+      max-width: 620px;
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+      font-weight: 400;
+      line-height: 1.6;
+      margin: 0 0 clamp(28px, 5vh, 48px);
+    }
+    .foot-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 3vw, 36px);
+      margin: 0 0 clamp(36px, 7vh, 72px);
+    }
+    .flink {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #000000;
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.72;
+      transition: opacity 0.15s ease;
+    }
+    .flink:hover { opacity: 1; }
+    .foot-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 24px;
+      padding-top: clamp(16px, 2.4vh, 22px);
+      border-top: 1px solid #000000;
+      font-size: clamp(0.82rem, 1.9vw, 0.95rem);
+      letter-spacing: 0.02em;
+      opacity: 0.72;
+    }
   </style>
 </head>
 <body>
+  <div class="topbar"></div>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
   <span class="corner tl"></span>
   <span class="corner tr"></span>
   <span class="corner bl"></span>
   <span class="corner br"></span>
-  <div class="stage">
-    <h1><a class="home-link" href="/">FRAME</a></h1>
-  </div>
+
+  <main>
+    <section class="sec lede">
+      <div class="sec-head"><h2>How It Works</h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">One FRAME. Run it anywhere. It behaves the same everywhere.</p>
+        <p>A FRAME is a single, self-contained instance you control, and you can run it in whatever way fits your setup:</p>
+        <ul>
+          <li>Open it directly in a web browser</li>
+          <li>Run it as a native desktop application</li>
+          <li>Launch it from the command line</li>
+          <li>Package it as an executable</li>
+          <li>Deploy it in a container</li>
+          <li>Boot it directly on bare metal</li>
+        </ul>
+        <p>Regardless of where it runs, it behaves the same way, because every FRAME uses the same kernel and protocols.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2>Apps Connect, They Don't Own</h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Applications connect to your FRAME instead of owning your data.</p>
+        <p>Applications (dApps) don't own your data.</p>
+        <p>Instead, they connect to your FRAME, request capabilities, and operate on the same shared foundation.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2>Portable by Design</h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Copy it, clone it, sync it, or host it yourself.</p>
+        <p>A FRAME can be copied, backed up, cloned, synchronized with other trusted FRAME instances, or hosted entirely on your own hardware.</p>
+        <p>That lets everything from a personal laptop to a distributed, user-owned cloud run the exact same software, without changing how applications are built.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <p class="foot-kicker">Contribute</p>
+      <p class="foot-tag">We're building a shared foundation where software speaks the same language. Come build on it.</p>
+      <nav class="foot-links">
+        <a class="flink" href="/why.html">Why FRAME</a>
+        <a class="flink" href="/how.html">How it works</a>
+        <a class="flink" href="/start.html">Start</a>
+        <a class="flink" href="https://github.com/frameprotocol" target="_blank" rel="noopener">GitHub</a>
+        <a class="flink" href="https://x.com/frame_protocol" target="_blank" rel="noopener">X</a>
+      </nav>
+      <div class="foot-bottom">
+        <span>Open source &middot; Local-first &middot; Verifiable</span>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
