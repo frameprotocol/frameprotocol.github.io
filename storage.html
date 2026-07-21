@@ -54,10 +54,17 @@
     }
     .dev-tag.on { background: #17a34a; border-color: #17a34a; color: #ffffff; }
 
-    /* File blocks (one block per stored item, sized by bytes) */
-    .pxwrap { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px; margin: 14px 0 10px; }
-    .cell { border-radius: 3px; cursor: pointer; transition: transform 0.08s ease, box-shadow 0.08s ease; }
-    .cell:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.22); }
+    /* Pixel grid (one square per stored item) */
+    .pxwrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 14px);
+      grid-auto-rows: 14px;
+      gap: 4px;
+      margin: 14px 0 10px;
+      justify-content: start;
+    }
+    .px { width: 14px; height: 14px; border-radius: 3px; cursor: pointer; transition: transform 0.08s ease; }
+    .px:hover { transform: scale(1.4); }
 
     .pctline { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(0.8rem, 3vw, 0.95rem); }
     .legend2 {
@@ -215,24 +222,19 @@
           return;
         }
 
-        // One distinct block per stored item, sized by its byte share.
-        var maxB = 1;
-        segs.forEach(function (s) { if (s.bytes > maxB) maxB = s.bytes; });
+        // One square per stored item.
         segs.slice().sort(function (a, b) { return b.bytes - a.bytes; }).forEach(function (s) {
-          var cell = document.createElement("div");
-          cell.className = "cell";
-          var size = 20 + Math.round(Math.sqrt(s.bytes / maxB) * 52); // 20px..72px
-          cell.style.width = size + "px";
-          cell.style.height = size + "px";
-          cell.style.background = s.color;
-          cell._seg = s;
-          wrap.appendChild(cell);
+          var px = document.createElement("div");
+          px.className = "px";
+          px.style.background = s.color;
+          px._seg = s;
+          wrap.appendChild(px);
         });
 
         wrap.addEventListener("pointerover", function (e) {
           if (pinned) return;
           var t = e.target;
-          if (t && t.classList.contains("cell") && t._seg) showTip(t._seg, total, e.clientX, e.clientY);
+          if (t && t.classList.contains("px") && t._seg) showTip(t._seg, total, e.clientX, e.clientY);
         });
         wrap.addEventListener("pointermove", function (e) {
           if (pinned) return;
@@ -241,7 +243,7 @@
         wrap.addEventListener("pointerleave", function () { if (!pinned) hideTip(); });
         wrap.addEventListener("click", function (e) {
           var t = e.target;
-          if (t && t.classList.contains("cell") && t._seg) {
+          if (t && t.classList.contains("px") && t._seg) {
             pinned = true;
             showTip(t._seg, total, e.clientX, e.clientY);
             e.stopPropagation();
@@ -317,7 +319,7 @@
 
         var note = document.createElement("div");
         note.className = "note";
-        note.textContent = "Each block is one stored item, sized by its share of used space. Hover or tap a block for details. Browsers report an allowance (a share of free disk), not the computer's true capacity.";
+        note.textContent = "Each square is one stored item. Hover or tap a square for details. Browsers report an allowance (a share of free disk), not the computer's true capacity.";
         dev.appendChild(note);
 
         thisDevice.appendChild(dev);
