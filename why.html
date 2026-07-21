@@ -3,50 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>frame</title>
+  <title>frame — why</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    * { box-sizing: border-box; }
     html, body {
-      height: 100%;
       margin: 0;
-      overflow: hidden;
-    }
-    body {
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
       background: #ffffff;
       color: #000000;
       -webkit-font-smoothing: antialiased;
     }
-    .stage {
-      margin-top: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: clamp(12px, 2.5vh, 24px);
-      padding: 8px 0 0 8px;
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    h1 {
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: #ffffff;
+      z-index: 6;
+    }
+    .brand {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      margin: 0;
+      z-index: 8;
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
       color: #000000;
       font-size: clamp(18px, 5vw, 40px);
       letter-spacing: 0.08em;
       line-height: 1;
-      margin: 0;
-      text-align: left;
     }
-    .home-link {
-      color: inherit;
-      text-decoration: none;
-    }
+    .home-link { color: inherit; text-decoration: none; }
 
     .corner {
       position: fixed;
@@ -55,20 +54,269 @@
       border-color: #000000;
       border-style: solid;
       border-width: 0;
+      z-index: 10;
+      pointer-events: none;
     }
     .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
     .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
     .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
     .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: clamp(88px, 14vh, 120px) clamp(24px, 6vw, 48px) clamp(96px, 16vh, 140px);
+    }
+    .lede {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.05;
+      margin: 0 0 clamp(28px, 5vh, 44px);
+    }
+    h2 {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.4rem, 4.5vw, 2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+      margin: clamp(44px, 7vh, 72px) 0 clamp(14px, 2vh, 20px);
+    }
+    p {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      font-weight: 400;
+      line-height: 1.7;
+      margin: 0 0 clamp(14px, 2vh, 20px);
+    }
+    p.spaced { margin-bottom: clamp(10px, 1.4vh, 14px); }
+    ul {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      line-height: 1.7;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+      padding-left: 1.3em;
+    }
+    ul li { margin-bottom: 6px; }
+    .diagram {
+      font-family: 'Space Grotesk', ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: pre;
+      overflow-x: auto;
+      background: #f5f5f5;
+      border: 1px solid #e2e2e2;
+      border-radius: 10px;
+      padding: clamp(16px, 3vw, 24px);
+      font-size: clamp(0.85rem, 2.2vw, 1rem);
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+      margin: 0 0 clamp(18px, 2.6vh, 26px);
+    }
+    .footer-note {
+      margin-top: clamp(48px, 8vh, 80px);
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
+  <div class="topbar"></div>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
   <span class="corner tl"></span>
   <span class="corner tr"></span>
   <span class="corner bl"></span>
   <span class="corner br"></span>
-  <div class="stage">
-    <h1><a class="home-link" href="/">FRAME</a></h1>
-  </div>
+
+  <main>
+    <h1 class="lede">Why FRAME?</h1>
+
+    <p>The internet was built around websites, accounts, passwords, servers, and applications that each maintain their own version of reality.</p>
+    <p class="spaced">Every service has its own identity system.</p>
+    <p class="spaced">Its own storage.</p>
+    <p class="spaced">Its own permissions.</p>
+    <p class="spaced">Its own APIs.</p>
+    <p class="spaced">Its own data model.</p>
+    <p class="spaced">Its own synchronization.</p>
+    <p>Its own way of representing the world.</p>
+    <p>The result is a fragmented ecosystem where nothing naturally works together.</p>
+    <p>FRAME was created to solve that problem.</p>
+
+    <h2>A Different Foundation</h2>
+    <p class="spaced">FRAME is not another application.</p>
+    <p class="spaced">It is not another cloud platform.</p>
+    <p class="spaced">It is not another database.</p>
+    <p>It is a foundation for building software around a single, consistent model of reality.</p>
+    <p>Instead of every application owning its own world, FRAME provides one authoritative kernel that applications build upon.</p>
+    <p class="spaced">Applications no longer compete to own your data.</p>
+    <p>They simply understand it in different ways.</p>
+
+    <h2>One Reality</h2>
+    <p>Imagine a room.</p>
+    <p>Today, every application stores its own version of that room.</p>
+    <p class="spaced">A game stores one.</p>
+    <p class="spaced">A robot stores another.</p>
+    <p class="spaced">A mapping application stores another.</p>
+    <p class="spaced">An AI builds another.</p>
+    <p>A digital twin creates another.</p>
+    <p>Each system spends enormous effort converting between formats instead of understanding the same world.</p>
+    <p>FRAME changes this.</p>
+    <p class="spaced">Reality exists once.</p>
+    <p>Applications simply observe it.</p>
+    <p>Different applications can render it differently, analyze it differently, or interact with it differently, but they all reference the same underlying information.</p>
+
+    <h2>Applications Shouldn't Own Reality</h2>
+    <p>Traditional software often looks like this:</p>
+    <div class="diagram">Application
+    &#8595;
+Database
+    &#8595;
+Custom APIs
+    &#8595;
+Custom Identity
+    &#8595;
+Custom Permissions</div>
+    <p>Every application rebuilds the same infrastructure.</p>
+    <p>FRAME reverses the model.</p>
+    <div class="diagram">FRAME
+&#9500;&#9472;&#9472; Reality
+&#9500;&#9472;&#9472; Identity
+&#9500;&#9472;&#9472; Permissions
+&#9500;&#9472;&#9472; Storage
+&#9500;&#9472;&#9472; Compute
+&#9492;&#9472;&#9472; Views
+
+        &#8593;
+
+Applications</div>
+    <p>Applications become dramatically simpler because they no longer need to recreate the foundations every time.</p>
+
+    <h2>One Source of Truth</h2>
+    <p>When information changes, there should be one authoritative place where that change occurs.</p>
+    <p class="spaced">Not five databases.</p>
+    <p class="spaced">Not three caches.</p>
+    <p>Not dozens of synchronization systems.</p>
+    <p>FRAME provides one mutation path.</p>
+    <p>Every application observes the same result.</p>
+    <p>This eliminates an entire category of synchronization bugs, conflicting states, and duplicated logic.</p>
+
+    <h2>Compute Should Not Own Data</h2>
+    <p>Modern software often mixes computation with storage.</p>
+    <p class="spaced">AI systems generate data.</p>
+    <p class="spaced">Physics engines generate data.</p>
+    <p class="spaced">Rendering pipelines generate data.</p>
+    <p>Simulation engines generate data.</p>
+    <p>Eventually nobody knows which component is actually authoritative.</p>
+    <p>FRAME separates these responsibilities.</p>
+    <p class="spaced">Compute performs work.</p>
+    <p class="spaced">Reality stores results.</p>
+    <p>Algorithms never become the source of truth.</p>
+
+    <h2>Multiple Views, One Reality</h2>
+    <p>The same information can be viewed in many different ways.</p>
+    <p>A room could appear as:</p>
+    <ul>
+      <li>A voxel world</li>
+      <li>A photorealistic reconstruction</li>
+      <li>A CAD model</li>
+      <li>A robotics navigation map</li>
+      <li>A thermal visualization</li>
+      <li>A semantic scene graph</li>
+      <li>A simple list of objects</li>
+    </ul>
+    <p>These are all different views of the same reality.</p>
+    <p>Changing how something is visualized should never require changing the underlying information.</p>
+
+    <h2>Local First</h2>
+    <p>Your computer should be capable of understanding its own data.</p>
+    <p>FRAME is designed so work can happen locally whenever possible.</p>
+    <p>Applications shouldn't require constant communication with remote servers simply to function.</p>
+    <p>Cloud computing remains useful, but it becomes a capability—not a requirement.</p>
+
+    <h2>Security by Design</h2>
+    <p>Most systems rely on passwords and broad trust.</p>
+    <p>FRAME is designed around explicit capabilities.</p>
+    <p>Applications receive only the permissions they actually require.</p>
+    <p>Instead of asking:</p>
+    <p>"Who are you?"</p>
+    <p>FRAME asks:</p>
+    <p>"What are you allowed to do?"</p>
+    <p>This creates simpler, more auditable security boundaries.</p>
+
+    <h2>Many Chains, One Foundation</h2>
+    <p>Blockchains gave the world verifiable ownership, settlement, and trust without intermediaries—but each chain became its own island, with its own accounts, tokens, and rules.</p>
+    <p>FRAME is deliberately chain-agnostic.</p>
+    <p>Identity, permissions, and ownership in FRAME can be anchored to whichever blockchain a use case requires—one chain, several, or new ones that don't exist yet.</p>
+    <p>Because FRAME separates reality from the systems that verify it, the same underlying information can be settled, proven, or notarized across multiple chains at once.</p>
+    <p class="spaced">Ownership can be recorded on one chain.</p>
+    <p class="spaced">Payments can settle on another.</p>
+    <p>Provenance and audit trails can live on a third.</p>
+    <p>Applications never have to care which chain is underneath. They interact with one consistent model, and FRAME translates that intent to the right networks.</p>
+
+    <h2>Abstractions That Let dApps Emerge</h2>
+    <p>Most decentralized applications today are forced to rebuild the same low-level machinery: wallets, key management, indexing, cross-chain bridges, and custom data formats.</p>
+    <p>FRAME turns those concerns into shared abstractions.</p>
+    <p>Developers build on a stable foundation of identity, permissions, storage, and verifiable state instead of reinventing it for every chain and every app.</p>
+    <p>On top of that foundation, higher-level abstractions can emerge:</p>
+    <ul>
+      <li>Portable identity that follows a person across every app and chain</li>
+      <li>Ownership and provenance that any application can verify</li>
+      <li>Composable dApps that read and extend the same shared reality</li>
+      <li>Cross-chain applications that behave as one seamless experience</li>
+      <li>Agents and services that transact on a user's behalf under explicit, revocable permissions</li>
+    </ul>
+    <p>This is how real benefit reaches the world: transparent supply chains, verifiable digital ownership, self-sovereign identity, open financial tools, and public infrastructure that anyone can audit and build upon.</p>
+    <p>When the hard parts become shared abstractions, small teams can ship powerful, trustworthy applications—and an entire ecosystem of dApps can grow on common ground instead of walled gardens.</p>
+
+    <h2>Built for AI</h2>
+    <p>Artificial intelligence is becoming another consumer of information—not a replacement for it.</p>
+    <p>AI models should not maintain their own disconnected representation of reality.</p>
+    <p>Instead, they should interact with the same shared information that humans, robots, applications, and simulations already use.</p>
+    <p>This allows multiple AI systems to collaborate without continuously translating between incompatible formats.</p>
+
+    <h2>Built for More Than One Industry</h2>
+    <p>FRAME is intentionally domain-agnostic.</p>
+    <p>The same kernel can support:</p>
+    <ul>
+      <li>Digital twins</li>
+      <li>Robotics</li>
+      <li>Autonomous vehicles</li>
+      <li>Mapping</li>
+      <li>Industrial automation</li>
+      <li>Simulation</li>
+      <li>Scientific visualization</li>
+      <li>AI agents</li>
+      <li>Smart homes</li>
+      <li>Geographic information systems</li>
+      <li>Media production</li>
+      <li>Research platforms</li>
+    </ul>
+    <p>Each application brings its own logic while relying on the same underlying foundation.</p>
+
+    <h2>Open by Design</h2>
+    <p>FRAME is designed to be fully open source.</p>
+    <p class="spaced">The architecture should be understandable.</p>
+    <p class="spaced">The interfaces should be stable.</p>
+    <p>The behavior should be verifiable.</p>
+    <p>Software that becomes fundamental infrastructure should not depend on hidden implementations or proprietary protocols.</p>
+
+    <h2>Why Now?</h2>
+    <p>Computing is changing.</p>
+    <p>AI, robotics, digital twins, spatial computing, and automation are all converging.</p>
+    <p>Yet most software still assumes every application should build its own isolated world.</p>
+    <p>That assumption no longer scales.</p>
+    <p>Instead of building increasingly complicated systems that translate between hundreds of disconnected models, FRAME proposes something simpler:</p>
+    <p class="spaced">Build one foundation.</p>
+    <p>Let every application stand on it.</p>
+
+    <h2>The Goal</h2>
+    <p class="spaced">FRAME isn't trying to replace every application.</p>
+    <p class="spaced">It isn't trying to replace Linux.</p>
+    <p>It isn't trying to replace the web.</p>
+    <p>Its goal is much simpler.</p>
+    <p>Provide a consistent kernel where applications can share reality instead of constantly recreating it.</p>
+    <p>Everything else—rendering, AI, simulation, robotics, visualization, automation—is simply another way of interacting with that shared foundation.</p>
+
+    <p class="footer-note">The internet connected computers.<br />FRAME aims to make software speak the same language.</p>
+  </main>
 </body>
 </html>
