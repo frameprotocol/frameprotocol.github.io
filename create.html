@@ -135,28 +135,11 @@
     </section>
   </main>
 
+  <script src="/frame.js"></script>
   <script>
     (function () {
-      function randomDigits(n) {
-        var s = "";
-        for (var i = 0; i < n; i++) s += Math.floor(Math.random() * 10);
-        return s;
-      }
-      function randomAlnum(n) {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        var out = "";
-        var arr = (window.crypto && crypto.getRandomValues)
-          ? crypto.getRandomValues(new Uint32Array(n))
-          : null;
-        for (var i = 0; i < n; i++) {
-          var r = arr ? arr[i] % chars.length : Math.floor(Math.random() * chars.length);
-          out += chars.charAt(r);
-        }
-        return out;
-      }
-
-      var frameId = "frameid:" + randomDigits(6);
-      var recoveryKey = randomAlnum(17);
+      var frameId = "frameid:" + FRAME.randomDigits(6);
+      var recoveryKey = FRAME.randomAlnum(17);
       document.getElementById("frameId").textContent = frameId;
       document.getElementById("recoveryKey").textContent = recoveryKey;
 
@@ -186,14 +169,18 @@
           return;
         }
         try {
-          localStorage.setItem("frame.instance", JSON.stringify({
+          FRAME.addIdentity({
             frameId: frameId,
             recoveryKey: recoveryKey,
             passcode: pin.value,
+            settings: { maxAttempts: 5, onLimit: "lock" },
+            failedAttempts: 0,
+            locked: false,
             createdAt: new Date().toISOString()
-          }));
+          });
+          FRAME.setActiveId(frameId);
+          FRAME.markUnlocked(frameId);
         } catch (err) {}
-        try { sessionStorage.setItem("frame.unlocked", "1"); } catch (err2) {}
         window.location.href = "/dashboard.html";
       });
     })();

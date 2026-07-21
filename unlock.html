@@ -111,12 +111,18 @@
   </style>
 </head>
 <body>
+  <script src="/frame.js"></script>
   <script>
-    try {
-      if (!localStorage.getItem("frame.instance")) {
-        window.location.replace("/start.html");
-      }
-    } catch (e) {}
+    (function () {
+      try {
+        var idents = FRAME.getIdentities();
+        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
+        var active = FRAME.getActive();
+        if (!active) { window.location.replace("/identity.html"); return; }
+        if (!active.passcode) { FRAME.markUnlocked(active.frameId); window.location.replace("/dashboard.html"); return; }
+        if (FRAME.isUnlocked(active.frameId)) { window.location.replace("/dashboard.html"); return; }
+      } catch (e) {}
+    })();
   </script>
   <span class="corner tl"></span>
   <span class="corner tr"></span>
@@ -139,6 +145,7 @@
 
     <div class="altsep">or</div>
     <div class="alt">
+      <a href="/identity.html">Manage identities</a>
       <a href="/create.html">Create identity</a>
       <a href="/connect.html">Connect to existing identity</a>
     </div>
@@ -146,13 +153,12 @@
 
   <script>
     (function () {
-      var stored = null;
-      try { stored = JSON.parse(localStorage.getItem("frame.instance") || "null"); } catch (e) {}
-      if (!stored) { window.location.replace("/start.html"); return; }
+      var active = FRAME.getActive();
+      if (!active) { window.location.replace("/identity.html"); return; }
 
-      if (stored.frameId) document.getElementById("idLine").textContent = stored.frameId;
+      if (active.frameId) document.getElementById("idLine").textContent = active.frameId;
 
-      var settings = stored.settings || { maxAttempts: 5, onLimit: "lock" };
+      var settings = active.settings || { maxAttempts: 5, onLimit: "lock" };
       var maxAttempts = settings.maxAttempts; // null = unlimited
       var onLimit = settings.onLimit || "lock";
 
@@ -160,24 +166,16 @@
       var pinHint = document.getElementById("pinHint");
       var unlockBtn = document.getElementById("unlockBtn");
 
-      function getFails() {
-        var n = parseInt(localStorage.getItem("frame.failedAttempts") || "0", 10);
-        return isNaN(n) ? 0 : n;
-      }
-      function setFails(n) {
-        try { localStorage.setItem("frame.failedAttempts", String(n)); } catch (e) {}
-      }
-
       function lockDevice() {
-        try { localStorage.setItem("frame.locked", "1"); } catch (e) {}
+        active.locked = true;
+        FRAME.updateIdentity(active);
         pin.disabled = true;
         unlockBtn.disabled = true;
         pinHint.classList.add("err");
         pinHint.textContent = "Locked. Too many incorrect attempts. Restore with your recovery key.";
       }
 
-      // Already locked from a previous session?
-      if (onLimit === "lock" && localStorage.getItem("frame.locked") === "1") {
+      if (onLimit === "lock" && active.locked) {
         lockDevice();
       } else {
         setTimeout(function () { pin.focus(); }, 50);
@@ -198,29 +196,25 @@
           pin.focus();
           return;
         }
-        if (pin.value === stored.passcode) {
-          setFails(0);
-          try { localStorage.removeItem("frame.locked"); } catch (err) {}
-          try { sessionStorage.setItem("frame.unlocked", "1"); } catch (err) {}
+        if (pin.value === active.passcode) {
+          active.failedAttempts = 0;
+          active.locked = false;
+          FRAME.updateIdentity(active);
+          FRAME.markUnlocked(active.frameId);
           window.location.href = "/dashboard.html";
           return;
         }
 
-        // Incorrect
-        var fails = getFails() + 1;
-        setFails(fails);
+        var fails = (active.failedAttempts || 0) + 1;
+        active.failedAttempts = fails;
+        FRAME.updateIdentity(active);
         pin.value = "";
 
         if (maxAttempts !== null && maxAttempts !== undefined && fails >= maxAttempts) {
           if (onLimit === "wipe") {
-            try {
-              localStorage.removeItem("frame.instance");
-              localStorage.removeItem("frame.failedAttempts");
-              localStorage.removeItem("frame.locked");
-              sessionStorage.removeItem("frame.unlocked");
-            } catch (err) {}
+            FRAME.removeIdentity(active.frameId);
             alert("Too many incorrect attempts. This identity has been erased from this device.");
-            window.location.href = "/start.html";
+            window.location.href = "/dashboard.html";
             return;
           }
           lockDevice();

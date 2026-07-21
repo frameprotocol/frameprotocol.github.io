@@ -57,14 +57,21 @@
   </style>
 </head>
 <body>
+  <script src="/frame.js"></script>
   <script>
-    try {
-      if (!localStorage.getItem("frame.instance")) {
-        window.location.replace("/start.html");
-      } else if (sessionStorage.getItem("frame.unlocked") !== "1") {
-        window.location.replace("/unlock.html");
-      }
-    } catch (e) {}
+    (function () {
+      try {
+        var idents = FRAME.getIdentities();
+        if (idents.length === 0) {
+          var created = FRAME.createIdentity(null);
+          FRAME.setActiveId(created.frameId);
+          return; // no passcode yet, stay on the dashboard
+        }
+        var active = FRAME.getActive();
+        if (!active) { window.location.replace("/identity.html"); return; }
+        if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); }
+      } catch (e) {}
+    })();
   </script>
   <span class="corner tl"></span>
   <span class="corner tr"></span>

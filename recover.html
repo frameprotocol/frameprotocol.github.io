@@ -95,12 +95,14 @@
   </style>
 </head>
 <body>
+  <script src="/frame.js"></script>
   <script>
-    try {
-      if (!localStorage.getItem("frame.instance")) {
-        window.location.replace("/start.html");
-      }
-    } catch (e) {}
+    (function () {
+      try {
+        if (FRAME.getIdentities().length === 0) { window.location.replace("/dashboard.html"); return; }
+        if (!FRAME.getActive()) { window.location.replace("/identity.html"); }
+      } catch (e) {}
+    })();
   </script>
   <span class="corner tl"></span>
   <span class="corner tr"></span>
@@ -137,9 +139,8 @@
 
   <script>
     (function () {
-      var stored = null;
-      try { stored = JSON.parse(localStorage.getItem("frame.instance") || "null"); } catch (e) {}
-      if (!stored) { window.location.replace("/start.html"); return; }
+      var stored = FRAME.getActive();
+      if (!stored) { window.location.replace("/identity.html"); return; }
 
       if (stored.frameId) document.getElementById("idLine").textContent = stored.frameId;
 
@@ -196,11 +197,12 @@
           return;
         }
         stored.passcode = pin.value;
+        stored.failedAttempts = 0;
+        stored.locked = false;
         try {
-          localStorage.setItem("frame.instance", JSON.stringify(stored));
-          localStorage.removeItem("frame.failedAttempts");
-          localStorage.removeItem("frame.locked");
-          sessionStorage.setItem("frame.unlocked", "1");
+          FRAME.updateIdentity(stored);
+          FRAME.setActiveId(stored.frameId);
+          FRAME.markUnlocked(stored.frameId);
         } catch (err) {}
         window.location.href = "/dashboard.html";
       });
