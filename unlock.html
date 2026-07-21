@@ -56,6 +56,7 @@
       text-indent: 0.5em; background: #ffffff; color: #000000;
     }
     .pin:focus { outline: 2px solid #000000; outline-offset: 2px; }
+    .pin:disabled { background: #f2f2f2; color: #999999; }
     .hint { text-align: center; color: #888888; font-size: 0.85rem; margin-top: 10px; min-height: 1.1em; }
     .hint.err { color: #c1121f; font-weight: 600; }
 
@@ -69,6 +70,24 @@
       transition: background 0.15s ease, color 0.15s ease;
     }
     .btn:hover { background: #ffffff; color: #000000; }
+    .btn:disabled { background: #f2f2f2; color: #999999; border-color: #cccccc; cursor: not-allowed; }
+
+    .altsep {
+      display: flex; align-items: center; gap: 12px;
+      color: #999999; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+      margin: clamp(22px, 4vh, 30px) 0 clamp(14px, 2.4vh, 18px);
+    }
+    .altsep::before, .altsep::after { content: ""; flex: 1; height: 0; border-top: 1px solid #dddddd; }
+    .alt { display: flex; flex-direction: column; gap: clamp(10px, 1.8vh, 14px); }
+    .alt a {
+      display: block; text-align: center; text-decoration: none;
+      padding: clamp(11px, 2.2vh, 15px) 18px;
+      border: 1.5px solid #000000; background: #ffffff; color: #000000;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: clamp(0.95rem, 3.4vw, 1.05rem);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .alt a:hover { background: #000000; color: #ffffff; }
 
     .corner {
       position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px);
@@ -104,6 +123,12 @@
       <div class="hint" id="pinHint">Enter your 5-digit passcode.</div>
       <button class="btn" id="unlockBtn" type="submit">Unlock</button>
     </form>
+
+    <div class="altsep">or</div>
+    <div class="alt">
+      <a href="/create.html">Create identity</a>
+      <a href="/connect.html">Connect to existing identity</a>
+    </div>
   </main>
 
   <script>
@@ -112,14 +137,38 @@
       try { stored = JSON.parse(localStorage.getItem("frame.instance") || "null"); } catch (e) {}
       if (!stored) { window.location.replace("/start.html"); return; }
 
-      if (stored.frameId) {
-        document.getElementById("idLine").textContent = stored.frameId;
-      }
+      if (stored.frameId) document.getElementById("idLine").textContent = stored.frameId;
+
+      var settings = stored.settings || { maxAttempts: 5, onLimit: "lock" };
+      var maxAttempts = settings.maxAttempts; // null = unlimited
+      var onLimit = settings.onLimit || "lock";
 
       var pin = document.getElementById("pin");
       var pinHint = document.getElementById("pinHint");
+      var unlockBtn = document.getElementById("unlockBtn");
 
-      setTimeout(function () { pin.focus(); }, 50);
+      function getFails() {
+        var n = parseInt(localStorage.getItem("frame.failedAttempts") || "0", 10);
+        return isNaN(n) ? 0 : n;
+      }
+      function setFails(n) {
+        try { localStorage.setItem("frame.failedAttempts", String(n)); } catch (e) {}
+      }
+
+      function lockDevice() {
+        try { localStorage.setItem("frame.locked", "1"); } catch (e) {}
+        pin.disabled = true;
+        unlockBtn.disabled = true;
+        pinHint.classList.add("err");
+        pinHint.textContent = "Locked. Too many incorrect attempts. Restore with your recovery key.";
+      }
+
+      // Already locked from a previous session?
+      if (onLimit === "lock" && localStorage.getItem("frame.locked") === "1") {
+        lockDevice();
+      } else {
+        setTimeout(function () { pin.focus(); }, 50);
+      }
 
       pin.addEventListener("input", function () {
         pin.value = pin.value.replace(/\D/g, "").slice(0, 5);
@@ -129,6 +178,7 @@
 
       document.getElementById("pwForm").addEventListener("submit", function (e) {
         e.preventDefault();
+        if (pin.disabled) return;
         if (pin.value.length !== 5) {
           pinHint.classList.add("err");
           pinHint.textContent = "Passcode must be exactly 5 digits.";
@@ -136,14 +186,42 @@
           return;
         }
         if (pin.value === stored.passcode) {
+          setFails(0);
+          try { localStorage.removeItem("frame.locked"); } catch (err) {}
           try { sessionStorage.setItem("frame.unlocked", "1"); } catch (err) {}
           window.location.href = "/dashboard.html";
-        } else {
-          pinHint.classList.add("err");
-          pinHint.textContent = "Incorrect passcode. Try again.";
-          pin.value = "";
-          pin.focus();
+          return;
         }
+
+        // Incorrect
+        var fails = getFails() + 1;
+        setFails(fails);
+        pin.value = "";
+
+        if (maxAttempts !== null && maxAttempts !== undefined && fails >= maxAttempts) {
+          if (onLimit === "wipe") {
+            try {
+              localStorage.removeItem("frame.instance");
+              localStorage.removeItem("frame.failedAttempts");
+              localStorage.removeItem("frame.locked");
+              sessionStorage.removeItem("frame.unlocked");
+            } catch (err) {}
+            alert("Too many incorrect attempts. This identity has been erased from this device.");
+            window.location.href = "/start.html";
+            return;
+          }
+          lockDevice();
+          return;
+        }
+
+        pinHint.classList.add("err");
+        if (maxAttempts === null || maxAttempts === undefined) {
+          pinHint.textContent = "Incorrect passcode. Try again.";
+        } else {
+          var remaining = maxAttempts - fails;
+          pinHint.textContent = "Incorrect passcode. " + remaining + " attempt" + (remaining === 1 ? "" : "s") + " remaining.";
+        }
+        pin.focus();
       });
     })();
   </script>

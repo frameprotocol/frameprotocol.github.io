@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000;
+      -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+
+    .panel { width: min(90vw, 460px); }
+    .title {
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700;
+      letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem);
+      margin: 0; text-align: center;
+    }
+    .subtitle {
+      color: #666666; font-weight: 500; text-align: center;
+      margin: 8px 0 0; font-size: clamp(0.95rem, 3.2vw, 1.05rem);
+    }
+    .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
+
+    .field-label {
+      font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.72rem; color: #888888; margin: clamp(16px, 3vh, 22px) 0 8px;
+    }
+    .idbox, .keybox {
+      border: 1.5px solid #000000; padding: 14px 16px;
+      font-family: 'Space Mono', monospace; font-weight: 700;
+      word-break: break-all; text-align: center;
+    }
+    .idbox { font-size: clamp(1.2rem, 5.4vw, 1.7rem); letter-spacing: 0.04em; }
+    .keybox { font-size: clamp(0.95rem, 4vw, 1.25rem); letter-spacing: 0.12em; }
+    .reveal {
+      display: inline-block; margin-top: 8px; cursor: pointer;
+      background: none; border: 0; padding: 0; color: #000000;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.85rem; text-decoration: underline;
+    }
+
+    .section-label {
+      font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.72rem; color: #888888;
+      margin: clamp(26px, 5vh, 34px) 0 12px;
+      border-top: 1.5px solid #000000; padding-top: clamp(18px, 3vh, 24px);
+    }
+    .row { margin-bottom: clamp(16px, 3vh, 22px); }
+    .row-label { font-weight: 600; font-size: clamp(0.95rem, 3.4vw, 1.05rem); }
+    .row-desc { color: #666666; font-size: clamp(0.82rem, 3vw, 0.92rem); margin: 3px 0 10px; line-height: 1.35; }
+    .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .field {
+      border: 1.5px solid #000000; padding: 11px 12px;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem;
+      background: #ffffff; color: #000000; width: 110px;
+    }
+    .field:disabled { background: #f2f2f2; color: #999999; }
+    select.field { width: auto; min-width: 220px; }
+    .check { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; user-select: none; }
+    .check input { width: 18px; height: 18px; accent-color: #000000; }
+
+    .btn {
+      display: block; width: 100%; box-sizing: border-box;
+      padding: clamp(13px, 2.6vh, 17px) 18px; margin-top: clamp(14px, 2.4vh, 20px);
+      background: #000000; color: #ffffff; border: 1.5px solid #000000;
+      text-align: center; text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      letter-spacing: 0.02em; font-size: clamp(1rem, 3.6vw, 1.1rem); cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .btn:hover { background: #ffffff; color: #000000; }
+    .btn.ghost { background: #ffffff; color: #000000; }
+    .btn.ghost:hover { background: #000000; color: #ffffff; }
+    .saved { text-align: center; color: #17a34a; font-weight: 600; min-height: 1.2em; margin-top: 10px; font-size: 0.9rem; }
+
+    .corner {
+      position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px);
+      border-color: #000000; border-style: solid; border-width: 0; pointer-events: none;
+    }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script>
+    try {
+      if (!localStorage.getItem("frame.instance")) {
+        window.location.replace("/start.html");
+      } else if (sessionStorage.getItem("frame.unlocked") !== "1") {
+        window.location.replace("/unlock.html");
+      }
+    } catch (e) {}
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <h2 class="title">Identity</h2>
+    <p class="subtitle">Manage this FRAME identity and its security.</p>
+    <div class="divider"></div>
+
+    <div class="field-label">frame identity</div>
+    <div class="idbox" id="frameId">frameid:000000</div>
+
+    <div class="field-label">recovery key</div>
+    <div class="keybox" id="recoveryKey">•••••••••••••••••</div>
+    <button class="reveal" id="revealBtn" type="button">Reveal recovery key</button>
+
+    <div class="section-label">Security</div>
+
+    <form id="settingsForm">
+      <div class="row">
+        <div class="row-label">Incorrect passcode attempts</div>
+        <div class="row-desc">How many times the wrong passcode can be entered before the limit action runs.</div>
+        <div class="controls">
+          <input class="field" id="maxAttempts" type="number" min="1" max="999" inputmode="numeric" value="5" />
+          <label class="check"><input type="checkbox" id="unlimited" /> Unlimited</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">When the limit is reached</div>
+        <div class="row-desc">Choose what happens after too many incorrect attempts on this device.</div>
+        <div class="controls">
+          <select class="field" id="onLimit">
+            <option value="lock">Lock this device (require recovery)</option>
+            <option value="wipe">Erase this identity from this device</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" type="submit">Save settings</button>
+      <div class="saved" id="savedMsg"></div>
+    </form>
+
+    <button class="btn ghost" id="signOutBtn" type="button">Sign out</button>
+  </main>
+
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = JSON.parse(localStorage.getItem("frame.instance") || "null"); } catch (e) {}
+      if (!stored) { window.location.replace("/start.html"); return; }
+
+      document.getElementById("frameId").textContent = stored.frameId || "frameid:—";
+
+      var settings = stored.settings || { maxAttempts: 5, onLimit: "lock" };
+      var maxAttempts = document.getElementById("maxAttempts");
+      var unlimited = document.getElementById("unlimited");
+      var onLimit = document.getElementById("onLimit");
+      var savedMsg = document.getElementById("savedMsg");
+
+      if (settings.maxAttempts === null || settings.maxAttempts === undefined) {
+        unlimited.checked = true;
+        maxAttempts.disabled = true;
+      } else {
+        maxAttempts.value = settings.maxAttempts;
+      }
+      onLimit.value = settings.onLimit || "lock";
+
+      unlimited.addEventListener("change", function () {
+        maxAttempts.disabled = unlimited.checked;
+      });
+
+      var revealed = false;
+      var revealBtn = document.getElementById("revealBtn");
+      var keyBox = document.getElementById("recoveryKey");
+      revealBtn.addEventListener("click", function () {
+        revealed = !revealed;
+        keyBox.textContent = revealed ? (stored.recoveryKey || "") : "•••••••••••••••••";
+        revealBtn.textContent = revealed ? "Hide recovery key" : "Reveal recovery key";
+      });
+
+      document.getElementById("settingsForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var max;
+        if (unlimited.checked) {
+          max = null;
+        } else {
+          max = parseInt(maxAttempts.value, 10);
+          if (isNaN(max) || max < 1) max = 1;
+          if (max > 999) max = 999;
+          maxAttempts.value = max;
+        }
+        stored.settings = { maxAttempts: max, onLimit: onLimit.value };
+        try { localStorage.setItem("frame.instance", JSON.stringify(stored)); } catch (err) {}
+        savedMsg.textContent = "Settings saved.";
+        setTimeout(function () { savedMsg.textContent = ""; }, 2500);
+      });
+
+      document.getElementById("signOutBtn").addEventListener("click", function () {
+        try { sessionStorage.removeItem("frame.unlocked"); } catch (err) {}
+        window.location.href = "/unlock.html";
+      });
+    })();
+  </script>
+</body>
+</html>
