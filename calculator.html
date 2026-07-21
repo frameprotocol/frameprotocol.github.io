@@ -162,6 +162,7 @@
             try {
               var d = JSON.parse(localStorage.getItem(KEY) || "null") || {};
               d.signature = sig; d.signedBy = ident.frameId; d.sigAlg = alg; d.sigScheme = "FRAME_SIGNATURE_V1";
+              d.digest = "SHA-256"; d.encoding = "base64"; d.signedOver = "raw digest bytes";
               localStorage.setItem(KEY, JSON.stringify(d));
             } catch (e) {}
             if (ok) {

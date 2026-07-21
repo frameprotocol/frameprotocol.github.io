@@ -90,14 +90,46 @@
     @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
     .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-    .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 0.72rem; font-family: 'Space Mono', monospace; margin-left: auto; }
+    .pill {
+      position: relative; display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: 0.72rem;
+      font-family: 'Space Mono', monospace; margin-left: auto; z-index: 0;
+      isolation: isolate;
+    }
     .pill svg { width: 12px; height: 12px; }
     .pill.ok { background: #e9f7ef; color: #0f7a3d; }
     .pill.bad { background: #fdecec; color: #c0392b; }
     .pill.pending { background: #fff7e0; color: #a97400; }
+    .pill.unsigned { background: #f4f4f5; color: #666666; }
     .pill.run { background: #e8f0fe; color: #1a73e8; }
     .pill.done { background: #e9f7ef; color: #0f7a3d; }
     .pill.queued { background: #f4f4f5; color: #555555; }
+
+    /* Sweeping ring around the pill every refresh cycle (6s) */
+    .pill::before {
+      content: ""; position: absolute; inset: -3px; border-radius: 999px;
+      padding: 1.5px; z-index: -1;
+      background: conic-gradient(from var(--ring-angle, 0deg), transparent 0%, transparent 72%, currentColor 88%, transparent 100%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0; pointer-events: none;
+    }
+    .pill.refreshing::before {
+      opacity: 0.85;
+      animation: pill-ring 1.1s linear forwards;
+    }
+    @property --ring-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+    @keyframes pill-ring {
+      0% { --ring-angle: 0deg; opacity: 0.9; }
+      85% { opacity: 0.85; }
+      100% { --ring-angle: 360deg; opacity: 0; }
+    }
 
     .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
     .task:last-child { border-bottom: 0; }
@@ -205,7 +237,6 @@
     <section class="pane" id="pane-receipts">
       <div class="toolbar">
         <span class="summary" id="receiptSummary">Checking&hellip;</span>
-        <button class="btn" id="reverify" type="button">Re-verify all</button>
       </div>
       <div id="receiptList"></div>
     </section>
@@ -295,6 +326,9 @@
                 d.signedBy = active.frameId;
                 d.sigAlg = FRAME.keyAlgLabel(active.publicKey);
                 d.sigScheme = "FRAME_SIGNATURE_V1";
+                d.digest = "SHA-256";
+                d.encoding = "base64";
+                d.signedOver = "raw digest bytes";
                 localStorage.setItem(KEY, JSON.stringify(d));
               } catch (e) {}
             });
@@ -318,7 +352,8 @@
         document.querySelectorAll(".pane").forEach(function (p) {
           p.classList.toggle("on", p.id === "pane-" + name);
         });
-        if (name === "receipts") renderReceipts();
+        if (name === "receipts") startReceiptLoop();
+        else stopReceiptLoop();
         if (history.replaceState) history.replaceState(null, "", "#" + name);
       }
       document.querySelectorAll(".tab").forEach(function (t) {
@@ -430,6 +465,46 @@
       }
 
       /* ---- Receipts ---- */
+      var receiptTimer = null;
+      var receiptSeq = 0;
+
+      function schemeInfo(d, pubKey) {
+        var scheme = d.sigScheme || (d.signature ? "FRAME_SIGNATURE_V1" : "none");
+        var alg = d.sigAlg || (pubKey ? FRAME.keyAlgLabel(pubKey) : null) || "—";
+        var digest = "SHA-256";
+        var encoding = "base64";
+        var over = "raw digest bytes";
+        if (scheme === "none" || !d.signature) {
+          return {
+            scheme: "unsigned",
+            alg: "—",
+            digest: "—",
+            encoding: "—",
+            over: "—",
+            label: "unsigned"
+          };
+        }
+        // Known FRAME schemes
+        if (scheme === "FRAME_SIGNATURE_V1" || scheme.indexOf("FRAME_SIGNATURE") === 0) {
+          return {
+            scheme: scheme,
+            alg: alg,
+            digest: digest,
+            encoding: encoding,
+            over: over,
+            label: scheme + " · " + alg
+          };
+        }
+        return {
+          scheme: scheme,
+          alg: alg,
+          digest: d.digest || digest,
+          encoding: d.encoding || encoding,
+          over: d.signedOver || "payload",
+          label: scheme + " · " + alg
+        };
+      }
+
       function collectReceipts() {
         var out = [];
         FRAME.localStorageEntries().forEach(function (e) {
@@ -441,17 +516,23 @@
         return out;
       }
 
-      function renderReceipts() {
+      function renderReceipts(opts) {
+        opts = opts || {};
         var listEl = document.getElementById("receiptList");
         var summaryEl = document.getElementById("receiptSummary");
         var records = collectReceipts();
+        var mySeq = ++receiptSeq;
+
+        // Keep existing cards' layout stable: rebuild, then pulse rings.
         listEl.innerHTML = "";
         if (records.length === 0) {
           listEl.innerHTML = '<div class="empty">No dApp receipts yet. Use Calculator or Wallet to create signed state.</div>';
-          summaryEl.textContent = "0 receipts";
+          summaryEl.textContent = "0 receipts · auto-verifying every 6s";
           return;
         }
-        var verifiedCount = 0, total = 0, pending = records.length;
+
+        var verifiedCount = 0, unsignedCount = 0, total = 0, pending = records.length;
+
         records.forEach(function (rec) {
           var d = rec.d;
           var card = document.createElement("div");
@@ -460,34 +541,80 @@
           var signer = hasSig ? FRAME.getById(d.signedBy) : null;
           var pubKey = signer ? signer.publicKey : null;
           var payload = d.state ? JSON.stringify(d.state) : "";
-          var alg = d.sigAlg || (pubKey ? FRAME.keyAlgLabel(pubKey) : "unknown");
+          var info = schemeInfo(d, pubKey);
+
           card.innerHTML =
             '<div class="card-head">' +
               '<span class="card-name">' + esc(d.name || rec.key) + '</span>' +
-              '<span class="pill pending">verifying\u2026</span>' +
+              '<span class="pill pending refreshing">verifying\u2026</span>' +
             '</div>' +
             '<div class="row"><span class="k">dApp</span><span class="v">' + esc(rec.key) + '</span></div>' +
-            '<div class="row"><span class="k">scheme</span><span class="v">' + esc(d.sigScheme || "\u2014") + ' \u00b7 ' + esc(alg) + '</span></div>' +
-            '<div class="row"><span class="k">signed by</span><span class="v">' + esc(d.signedBy || "unsigned") + '</span></div>' +
-            '<div class="row"><span class="k">updated</span><span class="v">' + esc(d.updatedAt || "\u2014") + '</span></div>' +
-            '<div class="row"><span class="k">signature</span><span class="v">' + esc(d.signature ? shorten(d.signature, 60) : "\u2014") + '</span></div>';
+            '<div class="row"><span class="k">scheme</span><span class="v">' + esc(info.scheme) + '</span></div>' +
+            '<div class="row"><span class="k">algorithm</span><span class="v">' + esc(info.alg) + '</span></div>' +
+            '<div class="row"><span class="k">digest</span><span class="v">' + esc(info.digest) + ' over ' + esc(info.over) + '</span></div>' +
+            '<div class="row"><span class="k">encoding</span><span class="v">' + esc(info.encoding) + '</span></div>' +
+            '<div class="row"><span class="k">signed by</span><span class="v">' + esc(d.signedBy || "—") + '</span></div>' +
+            '<div class="row"><span class="k">updated</span><span class="v">' + esc(d.updatedAt || "—") + '</span></div>' +
+            '<div class="row"><span class="k">signature</span><span class="v">' + esc(d.signature ? shorten(d.signature, 60) : "—") + '</span></div>';
           listEl.appendChild(card);
+
           var pill = card.querySelector(".pill");
           total++;
+
           function done() {
             pending--;
-            if (pending === 0) summaryEl.textContent = verifiedCount + " of " + total + " verified";
+            if (pending === 0 && mySeq === receiptSeq) {
+              summaryEl.textContent = verifiedCount + " verified · " + unsignedCount + " unsigned · " + total + " total · auto every 6s";
+            }
           }
-          if (!hasSig) { pill.className = "pill pending"; pill.textContent = "unsigned"; done(); return; }
-          if (!pubKey) { pill.className = "pill bad"; pill.textContent = "signer not found"; done(); return; }
-          FRAME.verifyData(pubKey, payload, d.signature).then(function (ok) {
-            if (ok) { pill.className = "pill ok"; pill.innerHTML = CHECK + "verified"; verifiedCount++; }
-            else { pill.className = "pill bad"; pill.textContent = "invalid"; }
+
+          if (!hasSig) {
+            pill.className = "pill unsigned" + (opts.pulse !== false ? " refreshing" : "");
+            pill.textContent = "unsigned";
+            unsignedCount++;
             done();
-          }).catch(function () { pill.className = "pill bad"; pill.textContent = "error"; done(); });
+            return;
+          }
+          if (!pubKey) {
+            pill.className = "pill bad" + (opts.pulse !== false ? " refreshing" : "");
+            pill.textContent = "signer not found";
+            done();
+            return;
+          }
+
+          FRAME.verifyData(pubKey, payload, d.signature).then(function (ok) {
+            if (mySeq !== receiptSeq) return;
+            if (ok) {
+              pill.className = "pill ok" + (opts.pulse !== false ? " refreshing" : "");
+              pill.innerHTML = CHECK + "verified";
+              verifiedCount++;
+            } else {
+              pill.className = "pill bad" + (opts.pulse !== false ? " refreshing" : "");
+              pill.textContent = "invalid";
+            }
+            done();
+          }).catch(function () {
+            if (mySeq !== receiptSeq) return;
+            pill.className = "pill bad" + (opts.pulse !== false ? " refreshing" : "");
+            pill.textContent = "error";
+            done();
+          });
         });
       }
-      document.getElementById("reverify").addEventListener("click", renderReceipts);
+
+      function startReceiptLoop() {
+        if (receiptTimer) return;
+        renderReceipts({ pulse: true });
+        receiptTimer = setInterval(function () {
+          var pane = document.getElementById("pane-receipts");
+          if (!pane || !pane.classList.contains("on")) return;
+          renderReceipts({ pulse: true });
+        }, 6000);
+      }
+
+      function stopReceiptLoop() {
+        if (receiptTimer) { clearInterval(receiptTimer); receiptTimer = null; }
+      }
 
       /* ---- Jobs ---- */
       var jobForm = document.getElementById("jobForm");
