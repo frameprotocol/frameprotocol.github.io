@@ -36,10 +36,7 @@
       letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem);
       margin: 0; text-align: center;
     }
-    .subtitle {
-      color: #666666; font-weight: 500; text-align: center;
-      margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem);
-    }
+    .subtitle { color: #666666; font-weight: 500; text-align: center; margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem); }
     .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
 
     .section-label {
@@ -49,54 +46,64 @@
 
     .dev { margin-bottom: clamp(14px, 2.6vh, 20px); }
     .dev-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-    .dev-name {
-      font-family: 'Space Mono', monospace; font-weight: 700;
-      font-size: clamp(1rem, 4.2vw, 1.2rem);
-    }
+    .dev-name { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(1rem, 4.2vw, 1.2rem); }
+    .dev-browser { font-family: 'Space Mono', monospace; font-weight: 700; color: #888888; font-size: clamp(0.82rem, 3.2vw, 0.95rem); }
     .dev-tag {
       font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
       padding: 2px 7px; border: 1px solid #000000;
     }
     .dev-tag.on { background: #17a34a; border-color: #17a34a; color: #ffffff; }
-    .dev-browser { font-family: 'Space Mono', monospace; font-weight: 700; color: #888888; font-size: clamp(0.82rem, 3.2vw, 0.95rem); }
 
-    .bar {
-      font-family: 'Space Mono', monospace; font-weight: 700;
-      font-size: clamp(0.85rem, 3.4vw, 1.05rem);
-      letter-spacing: 0; line-height: 1.2; margin: 10px 0 8px;
-      white-space: nowrap; overflow-x: auto;
+    /* Pixel map */
+    .pxwrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 12px);
+      grid-auto-rows: 12px;
+      gap: 3px;
+      margin: 12px 0 10px;
+      justify-content: start;
     }
-    .bar .used { color: #000000; }
-    .bar .free { color: #c8c8c8; }
-    .bar .pct { color: #000000; }
-    .legend {
-      font-family: 'Space Mono', monospace;
-      font-size: clamp(0.75rem, 3vw, 0.88rem); color: #444444;
-    }
-    .legend b { color: #000000; }
+    .px { width: 12px; height: 12px; border-radius: 2px; cursor: pointer; transition: transform 0.08s ease; }
+    .px:hover { transform: scale(1.35); }
+    .px.free { background: #eef0f2; }
 
-    .kv {
-      font-family: 'Space Mono', monospace;
-      font-size: clamp(0.75rem, 3vw, 0.88rem); color: #444444;
-      margin-top: 4px;
-    }
-    .kv b { color: #000000; }
-
-    .breakdown { margin-top: 12px; }
-    .breakdown .row {
-      display: flex; justify-content: space-between; gap: 12px;
+    .pctline { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(0.8rem, 3vw, 0.95rem); }
+    .legend2 {
       font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem);
-      padding: 5px 0; border-bottom: 1px solid #eeeeee;
+      color: #444444; margin-top: 4px;
     }
-    .breakdown .row:last-child { border-bottom: 0; }
-    .breakdown .row .k { color: #444444; }
-    .breakdown .row .v { color: #000000; font-weight: 700; }
+    .legend2 b { color: #000000; }
 
-    .empty {
-      border: 1.5px dashed #cccccc; padding: 16px; text-align: center;
-      color: #888888; font-size: 0.9rem;
+    .keys { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+    .key {
+      display: flex; align-items: center; gap: 9px;
+      font-family: 'Space Mono', monospace; font-size: clamp(0.74rem, 2.8vw, 0.86rem);
     }
-    .note { color: #888888; font-size: 0.8rem; margin-top: 6px; line-height: 1.4; }
+    .key .sw { width: 12px; height: 12px; border-radius: 3px; flex: 0 0 auto; }
+    .key .k-name { color: #333333; }
+    .key .k-size { margin-left: auto; color: #000000; font-weight: 700; }
+
+    .kv { font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem); color: #444444; margin-top: 10px; }
+    .kv b { color: #000000; }
+    .note { color: #888888; font-size: 0.8rem; margin-top: 8px; line-height: 1.4; }
+
+    .empty { border: 1.5px dashed #cccccc; padding: 16px; text-align: center; color: #888888; font-size: 0.9rem; }
+
+    /* Tooltip */
+    .tooltip {
+      position: fixed; z-index: 60; pointer-events: none; opacity: 0;
+      transform: translate(-50%, -120%);
+      background: #000000; color: #ffffff; padding: 9px 11px; border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+      max-width: 260px; transition: opacity 0.1s ease;
+    }
+    .tooltip.show { opacity: 1; }
+    .tooltip .t-name {
+      font-family: 'Space Mono', monospace; font-weight: 700;
+      font-size: 0.82rem; word-break: break-all; display: flex; align-items: center; gap: 7px;
+    }
+    .tooltip .t-name .sw { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+    .tooltip .t-meta { color: #bbbbbb; font-size: 0.74rem; margin-top: 4px; font-family: 'Space Mono', monospace; }
 
     .corner {
       position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px);
@@ -139,47 +146,158 @@
     <div id="connected"></div>
   </main>
 
+  <div class="tooltip" id="tooltip" role="status" aria-live="polite">
+    <div class="t-name"><span class="sw" id="ttSw"></span><span id="ttName"></span></div>
+    <div class="t-meta" id="ttMeta"></div>
+  </div>
+
   <script>
     (function () {
-      var BAR_WIDTH = 34;
+      var PIXELS = 240;
+      var tip = document.getElementById("tooltip");
+      var ttSw = document.getElementById("ttSw");
+      var ttName = document.getElementById("ttName");
+      var ttMeta = document.getElementById("ttMeta");
+      var pinned = false;
 
-      function humanBytes(n) {
-        return FRAME.humanBytesLong ? FRAME.humanBytesLong(n) : n + " bytes";
+      function hb(n) { return FRAME.humanBytesLong ? FRAME.humanBytesLong(n) : n + " bytes"; }
+
+      function categorize(name, isUsage) {
+        if (isUsage) {
+          var n = String(name).toLowerCase();
+          if (n.indexOf("indexeddb") >= 0) return { label: "IndexedDB", color: "#9b59b6" };
+          if (n.indexOf("cache") >= 0) return { label: "Caches", color: "#ff8a00" };
+          if (n.indexOf("serviceworker") >= 0) return { label: "Service worker", color: "#ff5fa2" };
+          if (n.indexOf("filesystem") >= 0) return { label: "File system", color: "#0891b2" };
+          return { label: name, color: "#7c5cff" };
+        }
+        if (name === "frame.identities") return { label: "Identities", color: "#1a73e8" };
+        if (name === "frame.activeId") return { label: "Active identity", color: "#17a34a" };
+        if (name.indexOf("frame.") === 0) return { label: "FRAME data", color: "#14b8a6" };
+        return { label: "Site data", color: "#999999" };
       }
 
-      function barHTML(used, total) {
-        var pct = total > 0 ? Math.min(1, used / total) : 0;
-        var filled = Math.round(pct * BAR_WIDTH);
-        if (used > 0 && filled === 0) filled = 1;
-        if (used < total && filled === BAR_WIDTH) filled = BAR_WIDTH - 1;
-        var usedStr = "", freeStr = "";
-        for (var i = 0; i < filled; i++) usedStr += "\u2501";              // heavy
-        for (var j = 0; j < BAR_WIDTH - filled; j++) freeStr += "\u2500";  // light
-        var pctTxt = (pct * 100).toFixed(pct * 100 >= 10 ? 0 : 2) + "%";
-        return '[<span class="used">' + usedStr + '</span><span class="free">' + freeStr + '</span>] <span class="pct">' + pctTxt + '</span>';
+      function buildSegments(est) {
+        var segs = [];
+        FRAME.localStorageEntries().forEach(function (e) {
+          if (e.bytes <= 0) return;
+          var c = categorize(e.name, false);
+          segs.push({ name: e.name, bytes: e.bytes, label: c.label, color: c.color });
+        });
+        if (est && est.usageDetails) {
+          Object.keys(est.usageDetails).forEach(function (k) {
+            var b = est.usageDetails[k];
+            if (!b || b <= 0) return;
+            var c = categorize(k, true);
+            segs.push({ name: k, bytes: b, label: c.label, color: c.color });
+          });
+        }
+        return segs;
       }
 
-      function localStorageBytes() {
+      function allocate(segs, pixels) {
         var total = 0;
-        try {
-          for (var i = 0; i < localStorage.length; i++) {
-            var k = localStorage.key(i);
-            var v = localStorage.getItem(k) || "";
-            total += (k.length + v.length) * 2; // UTF-16 code units
-          }
-        } catch (e) {}
-        return total;
+        segs.forEach(function (s) { total += s.bytes; });
+        if (total <= 0) return [];
+        var alloc = segs.map(function (s) {
+          var exact = s.bytes / total * pixels;
+          return { seg: s, exact: exact, frac: exact - Math.floor(exact), n: Math.max(1, Math.floor(exact)) };
+        });
+        var sum = 0; alloc.forEach(function (a) { sum += a.n; });
+        var rem = pixels - sum;
+        if (rem > 0) {
+          var byFrac = alloc.slice().sort(function (a, b) { return b.frac - a.frac; });
+          var i = 0;
+          while (rem > 0) { byFrac[i % byFrac.length].n++; rem--; i++; }
+        } else if (rem < 0) {
+          var byN = alloc.slice().sort(function (a, b) { return b.n - a.n; });
+          var j = 0;
+          while (rem < 0) { if (byN[j % byN.length].n > 1) { byN[j % byN.length].n--; rem++; } j++; if (j > pixels * 4) break; }
+        }
+        return alloc;
       }
 
-      function browserName() { return FRAME.browserName ? FRAME.browserName() : "browser"; }
+      function positionTip(x, y) {
+        tip.style.left = x + "px";
+        tip.style.top = y + "px";
+      }
+      function showTip(seg, total, x, y) {
+        ttSw.style.background = seg.color;
+        ttName.textContent = seg.name;
+        var pct = total > 0 ? (seg.bytes / total * 100) : 0;
+        var pctTxt = pct >= 1 ? pct.toFixed(1) : pct.toPrecision(2);
+        ttMeta.textContent = seg.label + " \u00b7 " + hb(seg.bytes) + " \u00b7 " + pctTxt + "% of used";
+        positionTip(x, y);
+        tip.classList.add("show");
+      }
+      function hideTip() { tip.classList.remove("show"); }
+
+      function renderMap(container, segs) {
+        var total = 0; segs.forEach(function (s) { total += s.bytes; });
+        var wrap = document.createElement("div");
+        wrap.className = "pxwrap";
+
+        if (total <= 0) {
+          var pctLine0 = document.createElement("div");
+          pctLine0.className = "legend2";
+          pctLine0.textContent = "No stored data yet.";
+          container.appendChild(pctLine0);
+          return;
+        }
+
+        var alloc = allocate(segs, PIXELS);
+        alloc.forEach(function (a) {
+          for (var i = 0; i < a.n; i++) {
+            var px = document.createElement("div");
+            px.className = "px";
+            px.style.background = a.seg.color;
+            px._seg = a.seg;
+            wrap.appendChild(px);
+          }
+        });
+
+        wrap.addEventListener("pointerover", function (e) {
+          if (pinned) return;
+          var t = e.target;
+          if (t && t.classList.contains("px") && t._seg) showTip(t._seg, total, e.clientX, e.clientY);
+        });
+        wrap.addEventListener("pointermove", function (e) {
+          if (pinned) return;
+          if (tip.classList.contains("show")) positionTip(e.clientX, e.clientY);
+        });
+        wrap.addEventListener("pointerleave", function () { if (!pinned) hideTip(); });
+        wrap.addEventListener("click", function (e) {
+          var t = e.target;
+          if (t && t.classList.contains("px") && t._seg) {
+            pinned = true;
+            showTip(t._seg, total, e.clientX, e.clientY);
+            e.stopPropagation();
+          }
+        });
+
+        container.appendChild(wrap);
+
+        // Color legend
+        var keys = document.createElement("div");
+        keys.className = "keys";
+        segs.slice().sort(function (a, b) { return b.bytes - a.bytes; }).forEach(function (s) {
+          var row = document.createElement("div");
+          row.className = "key";
+          row.innerHTML = '<span class="sw" style="background:' + s.color + '"></span>' +
+            '<span class="k-name">' + s.label + " \u2014 " + s.name + '</span>' +
+            '<span class="k-size">' + hb(s.bytes) + '</span>';
+          keys.appendChild(row);
+        });
+        container.appendChild(keys);
+      }
+
+      document.addEventListener("click", function () { if (pinned) { pinned = false; hideTip(); } });
 
       var thisDevice = document.getElementById("thisDevice");
 
       function renderThisDevice(est, persisted) {
-        var localBytes = localStorageBytes();
+        var localBytes = FRAME.localStorageBytes();
         var estUsage = (est && typeof est.usage === "number") ? est.usage : 0;
-        // estimate() usually excludes localStorage, so make sure our real
-        // localStorage footprint is reflected rather than reading as 0.
         var usage = Math.max(estUsage, localBytes);
         var quota = (est && typeof est.quota === "number") ? est.quota : null;
 
@@ -188,63 +306,45 @@
 
         var head = document.createElement("div");
         head.className = "dev-head";
-        var nm = document.createElement("span");
-        nm.className = "dev-name";
-        nm.textContent = "this browser";
-        head.appendChild(nm);
-        var bn = document.createElement("span");
-        bn.className = "dev-browser";
-        bn.textContent = "(" + browserName() + ")";
-        head.appendChild(bn);
-        var tag = document.createElement("span");
-        tag.className = "dev-tag on";
-        tag.textContent = "this device";
-        head.appendChild(tag);
+        head.innerHTML = '<span class="dev-name">this browser</span>' +
+          '<span class="dev-browser">(' + FRAME.browserName() + ')</span>' +
+          '<span class="dev-tag on">this device</span>';
         dev.appendChild(head);
 
-        if (quota !== null && quota > 0) {
-          var free = Math.max(0, quota - usage);
-          var bar = document.createElement("div");
-          bar.className = "bar";
-          bar.innerHTML = barHTML(usage, quota);
-          dev.appendChild(bar);
+        // Pixel map of used composition
+        var segs = buildSegments(est);
+        renderMap(dev, segs);
 
-          var legend = document.createElement("div");
-          legend.className = "legend";
-          legend.innerHTML = "Used <b>" + humanBytes(usage) + "</b> \u00b7 Free <b>" + humanBytes(free) + "</b> \u00b7 Allowance <b>" + humanBytes(quota) + "</b>";
-          dev.appendChild(legend);
+        // Exact percentage of allowance used
+        var pctLine = document.createElement("div");
+        pctLine.className = "pctline";
+        if (quota && quota > 0) {
+          var p = usage / quota * 100;
+          var pTxt = p >= 1 ? p.toFixed(2) : (p > 0 ? p.toPrecision(2) : "0");
+          pctLine.textContent = pTxt + "% of allowance used";
         } else {
-          var legend2 = document.createElement("div");
-          legend2.className = "legend";
-          legend2.innerHTML = "Used <b>" + humanBytes(usage) + "</b> \u00b7 Allowance <b>unknown</b>";
-          dev.appendChild(legend2);
+          pctLine.textContent = hb(usage) + " used";
         }
+        dev.appendChild(pctLine);
+
+        var legend = document.createElement("div");
+        legend.className = "legend2";
+        if (quota && quota > 0) {
+          var free = Math.max(0, quota - usage);
+          legend.innerHTML = "Used <b>" + hb(usage) + "</b> \u00b7 " + FRAME.browserName() + " allows: <b>" + hb(free) + "</b> free \u00b7 Allowance <b>" + hb(quota) + "</b>";
+        } else {
+          legend.innerHTML = "Used <b>" + hb(usage) + "</b> \u00b7 " + FRAME.browserName() + " does not report an allowance";
+        }
+        dev.appendChild(legend);
 
         var kv = document.createElement("div");
         kv.className = "kv";
         kv.innerHTML = "Persistent storage: <b>" + (persisted === true ? "granted" : persisted === false ? "not granted (may be evicted)" : "unknown") + "</b>";
         dev.appendChild(kv);
 
-        // Real per-type breakdown.
-        var bd = document.createElement("div");
-        bd.className = "breakdown";
-        var bdRow = document.createElement("div");
-        bdRow.className = "row";
-        bdRow.innerHTML = '<span class="k">localStorage (FRAME data)</span><span class="v">' + humanBytes(localBytes) + '</span>';
-        bd.appendChild(bdRow);
-        if (est && est.usageDetails && typeof est.usageDetails === "object") {
-          Object.keys(est.usageDetails).forEach(function (k) {
-            var row = document.createElement("div");
-            row.className = "row";
-            row.innerHTML = '<span class="k">' + k + '</span><span class="v">' + humanBytes(est.usageDetails[k]) + '</span>';
-            bd.appendChild(row);
-          });
-        }
-        dev.appendChild(bd);
-
         var note = document.createElement("div");
         note.className = "note";
-        note.textContent = "Browsers report an allowance for this site (a share of free disk), not the computer's true total capacity. Exact disk size is not exposed to web pages.";
+        note.textContent = "Each pixel is a slice of what FRAME and this site store. Hover or tap a pixel for details. Browsers report an allowance (a share of free disk), not the computer's true capacity.";
         dev.appendChild(note);
 
         thisDevice.appendChild(dev);
@@ -259,15 +359,9 @@
       }
 
       function go(est) {
-        var p = (navigator.storage && navigator.storage.persisted)
-          ? navigator.storage.persisted() : Promise.resolve(null);
-        p.then(function (persisted) {
-          renderThisDevice(est, persisted);
-          renderConnected();
-        }).catch(function () {
-          renderThisDevice(est, null);
-          renderConnected();
-        });
+        var p = (navigator.storage && navigator.storage.persisted) ? navigator.storage.persisted() : Promise.resolve(null);
+        p.then(function (persisted) { renderThisDevice(est, persisted); renderConnected(); })
+         .catch(function () { renderThisDevice(est, null); renderConnected(); });
       }
 
       if (navigator.storage && navigator.storage.estimate) {
