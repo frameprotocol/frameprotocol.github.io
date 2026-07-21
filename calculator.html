@@ -30,6 +30,14 @@
     .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.3rem, 5vw, 1.7rem); margin: 0 0 4px; text-align: center; }
     .saved-note { text-align: center; color: #17a34a; font-size: 0.74rem; font-weight: 600; margin-bottom: 14px; }
 
+    .sig { margin: -2px 0 14px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: #777777; }
+    .sig .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-weight: 700; }
+    .sig .pill svg { width: 12px; height: 12px; }
+    .sig .pill.ok { background: #e9f7ef; color: #0f7a3d; }
+    .sig .pill.bad { background: #fdecec; color: #c0392b; }
+    .sig .pill.pending { background: #fff7e0; color: #a97400; }
+    .sig .hash { color: #9a9a9a; word-break: break-all; text-align: center; }
+
     .display {
       border: 1.5px solid #000000; border-radius: 14px;
       padding: 18px 18px 14px; text-align: right; margin-bottom: 14px;
@@ -90,6 +98,10 @@
       <div class="expr" id="expr"></div>
       <div class="result" id="result">0</div>
     </div>
+    <div class="sig" id="sig">
+      <span class="pill pending" id="sigPill">signing&hellip;</span>
+      <span class="hash" id="sigHash"></span>
+    </div>
     <div class="grid">
       <button class="key fn" data-act="clear">AC</button>
       <button class="key fn" data-act="sign">+/-</button>
@@ -123,6 +135,50 @@
       var KEY = "frame.dapp.calculator";
       var exprEl = document.getElementById("expr");
       var resultEl = document.getElementById("result");
+      var sigPill = document.getElementById("sigPill");
+      var sigHash = document.getElementById("sigHash");
+
+      var ident = null;
+      try { ident = FRAME.getActive(); } catch (e) {}
+      var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+      var sigSeq = 0;
+
+      // Sign the dApp state with the active identity key (FRAME_SIGNATURE_V1) and verify it.
+      function refreshSig(payload) {
+        if (!ident || !ident.privateKey || !ident.publicKey) {
+          sigPill.className = "pill pending";
+          sigPill.textContent = "unsigned";
+          sigHash.textContent = "no identity key on this device";
+          return;
+        }
+        var mySeq = ++sigSeq;
+        sigPill.className = "pill pending";
+        sigPill.textContent = "signing\u2026";
+        sigHash.textContent = "";
+        var alg = FRAME.keyAlgLabel(ident.publicKey);
+        FRAME.signData(ident.privateKey, payload).then(function (sig) {
+          return FRAME.verifyData(ident.publicKey, payload, sig).then(function (ok) {
+            if (mySeq !== sigSeq) return; // a newer state superseded this one
+            try {
+              var d = JSON.parse(localStorage.getItem(KEY) || "null") || {};
+              d.signature = sig; d.signedBy = ident.frameId; d.sigAlg = alg; d.sigScheme = "FRAME_SIGNATURE_V1";
+              localStorage.setItem(KEY, JSON.stringify(d));
+            } catch (e) {}
+            if (ok) {
+              sigPill.className = "pill ok";
+              sigPill.innerHTML = CHECK + "verified";
+              sigHash.textContent = "FRAME_SIGNATURE_V1 \u00b7 " + alg + " \u00b7 " + ident.frameId.slice(0, 12) + "\u2026 \u00b7 sig " + sig.slice(0, 14) + "\u2026";
+            } else {
+              sigPill.className = "pill bad";
+              sigPill.textContent = "verification failed";
+            }
+          });
+        }).catch(function () {
+          if (mySeq !== sigSeq) return;
+          sigPill.className = "pill bad";
+          sigPill.textContent = "sign error";
+        });
+      }
 
       var current = "0";   // string shown
       var stored = null;   // previous operand (number)
@@ -136,12 +192,15 @@
         } catch (e) {}
       }
       function persist() {
+        var payload;
         try {
           var d = JSON.parse(localStorage.getItem(KEY) || "null") || { name: "Calculator", version: "1.0.0", installedAt: new Date().toISOString() };
           d.state = { display: current, expr: exprEl.textContent };
           d.updatedAt = new Date().toISOString();
+          payload = JSON.stringify(d.state);
           localStorage.setItem(KEY, JSON.stringify(d));
         } catch (e) {}
+        if (payload !== undefined) refreshSig(payload);
       }
 
       function fmt(n) {

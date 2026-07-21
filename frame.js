@@ -162,6 +162,53 @@ window.FRAME = (function () {
     return buildIdentity(passcode).then(function (obj) { addIdentity(obj); return obj; });
   }
 
+  /* --- FRAME_SIGNATURE_V1 (mirrors frame ui/src/crypto.ts signDigest/verifyDigest) ---
+     Ed25519 over the RAW SHA-256 digest bytes of the payload; base64 signature.
+     ECDSA-P256 is a best-effort local fallback (hashes internally). */
+  function b64ToBuf(b64) {
+    var bin = atob(b64), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out.buffer;
+  }
+  function unpackKeyMaterial(packed) {
+    var m = /^v1:(ed25519|p256):(.+)$/i.exec((packed || "").trim());
+    if (!m) return null;
+    return { alg: m[1].toLowerCase() === "ed25519" ? "Ed25519" : "ECDSA-P256", b64: m[2] };
+  }
+  function sha256Bytes(str) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (b) { return new Uint8Array(b); });
+  }
+  function importPriv(alg, b64) {
+    var buf = b64ToBuf(b64);
+    if (alg === "Ed25519") return crypto.subtle.importKey("pkcs8", buf, { name: "Ed25519" }, false, ["sign"]);
+    return crypto.subtle.importKey("pkcs8", buf, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  }
+  function importPub(alg, b64) {
+    var buf = b64ToBuf(b64);
+    if (alg === "Ed25519") return crypto.subtle.importKey("raw", buf, { name: "Ed25519" }, true, ["verify"]);
+    return crypto.subtle.importKey("spki", buf, { name: "ECDSA", namedCurve: "P-256" }, true, ["verify"]);
+  }
+  function signDigest(privateKey, digest) {
+    var u = unpackKeyMaterial(privateKey);
+    if (!u) return Promise.reject(new Error("signDigest: invalid private key material"));
+    return importPriv(u.alg, u.b64).then(function (k) {
+      if (u.alg === "Ed25519") return crypto.subtle.sign("Ed25519", k, digest);
+      return crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, k, digest);
+    }).then(bufToB64);
+  }
+  function verifyDigest(publicKey, digest, sigB64) {
+    var u = unpackKeyMaterial(publicKey);
+    if (!u) return Promise.resolve(false);
+    return importPub(u.alg, u.b64).then(function (k) {
+      var sig = b64ToBuf(sigB64);
+      if (u.alg === "Ed25519") return crypto.subtle.verify("Ed25519", k, sig, digest);
+      return crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, k, sig, digest);
+    }).catch(function () { return false; });
+  }
+  function signData(privateKey, data) { return sha256Bytes(data).then(function (d) { return signDigest(privateKey, d); }); }
+  function verifyData(publicKey, data, sigB64) { return sha256Bytes(data).then(function (d) { return verifyDigest(publicKey, d, sigB64); }); }
+  function keyAlgLabel(packed) { var u = unpackKeyMaterial(packed); return u ? u.alg : "unknown"; }
+
   function isUnlocked(id) {
     var ident = getById(id);
     if (!ident) return false;
@@ -281,6 +328,12 @@ window.FRAME = (function () {
     generateKeypair: generateKeypair,
     deriveIdentityId: deriveIdentityId,
     packKeyMaterial: packKeyMaterial,
+    sha256Bytes: sha256Bytes,
+    signDigest: signDigest,
+    verifyDigest: verifyDigest,
+    signData: signData,
+    verifyData: verifyData,
+    keyAlgLabel: keyAlgLabel,
     isUnlocked: isUnlocked,
     markUnlocked: markUnlocked,
     lockSession: lockSession,
