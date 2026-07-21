@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000; -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+    .calc { width: min(92vw, 360px); }
+    .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.3rem, 5vw, 1.7rem); margin: 0 0 4px; text-align: center; }
+    .saved-note { text-align: center; color: #17a34a; font-size: 0.74rem; font-weight: 600; margin-bottom: 14px; }
+
+    .display {
+      border: 1.5px solid #000000; border-radius: 14px;
+      padding: 18px 18px 14px; text-align: right; margin-bottom: 14px;
+      background: #ffffff; overflow: hidden;
+    }
+    .expr { font-family: 'Space Mono', monospace; color: #999999; font-size: 0.9rem; min-height: 1.1em; word-break: break-all; }
+    .result { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(2rem, 9vw, 2.8rem); word-break: break-all; }
+
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .key {
+      border: 1.5px solid #000000; border-radius: 14px; background: #ffffff; color: #000000;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: clamp(1.1rem, 4.6vw, 1.4rem); padding: clamp(14px, 3.6vw, 20px) 0;
+      cursor: pointer; transition: background 0.12s ease, color 0.12s ease;
+      -webkit-user-select: none; user-select: none;
+    }
+    .key:hover { background: #000000; color: #ffffff; }
+    .key:active { transform: translateY(1px); }
+    .key.op { background: #f2f2f2; }
+    .key.op.active { background: #000000; color: #ffffff; }
+    .key.eq { background: #000000; color: #ffffff; }
+    .key.eq:hover { background: #ffffff; color: #000000; }
+    .key.fn { color: #666666; }
+    .key.wide { grid-column: span 2; text-align: left; padding-left: 26px; }
+
+    .back { display: block; text-align: center; margin-top: 16px; color: #000000; font-weight: 600; font-size: 0.85rem; text-decoration: underline; }
+
+    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      try {
+        var idents = FRAME.getIdentities();
+        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
+        var active = FRAME.getActive();
+        if (!active) { window.location.replace("/identity.html"); return; }
+        if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); }
+      } catch (e) {}
+    })();
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="calc">
+    <h2 class="title">Calculator</h2>
+    <div class="saved-note">Saved in your FRAME storage</div>
+    <div class="display">
+      <div class="expr" id="expr"></div>
+      <div class="result" id="result">0</div>
+    </div>
+    <div class="grid">
+      <button class="key fn" data-act="clear">AC</button>
+      <button class="key fn" data-act="sign">+/-</button>
+      <button class="key fn" data-act="percent">%</button>
+      <button class="key op" data-op="/">&divide;</button>
+
+      <button class="key" data-num="7">7</button>
+      <button class="key" data-num="8">8</button>
+      <button class="key" data-num="9">9</button>
+      <button class="key op" data-op="*">&times;</button>
+
+      <button class="key" data-num="4">4</button>
+      <button class="key" data-num="5">5</button>
+      <button class="key" data-num="6">6</button>
+      <button class="key op" data-op="-">&minus;</button>
+
+      <button class="key" data-num="1">1</button>
+      <button class="key" data-num="2">2</button>
+      <button class="key" data-num="3">3</button>
+      <button class="key op" data-op="+">+</button>
+
+      <button class="key wide" data-num="0">0</button>
+      <button class="key" data-dot>.</button>
+      <button class="key eq" data-act="equals">=</button>
+    </div>
+    <a class="back" href="/dapps.html">Back to dApps</a>
+  </main>
+
+  <script>
+    (function () {
+      var KEY = "frame.dapp.calculator";
+      var exprEl = document.getElementById("expr");
+      var resultEl = document.getElementById("result");
+
+      var current = "0";   // string shown
+      var stored = null;   // previous operand (number)
+      var op = null;       // pending operator
+      var replace = true;  // next digit replaces display
+
+      function load() {
+        try {
+          var d = JSON.parse(localStorage.getItem(KEY) || "null");
+          if (d && d.state && typeof d.state.display === "string") current = d.state.display;
+        } catch (e) {}
+      }
+      function persist() {
+        try {
+          var d = JSON.parse(localStorage.getItem(KEY) || "null") || { name: "Calculator", version: "1.0.0", installedAt: new Date().toISOString() };
+          d.state = { display: current, expr: exprEl.textContent };
+          d.updatedAt = new Date().toISOString();
+          localStorage.setItem(KEY, JSON.stringify(d));
+        } catch (e) {}
+      }
+
+      function fmt(n) {
+        if (!isFinite(n)) return "Error";
+        var r = Math.round((n + Number.EPSILON) * 1e10) / 1e10;
+        return String(r);
+      }
+      function render() {
+        resultEl.textContent = current;
+        var opSym = { "+": "+", "-": "\u2212", "*": "\u00d7", "/": "\u00f7" };
+        exprEl.textContent = (op !== null && stored !== null) ? (fmt(stored) + " " + opSym[op]) : "";
+      }
+
+      function inputDigit(d) {
+        if (replace) { current = (d === "0") ? "0" : d; replace = false; }
+        else { if (current === "0") current = d; else current += d; }
+        render(); persist();
+      }
+      function inputDot() {
+        if (replace) { current = "0."; replace = false; }
+        else if (current.indexOf(".") < 0) current += ".";
+        render(); persist();
+      }
+      function clearAll() { current = "0"; stored = null; op = null; replace = true; render(); persist(); }
+      function sign() { if (current !== "0") current = current.charAt(0) === "-" ? current.slice(1) : "-" + current; render(); persist(); }
+      function percent() { current = fmt(parseFloat(current) / 100); replace = true; render(); persist(); }
+
+      function compute(a, b, o) {
+        switch (o) { case "+": return a + b; case "-": return a - b; case "*": return a * b; case "/": return b === 0 ? NaN : a / b; }
+        return b;
+      }
+      function setOp(o) {
+        var val = parseFloat(current);
+        if (op !== null && !replace) { var r = compute(stored, val, op); current = fmt(r); stored = parseFloat(current); }
+        else { stored = val; }
+        op = o; replace = true; render(); persist();
+        highlight(o);
+      }
+      function equals() {
+        if (op === null || stored === null) return;
+        var val = parseFloat(current);
+        var r = compute(stored, val, op);
+        current = fmt(r); stored = null; op = null; replace = true; render(); persist();
+        highlight(null);
+      }
+
+      function highlight(o) {
+        document.querySelectorAll(".key.op").forEach(function (b) {
+          b.classList.toggle("active", !!o && b.getAttribute("data-op") === o);
+        });
+      }
+
+      document.querySelector(".grid").addEventListener("click", function (e) {
+        var b = e.target.closest("button");
+        if (!b) return;
+        if (b.hasAttribute("data-num")) inputDigit(b.getAttribute("data-num"));
+        else if (b.hasAttribute("data-dot")) inputDot();
+        else if (b.hasAttribute("data-op")) setOp(b.getAttribute("data-op"));
+        else {
+          var act = b.getAttribute("data-act");
+          if (act === "clear") clearAll();
+          else if (act === "sign") sign();
+          else if (act === "percent") percent();
+          else if (act === "equals") equals();
+        }
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key >= "0" && e.key <= "9") inputDigit(e.key);
+        else if (e.key === ".") inputDot();
+        else if (e.key === "+" || e.key === "-" || e.key === "*" || e.key === "/") setOp(e.key);
+        else if (e.key === "Enter" || e.key === "=") { e.preventDefault(); equals(); }
+        else if (e.key === "Escape") clearAll();
+        else if (e.key === "%") percent();
+      });
+
+      load();
+      render();
+      persist();
+    })();
+  </script>
+</body>
+</html>

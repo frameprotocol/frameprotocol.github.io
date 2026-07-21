@@ -66,21 +66,27 @@
     .px { width: 14px; height: 14px; border-radius: 3px; cursor: pointer; transition: transform 0.08s ease; }
     .px:hover { transform: scale(1.4); }
 
-    .pctline { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(0.8rem, 3vw, 0.95rem); }
-    .legend2 {
-      font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem);
-      color: #444444; margin-top: 4px;
-    }
+    .legend2 { font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem); color: #444444; margin-top: 4px; }
     .legend2 b { color: #000000; }
 
-    .keys { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
-    .key {
-      display: flex; align-items: center; gap: 9px;
-      font-family: 'Space Mono', monospace; font-size: clamp(0.74rem, 2.8vw, 0.86rem);
+    /* iOS-style horizontal storage bar */
+    .iosbar {
+      display: flex; width: 100%; height: 15px; border-radius: 8px;
+      overflow: hidden; background: #e9ecef; margin: 14px 0 10px;
     }
-    .key .sw { width: 12px; height: 12px; border-radius: 3px; flex: 0 0 auto; }
-    .key .k-name { color: #333333; }
-    .key .k-size { margin-left: auto; color: #000000; font-weight: 700; }
+    .ios-seg { height: 100%; min-width: 4px; cursor: pointer; box-shadow: inset -1px 0 0 rgba(255,255,255,0.9); }
+    .ios-free { flex: 1 1 auto; height: 100%; background: #e9ecef; }
+    .ios-legend { display: flex; flex-wrap: wrap; gap: 12px 16px; margin-top: 4px; }
+    .ios-key {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: clamp(0.76rem, 2.8vw, 0.88rem); color: #333333; font-weight: 500;
+    }
+    .ios-key .dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+    .ios-caption {
+      font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem);
+      color: #444444; margin-top: 10px;
+    }
+    .ios-caption b { color: #000000; }
 
     .kv { font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem); color: #444444; margin-top: 10px; }
     .kv b { color: #000000; }
@@ -172,6 +178,7 @@
         }
         if (name === "frame.identities") return { label: "Identities", color: "#1a73e8" };
         if (name === "frame.activeId") return { label: "Active identity", color: "#17a34a" };
+        if (name.indexOf("frame.dapp.") === 0) return { label: "dApp", color: "#ff8a00" };
         if (name.indexOf("frame.") === 0) return { label: "FRAME data", color: "#14b8a6" };
         return { label: "Site data", color: "#999999" };
       }
@@ -251,19 +258,70 @@
         });
 
         container.appendChild(wrap);
+      }
 
-        // Color legend
-        var keys = document.createElement("div");
-        keys.className = "keys";
+      function renderIosBar(container, segs, usage, quota) {
+        var usedTotal = 0; segs.forEach(function (s) { usedTotal += s.bytes; });
+        var denom = (quota && quota > 0) ? quota : (usedTotal || 1);
+
+        var bar = document.createElement("div");
+        bar.className = "iosbar";
+
         segs.slice().sort(function (a, b) { return b.bytes - a.bytes; }).forEach(function (s) {
-          var row = document.createElement("div");
-          row.className = "key";
-          row.innerHTML = '<span class="sw" style="background:' + s.color + '"></span>' +
-            '<span class="k-name">' + s.label + " \u2014 " + s.name + '</span>' +
-            '<span class="k-size">' + hb(s.bytes) + '</span>';
-          keys.appendChild(row);
+          var seg = document.createElement("div");
+          seg.className = "ios-seg";
+          seg.style.width = (s.bytes / denom * 100) + "%";
+          seg.style.background = s.color;
+          seg._seg = s;
+          bar.appendChild(seg);
         });
-        container.appendChild(keys);
+        if (quota && quota > 0) {
+          var freeSeg = document.createElement("div");
+          freeSeg.className = "ios-free";
+          bar.appendChild(freeSeg);
+        }
+
+        bar.addEventListener("pointerover", function (e) {
+          if (pinned) return;
+          var t = e.target;
+          if (t && t.classList.contains("ios-seg") && t._seg) showTip(t._seg, usedTotal, e.clientX, e.clientY);
+        });
+        bar.addEventListener("pointermove", function (e) {
+          if (pinned) return;
+          if (tip.classList.contains("show")) positionTip(e.clientX, e.clientY);
+        });
+        bar.addEventListener("pointerleave", function () { if (!pinned) hideTip(); });
+        bar.addEventListener("click", function (e) {
+          var t = e.target;
+          if (t && t.classList.contains("ios-seg") && t._seg) {
+            pinned = true; showTip(t._seg, usedTotal, e.clientX, e.clientY); e.stopPropagation();
+          }
+        });
+        container.appendChild(bar);
+
+        // Compact iOS-style legend (colored dots by category, no byte list)
+        var seen = {};
+        var legend = document.createElement("div");
+        legend.className = "ios-legend";
+        segs.slice().sort(function (a, b) { return b.bytes - a.bytes; }).forEach(function (s) {
+          if (seen[s.label]) return;
+          seen[s.label] = true;
+          var item = document.createElement("span");
+          item.className = "ios-key";
+          item.innerHTML = '<span class="dot" style="background:' + s.color + '"></span>' + s.label;
+          legend.appendChild(item);
+        });
+        container.appendChild(legend);
+
+        var cap = document.createElement("div");
+        cap.className = "ios-caption";
+        if (quota && quota > 0) {
+          var free = Math.max(0, quota - usage);
+          cap.innerHTML = "<b>" + hb(usage) + "</b> used of <b>" + hb(quota) + "</b> \u00b7 " + hb(free) + " free";
+        } else {
+          cap.innerHTML = "<b>" + hb(usage) + "</b> used \u00b7 allowance not reported";
+        }
+        container.appendChild(cap);
       }
 
       document.addEventListener("click", function () { if (pinned) { pinned = false; hideTip(); } });
@@ -286,31 +344,12 @@
           '<span class="dev-tag on">this device</span>';
         dev.appendChild(head);
 
-        // Pixel map of used composition
+        // Pixel grid: one square per stored item
         var segs = buildSegments(est);
         renderMap(dev, segs);
 
-        // Exact percentage of allowance used
-        var pctLine = document.createElement("div");
-        pctLine.className = "pctline";
-        if (quota && quota > 0) {
-          var p = usage / quota * 100;
-          var pTxt = p >= 1 ? p.toFixed(2) : (p > 0 ? p.toPrecision(2) : "0");
-          pctLine.textContent = pTxt + "% of allowance used";
-        } else {
-          pctLine.textContent = hb(usage) + " used";
-        }
-        dev.appendChild(pctLine);
-
-        var legend = document.createElement("div");
-        legend.className = "legend2";
-        if (quota && quota > 0) {
-          var free = Math.max(0, quota - usage);
-          legend.innerHTML = "Used <b>" + hb(usage) + "</b> \u00b7 " + FRAME.browserName() + " allows: <b>" + hb(free) + "</b> free \u00b7 Allowance <b>" + hb(quota) + "</b>";
-        } else {
-          legend.innerHTML = "Used <b>" + hb(usage) + "</b> \u00b7 " + FRAME.browserName() + " does not report an allowance";
-        }
-        dev.appendChild(legend);
+        // iOS-style horizontal storage bar
+        renderIosBar(dev, segs, usage, quota);
 
         var kv = document.createElement("div");
         kv.className = "kv";

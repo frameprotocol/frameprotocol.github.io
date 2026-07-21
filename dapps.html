@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000; -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+    .panel { width: min(92vw, 560px); }
+    .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem); margin: 0; text-align: center; }
+    .subtitle { color: #666666; font-weight: 500; text-align: center; margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem); }
+    .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: clamp(12px, 1.8vw, 18px); }
+    .feat {
+      border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(16px, 2.4vw, 22px);
+      display: flex; flex-direction: column; gap: 10px; background: #ffffff;
+      text-decoration: none; color: #000000;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .feat:hover { border-color: #000000; transform: translateY(-2px); }
+    .feat .ic {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border-radius: 10px; background: #f2f2f2; color: #000000; flex: 0 0 auto;
+    }
+    .feat .ic svg { width: 20px; height: 20px; display: block; }
+    .feat h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: clamp(1.05rem, 2.4vw, 1.2rem); margin: 0; }
+    .feat p { font-size: clamp(0.86rem, 2.2vw, 0.96rem); color: #666666; margin: 0; line-height: 1.45; }
+    .feat .tagrow { display: flex; align-items: center; gap: 8px; }
+    .feat .tag { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: #e9f7ef; color: #0f7a3d; }
+    .feat .open { margin-top: 2px; font-weight: 600; font-size: 0.82rem; }
+
+    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      try {
+        var idents = FRAME.getIdentities();
+        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
+        var active = FRAME.getActive();
+        if (!active) { window.location.replace("/identity.html"); return; }
+        if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); return; }
+        // Register the calculator dApp in storage so it appears on the storage map.
+        if (!localStorage.getItem("frame.dapp.calculator")) {
+          localStorage.setItem("frame.dapp.calculator", JSON.stringify({
+            name: "Calculator", version: "1.0.0", installedAt: new Date().toISOString(), state: { display: "0" }
+          }));
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <h2 class="title">dApps</h2>
+    <p class="subtitle">Apps that run on your FRAME and store data in it.</p>
+    <div class="divider"></div>
+
+    <div class="cards">
+      <a class="feat" href="/calculator.html">
+        <span class="ic" style="color:#ff8a00"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11"/><line x1="12" y1="11" x2="12" y2="11"/><line x1="16" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg></span>
+        <div class="tagrow"><h3>Calculator</h3><span class="tag">Installed</span></div>
+        <p>A simple, clean calculator. Its state lives in your FRAME's storage.</p>
+        <span class="open">Open &rarr;</span>
+      </a>
+    </div>
+  </main>
+</body>
+</html>
