@@ -63,18 +63,36 @@
         var active = FRAME.getActive();
         if (!active) { window.location.replace("/identity.html"); return; }
         if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); return; }
-        // Register installed dApps in storage so they appear on the storage map.
-        if (!localStorage.getItem("frame.dapp.calculator")) {
-          localStorage.setItem("frame.dapp.calculator", JSON.stringify({
-            name: "Calculator", version: "1.0.0", installedAt: new Date().toISOString(), state: { display: "0" }
-          }));
+        // Register installed dApps in storage so they appear on the storage map,
+        // then sign them with the active identity (FRAME_SIGNATURE_V1).
+        function ensureDapp(key, name, state) {
+          if (!localStorage.getItem(key)) {
+            localStorage.setItem(key, JSON.stringify({
+              name: name, version: "1.0.0", installedAt: new Date().toISOString(), state: state
+            }));
+          }
+          var d = null; try { d = JSON.parse(localStorage.getItem(key)); } catch (x) {}
+          if (!d || !d.state) return;
+          if (d.signature && d.signedBy) return;
+          if (!active.privateKey || !active.publicKey) return;
+          var payload = JSON.stringify(d.state);
+          FRAME.signData(active.privateKey, payload).then(function (sig) {
+            return FRAME.verifyData(active.publicKey, payload, sig).then(function (ok) {
+              if (!ok) return;
+              d.signature = sig;
+              d.signedBy = active.frameId;
+              d.sigAlg = FRAME.keyAlgLabel(active.publicKey);
+              d.sigScheme = "FRAME_SIGNATURE_V1";
+              d.digest = "SHA-256";
+              d.encoding = "base64";
+              d.signedOver = "raw digest bytes";
+              d.updatedAt = new Date().toISOString();
+              localStorage.setItem(key, JSON.stringify(d));
+            });
+          }).catch(function () {});
         }
-        if (!localStorage.getItem("frame.dapp.wallet")) {
-          localStorage.setItem("frame.dapp.wallet", JSON.stringify({
-            name: "Wallet", version: "1.0.0", installedAt: new Date().toISOString(),
-            state: { wallets: [], jobs: [], tasks: [], activeWalletId: null }
-          }));
-        }
+        ensureDapp("frame.dapp.calculator", "Calculator", { display: "0" });
+        ensureDapp("frame.dapp.wallet", "Wallet", { wallets: [], jobs: [], tasks: [], activeWalletId: null });
       } catch (e) {}
     })();
   </script>

@@ -105,30 +105,20 @@
     .pill.done { background: #e9f7ef; color: #0f7a3d; }
     .pill.queued { background: #f4f4f5; color: #555555; }
 
-    /* Sweeping ring around the pill every refresh cycle (6s) */
-    .pill::before {
+    /* Continuous sweeping ring around receipt status pills */
+    #receiptList .pill::before {
       content: ""; position: absolute; inset: -3px; border-radius: 999px;
       padding: 1.5px; z-index: -1;
-      background: conic-gradient(from var(--ring-angle, 0deg), transparent 0%, transparent 72%, currentColor 88%, transparent 100%);
+      background: conic-gradient(from 0deg, transparent 0%, transparent 68%, currentColor 86%, transparent 100%);
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
       mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
       mask-composite: exclude;
-      opacity: 0; pointer-events: none;
+      opacity: 0.95; pointer-events: none;
+      animation: pill-spin 6s linear infinite;
     }
-    .pill.refreshing::before {
-      opacity: 0.85;
-      animation: pill-ring 1.1s linear forwards;
-    }
-    @property --ring-angle {
-      syntax: "<angle>";
-      inherits: false;
-      initial-value: 0deg;
-    }
-    @keyframes pill-ring {
-      0% { --ring-angle: 0deg; opacity: 0.9; }
-      85% { opacity: 0.85; }
-      100% { --ring-angle: 360deg; opacity: 0; }
+    @keyframes pill-spin {
+      to { transform: rotate(360deg); }
     }
 
     .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
@@ -306,6 +296,7 @@
           var d = JSON.parse(localStorage.getItem(KEY) || "null") || {
             name: "Wallet", version: "1.0.0", installedAt: new Date().toISOString()
           };
+          d.name = d.name || "Wallet";
           d.state = {
             wallets: state.wallets,
             jobs: state.jobs,
@@ -316,24 +307,51 @@
           payload = JSON.stringify(d.state);
           localStorage.setItem(KEY, JSON.stringify(d));
         } catch (e) {}
-        if (payload !== undefined && active && active.privateKey && active.publicKey) {
-          FRAME.signData(active.privateKey, payload).then(function (sig) {
-            return FRAME.verifyData(active.publicKey, payload, sig).then(function (ok) {
-              if (!ok) return;
-              try {
-                var d = JSON.parse(localStorage.getItem(KEY) || "null") || {};
-                d.signature = sig;
-                d.signedBy = active.frameId;
-                d.sigAlg = FRAME.keyAlgLabel(active.publicKey);
-                d.sigScheme = "FRAME_SIGNATURE_V1";
-                d.digest = "SHA-256";
-                d.encoding = "base64";
-                d.signedOver = "raw digest bytes";
-                localStorage.setItem(KEY, JSON.stringify(d));
-              } catch (e) {}
-            });
-          }).catch(function () {});
+        if (payload !== undefined) signRecord(KEY, payload);
+      }
+
+      // Sign a dApp localStorage record with the active identity (FRAME_SIGNATURE_V1).
+      function signRecord(key, payload) {
+        if (!active || !active.privateKey || !active.publicKey) return Promise.resolve(false);
+        return FRAME.signData(active.privateKey, payload).then(function (sig) {
+          return FRAME.verifyData(active.publicKey, payload, sig).then(function (ok) {
+            if (!ok) return false;
+            try {
+              var d = JSON.parse(localStorage.getItem(key) || "null") || {};
+              d.signature = sig;
+              d.signedBy = active.frameId;
+              d.sigAlg = FRAME.keyAlgLabel(active.publicKey);
+              d.sigScheme = "FRAME_SIGNATURE_V1";
+              d.digest = "SHA-256";
+              d.encoding = "base64";
+              d.signedOver = "raw digest bytes";
+              localStorage.setItem(key, JSON.stringify(d));
+            } catch (e) { return false; }
+            return true;
+          });
+        }).catch(function () { return false; });
+      }
+
+      // Sign any unsigned frame.dapp.* records that have state + an identity with keys.
+      function ensureAllDappsSigned() {
+        if (!active || !active.privateKey || !active.publicKey) {
+          return Promise.resolve({ signed: 0, skipped: 0, reason: "no identity key" });
         }
+        var pending = [];
+        FRAME.localStorageEntries().forEach(function (e) {
+          if (e.name.indexOf("frame.dapp.") !== 0) return;
+          var d = null; try { d = JSON.parse(localStorage.getItem(e.name)); } catch (x) {}
+          if (!d || !d.state) return;
+          if (d.signature && d.signedBy) return; // already signed
+          var payload = JSON.stringify(d.state);
+          pending.push(signRecord(e.name, payload));
+        });
+        if (!pending.length) return Promise.resolve({ signed: 0, skipped: 0 });
+        return Promise.all(pending).then(function (results) {
+          var signed = 0;
+          results.forEach(function (r) { if (r) signed++; });
+          return { signed: signed, skipped: results.length - signed };
+        });
       }
 
       function uid() {
@@ -516,99 +534,158 @@
         return out;
       }
 
-      function renderReceipts(opts) {
-        opts = opts || {};
+      function renderReceipts() {
         var listEl = document.getElementById("receiptList");
         var summaryEl = document.getElementById("receiptSummary");
-        var records = collectReceipts();
         var mySeq = ++receiptSeq;
 
-        // Keep existing cards' layout stable: rebuild, then pulse rings.
-        listEl.innerHTML = "";
-        if (records.length === 0) {
-          listEl.innerHTML = '<div class="empty">No dApp receipts yet. Use Calculator or Wallet to create signed state.</div>';
-          summaryEl.textContent = "0 receipts · auto-verifying every 6s";
-          return;
+        function paint(records) {
+          if (mySeq !== receiptSeq) return;
+
+          // Build a map of existing cards so we can update in place (keeps ring animation alive).
+          var existing = {};
+          Array.prototype.forEach.call(listEl.querySelectorAll(".card[data-key]"), function (c) {
+            existing[c.getAttribute("data-key")] = c;
+          });
+          var seen = {};
+
+          if (records.length === 0) {
+            listEl.innerHTML = '<div class="empty">No dApp receipts yet. Use Calculator or Wallet to create signed state.</div>';
+            summaryEl.textContent = "0 receipts · auto-verifying every 6s";
+            return;
+          }
+
+          // Drop the empty state if present
+          var empty = listEl.querySelector(".empty");
+          if (empty) empty.remove();
+
+          var verifiedCount = 0, unsignedCount = 0, total = 0, pending = records.length;
+          var noKey = !active || !active.privateKey || !active.publicKey;
+
+          records.forEach(function (rec) {
+            var d = rec.d;
+            var card = existing[rec.key];
+            var hasSig = !!(d.signature && d.signedBy);
+            var signer = hasSig ? FRAME.getById(d.signedBy) : null;
+            var pubKey = signer ? signer.publicKey : null;
+            var payload = d.state ? JSON.stringify(d.state) : "";
+            var info = schemeInfo(d, pubKey);
+            var note = (noKey && !hasSig)
+              ? "unsigned because this identity has no signing key (create a new identity)"
+              : "";
+
+            if (!card) {
+              card = document.createElement("div");
+              card.className = "card";
+              card.setAttribute("data-key", rec.key);
+              card.innerHTML =
+                '<div class="card-head">' +
+                  '<span class="card-name"></span>' +
+                  '<span class="pill pending">verifying\u2026</span>' +
+                '</div>' +
+                '<div class="row"><span class="k">dApp</span><span class="v" data-f="dapp"></span></div>' +
+                '<div class="row"><span class="k">scheme</span><span class="v" data-f="scheme"></span></div>' +
+                '<div class="row"><span class="k">algorithm</span><span class="v" data-f="alg"></span></div>' +
+                '<div class="row"><span class="k">digest</span><span class="v" data-f="digest"></span></div>' +
+                '<div class="row"><span class="k">encoding</span><span class="v" data-f="encoding"></span></div>' +
+                '<div class="row"><span class="k">signed by</span><span class="v" data-f="signer"></span></div>' +
+                '<div class="row"><span class="k">updated</span><span class="v" data-f="updated"></span></div>' +
+                '<div class="row"><span class="k">signature</span><span class="v" data-f="sig"></span></div>' +
+                '<div class="row" data-f="noterow" hidden><span class="k">note</span><span class="v" data-f="note"></span></div>';
+              listEl.appendChild(card);
+            }
+            seen[rec.key] = true;
+
+            card.querySelector(".card-name").textContent = d.name || rec.key;
+            card.querySelector('[data-f="dapp"]').textContent = rec.key;
+            card.querySelector('[data-f="scheme"]').textContent = info.scheme;
+            card.querySelector('[data-f="alg"]').textContent = info.alg;
+            card.querySelector('[data-f="digest"]').textContent = info.digest + (info.over !== "—" ? " over " + info.over : "");
+            card.querySelector('[data-f="encoding"]').textContent = info.encoding;
+            card.querySelector('[data-f="signer"]').textContent = d.signedBy || "—";
+            card.querySelector('[data-f="updated"]').textContent = d.updatedAt || "—";
+            card.querySelector('[data-f="sig"]').textContent = d.signature ? shorten(d.signature, 60) : "—";
+            var noteRow = card.querySelector('[data-f="noterow"]');
+            if (note) {
+              noteRow.hidden = false;
+              card.querySelector('[data-f="note"]').textContent = note;
+            } else {
+              noteRow.hidden = true;
+            }
+
+            var pill = card.querySelector(".pill");
+            // Don't reset pill class to pending if we're only refreshing — keeps ring continuous.
+            if (!pill.dataset.busy) {
+              pill.className = "pill pending";
+              pill.textContent = "verifying\u2026";
+            }
+            pill.dataset.busy = "1";
+            total++;
+
+            function done() {
+              delete pill.dataset.busy;
+              pending--;
+              if (pending === 0 && mySeq === receiptSeq) {
+                var tip = noKey ? " · identity missing keys" : "";
+                summaryEl.textContent = verifiedCount + " verified · " + unsignedCount + " unsigned · " + total + " total · auto every 6s" + tip;
+              }
+            }
+
+            if (!hasSig) {
+              pill.className = "pill unsigned";
+              pill.textContent = "unsigned";
+              unsignedCount++;
+              done();
+              return;
+            }
+            if (!pubKey) {
+              pill.className = "pill bad";
+              pill.textContent = "signer not found";
+              done();
+              return;
+            }
+
+            FRAME.verifyData(pubKey, payload, d.signature).then(function (ok) {
+              if (mySeq !== receiptSeq) return;
+              if (ok) {
+                pill.className = "pill ok";
+                pill.innerHTML = CHECK + "verified";
+                verifiedCount++;
+              } else {
+                pill.className = "pill bad";
+                pill.textContent = "invalid";
+              }
+              done();
+            }).catch(function () {
+              if (mySeq !== receiptSeq) return;
+              pill.className = "pill bad";
+              pill.textContent = "error";
+              done();
+            });
+          });
+
+          // Remove cards for deleted dApps
+          Object.keys(existing).forEach(function (k) {
+            if (!seen[k]) existing[k].remove();
+          });
         }
 
-        var verifiedCount = 0, unsignedCount = 0, total = 0, pending = records.length;
-
-        records.forEach(function (rec) {
-          var d = rec.d;
-          var card = document.createElement("div");
-          card.className = "card";
-          var hasSig = !!(d.signature && d.signedBy);
-          var signer = hasSig ? FRAME.getById(d.signedBy) : null;
-          var pubKey = signer ? signer.publicKey : null;
-          var payload = d.state ? JSON.stringify(d.state) : "";
-          var info = schemeInfo(d, pubKey);
-
-          card.innerHTML =
-            '<div class="card-head">' +
-              '<span class="card-name">' + esc(d.name || rec.key) + '</span>' +
-              '<span class="pill pending refreshing">verifying\u2026</span>' +
-            '</div>' +
-            '<div class="row"><span class="k">dApp</span><span class="v">' + esc(rec.key) + '</span></div>' +
-            '<div class="row"><span class="k">scheme</span><span class="v">' + esc(info.scheme) + '</span></div>' +
-            '<div class="row"><span class="k">algorithm</span><span class="v">' + esc(info.alg) + '</span></div>' +
-            '<div class="row"><span class="k">digest</span><span class="v">' + esc(info.digest) + ' over ' + esc(info.over) + '</span></div>' +
-            '<div class="row"><span class="k">encoding</span><span class="v">' + esc(info.encoding) + '</span></div>' +
-            '<div class="row"><span class="k">signed by</span><span class="v">' + esc(d.signedBy || "—") + '</span></div>' +
-            '<div class="row"><span class="k">updated</span><span class="v">' + esc(d.updatedAt || "—") + '</span></div>' +
-            '<div class="row"><span class="k">signature</span><span class="v">' + esc(d.signature ? shorten(d.signature, 60) : "—") + '</span></div>';
-          listEl.appendChild(card);
-
-          var pill = card.querySelector(".pill");
-          total++;
-
-          function done() {
-            pending--;
-            if (pending === 0 && mySeq === receiptSeq) {
-              summaryEl.textContent = verifiedCount + " verified · " + unsignedCount + " unsigned · " + total + " total · auto every 6s";
-            }
-          }
-
-          if (!hasSig) {
-            pill.className = "pill unsigned" + (opts.pulse !== false ? " refreshing" : "");
-            pill.textContent = "unsigned";
-            unsignedCount++;
-            done();
-            return;
-          }
-          if (!pubKey) {
-            pill.className = "pill bad" + (opts.pulse !== false ? " refreshing" : "");
-            pill.textContent = "signer not found";
-            done();
-            return;
-          }
-
-          FRAME.verifyData(pubKey, payload, d.signature).then(function (ok) {
-            if (mySeq !== receiptSeq) return;
-            if (ok) {
-              pill.className = "pill ok" + (opts.pulse !== false ? " refreshing" : "");
-              pill.innerHTML = CHECK + "verified";
-              verifiedCount++;
-            } else {
-              pill.className = "pill bad" + (opts.pulse !== false ? " refreshing" : "");
-              pill.textContent = "invalid";
-            }
-            done();
-          }).catch(function () {
-            if (mySeq !== receiptSeq) return;
-            pill.className = "pill bad" + (opts.pulse !== false ? " refreshing" : "");
-            pill.textContent = "error";
-            done();
-          });
+        // Sign any unsigned dApp records first (stubs from install often lack signatures),
+        // then verify. That is why receipts were stuck on "unsigned".
+        summaryEl.textContent = "signing / verifying\u2026";
+        ensureAllDappsSigned().then(function () {
+          if (mySeq !== receiptSeq) return;
+          paint(collectReceipts());
         });
       }
 
       function startReceiptLoop() {
         if (receiptTimer) return;
-        renderReceipts({ pulse: true });
+        renderReceipts();
         receiptTimer = setInterval(function () {
           var pane = document.getElementById("pane-receipts");
           if (!pane || !pane.classList.contains("on")) return;
-          renderReceipts({ pulse: true });
+          renderReceipts();
         }, 6000);
       }
 
@@ -747,7 +824,8 @@
 
       /* ---- Boot ---- */
       load();
-      if (!localStorage.getItem(KEY)) persist();
+      persist(); // always write + sign (stubs from dapps.html were left unsigned)
+      ensureAllDappsSigned();
       renderWallets();
       renderJobs();
       renderTasks();
