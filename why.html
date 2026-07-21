@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>frame — why</title>
+  <title>frame - why</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -47,6 +47,8 @@
       line-height: 1;
     }
     .home-link { color: inherit; text-decoration: none; }
+    .hl-orange { background: #ff8a00; color: #000000; box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0.02em 0.12em; }
+    .hl-gray { background: #d0d0d0; color: #000000; box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0.02em 0.12em; }
 
     .corner {
       position: fixed;
@@ -295,7 +297,7 @@
     <section class="sec">
       <div class="sec-head"><h2>One Reality</h2><span class="hline"></span></div>
       <div class="sec-body">
-        <p class="lead">Reality should exist once—not once inside every application.</p>
+        <p class="lead">Reality should exist once, not once inside every application.</p>
         <p>Imagine a room.</p>
         <p>Today, every application stores its own version of that room.</p>
         <p class="spaced">A game stores one.</p>
@@ -400,7 +402,7 @@ Applications</div>
         <p>Your computer should be capable of understanding its own data.</p>
         <p>FRAME is designed so work can happen locally whenever possible.</p>
         <p>Applications shouldn't require constant communication with remote servers simply to function.</p>
-        <p>Cloud computing remains useful, but it becomes a capability—not a requirement.</p>
+        <p>Cloud computing remains useful, but it becomes a capability, not a requirement.</p>
       </div>
     </section>
 
@@ -436,13 +438,13 @@ Applications</div>
       <div class="sec-body">
         <p class="lead">Everything runs sandboxed, and every FRAME can prove it hasn't been tampered with.</p>
         <p>FRAME is sandboxed from the ground up.</p>
-        <p>The kernel runs isolated from the system around it, and everything built inside it—including dApps—is sandboxed entirely.</p>
+        <p>The kernel runs isolated from the system around it, and everything built inside it, including dApps, is sandboxed entirely.</p>
         <p>An application can only touch what it has been explicitly granted. It cannot reach into other applications, other data, or the host system on its own.</p>
         <p>Because code in FRAME is verified through FRAME itself, an instance can instantly tell whether its code or state has been tampered with.</p>
-        <p>Integrity isn't assumed—it is continuously provable.</p>
+        <p>Integrity isn't assumed; it is continuously provable.</p>
         <p>Isolation extends between FRAMEs as well.</p>
         <p>Even two FRAMEs running on the same machine are fully separated. They cannot silently read or influence each other.</p>
-        <p>The only way they interact is through explicit, permissioned capabilities—narrow, revocable grants that define exactly what one FRAME may ask of another.</p>
+        <p>The only way they interact is through explicit, permissioned capabilities: narrow, revocable grants that define exactly what one FRAME may ask of another.</p>
         <p>Nothing communicates by default. Everything communicates by permission.</p>
       </div>
     </section>
@@ -450,10 +452,10 @@ Applications</div>
     <section class="sec">
       <div class="sec-head"><h2>Many Chains, One Foundation</h2><span class="hline"></span></div>
       <div class="sec-body">
-        <p class="lead">Chain-agnostic by design—one model across many blockchains.</p>
-        <p>Blockchains gave the world verifiable ownership, settlement, and trust without intermediaries—but each chain became its own island, with its own accounts, tokens, and rules.</p>
+        <p class="lead">Chain-agnostic by design: one model across many blockchains.</p>
+        <p>Blockchains gave the world verifiable ownership, settlement, and trust without intermediaries, but each chain became its own island, with its own accounts, tokens, and rules.</p>
         <p>FRAME is deliberately chain-agnostic.</p>
-        <p>Identity, permissions, and ownership in FRAME can be anchored to whichever blockchain a use case requires—one chain, several, or new ones that don't exist yet.</p>
+        <p>Identity, permissions, and ownership in FRAME can be anchored to whichever blockchain a use case requires: one chain, several, or new ones that don't exist yet.</p>
         <p>Because FRAME separates reality from the systems that verify it, the same underlying information can be settled, proven, or notarized across multiple chains at once.</p>
         <p class="spaced">Ownership can be recorded on one chain.</p>
         <p class="spaced">Payments can settle on another.</p>
@@ -478,14 +480,14 @@ Applications</div>
           <li>Agents and services that transact on a user's behalf under explicit, revocable permissions</li>
         </ul>
         <p>This is how real benefit reaches the world: transparent supply chains, verifiable digital ownership, self-sovereign identity, open financial tools, and public infrastructure that anyone can audit and build upon.</p>
-        <p>When the hard parts become shared abstractions, small teams can ship powerful, trustworthy applications—and an entire ecosystem of dApps can grow on common ground instead of walled gardens.</p>
+        <p>When the hard parts become shared abstractions, small teams can ship powerful, trustworthy applications, and an entire ecosystem of dApps can grow on common ground instead of walled gardens.</p>
       </div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Governance, as an Abstraction</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-orange">Governance</span><span class="hl-gray">, as an Abstraction</span></h2><span class="hline"></span></div>
       <div class="sec-body">
-        <p class="lead">Governance isn't hard-coded into the kernel—it's expressed abstractly through capabilities.</p>
+        <p class="lead">Governance isn't hard-coded into the kernel; it's expressed abstractly through capabilities.</p>
         <p>FRAME doesn't impose a single way to make decisions.</p>
         <p>Because every permission in FRAME is a capability, governance simply becomes the question of who is allowed to grant, revoke, or change those capabilities.</p>
         <p>That turns governance into an abstraction that applications build on top of, rather than something baked rigidly into the foundation.</p>
@@ -497,9 +499,9 @@ Applications</div>
           <li>Time-locked, delegated, or revocable authority</li>
         </ul>
         <p>Each of these is just a pattern for deciding how capabilities are issued and withdrawn.</p>
-        <p>A governance decision—on-chain or off—resolves into a concrete change in permissions that FRAME then enforces.</p>
+        <p>A governance decision, on-chain or off, resolves into a concrete change in permissions that FRAME then enforces.</p>
         <p>Because those changes are verifiable, governance becomes transparent and auditable: anyone can confirm who authorized what, and applications can trust the outcome without trusting a central operator.</p>
-        <p>The same kernel can host a solo user granting themselves capabilities and a global community coordinating through elaborate governance—without changing how FRAME works underneath.</p>
+        <p>The same kernel can host a solo user granting themselves capabilities and a global community coordinating through elaborate governance, without changing how FRAME works underneath.</p>
       </div>
     </section>
 
@@ -522,7 +524,7 @@ Applications</div>
             </tbody>
           </table>
         </div>
-        <p class="note">The important idea is that FRAME doesn't eliminate application-specific identities—it moves them up a layer.</p>
+        <p class="note">The important idea is that FRAME doesn't eliminate application-specific identities; it moves them up a layer.</p>
       </div>
     </section>
 
@@ -530,7 +532,7 @@ Applications</div>
       <div class="sec-head"><h2>Built for AI</h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">AI works with the same shared reality as everyone else.</p>
-        <p>Artificial intelligence is becoming another consumer of information—not a replacement for it.</p>
+        <p>Artificial intelligence is becoming another consumer of information, not a replacement for it.</p>
         <p>AI models should not maintain their own disconnected representation of reality.</p>
         <p>Instead, they should interact with the same shared information that humans, robots, applications, and simulations already use.</p>
         <p>This allows multiple AI systems to collaborate without continuously translating between incompatible formats.</p>
@@ -576,7 +578,7 @@ Applications</div>
     <section class="sec">
       <div class="sec-head"><h2>Why Now?</h2><span class="hline"></span></div>
       <div class="sec-body">
-        <p class="lead">The old assumption—every app builds its own world—no longer scales.</p>
+        <p class="lead">The old assumption, that every app builds its own world, no longer scales.</p>
         <p>Computing is changing.</p>
         <p>AI, robotics, digital twins, spatial computing, and automation are all converging.</p>
         <p>Yet most software still assumes every application should build its own isolated world.</p>
@@ -637,7 +639,7 @@ Applications</div>
         <p>It isn't trying to replace the web.</p>
         <p>Its goal is much simpler.</p>
         <p>Provide a consistent kernel where applications can share reality instead of constantly recreating it.</p>
-        <p>Everything else—rendering, AI, simulation, robotics, visualization, automation—is simply another way of interacting with that shared foundation.</p>
+        <p>Everything else, rendering, AI, simulation, robotics, visualization, automation, is simply another way of interacting with that shared foundation.</p>
       </div>
     </section>
 
