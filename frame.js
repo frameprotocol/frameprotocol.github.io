@@ -88,7 +88,7 @@ window.FRAME = (function () {
 
   function createIdentity(passcode) {
     var obj = {
-      frameId: "frameid:" + randomDigits(6),
+      frameId: "identity:" + randomDigits(6),
       recoveryKey: randomAlnum(17),
       passcode: passcode || null,
       settings: { maxAttempts: 5, onLimit: "lock" },

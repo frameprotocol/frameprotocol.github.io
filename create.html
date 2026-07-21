@@ -113,7 +113,7 @@
       <div class="divider"></div>
 
       <div class="field-label">frame identity</div>
-      <div class="idbox" id="frameId">frameid:000000</div>
+      <div class="idbox" id="frameId">identity:000000</div>
 
       <div class="warn" id="warnBox">Write all of this down and store it in a safe place.<br /><br />This is what lets you import / authenticate your identity to a new device.</div>
 
@@ -138,7 +138,7 @@
   <script src="/frame.js"></script>
   <script>
     (function () {
-      var frameId = "frameid:" + FRAME.randomDigits(6);
+      var frameId = "identity:" + FRAME.randomDigits(6);
       var recoveryKey = FRAME.randomAlnum(17);
       document.getElementById("frameId").textContent = frameId;
       document.getElementById("recoveryKey").textContent = recoveryKey;
