@@ -58,6 +58,7 @@
       padding: 2px 7px; border: 1px solid #000000;
     }
     .dev-tag.on { background: #17a34a; border-color: #17a34a; color: #ffffff; }
+    .dev-browser { font-family: 'Space Mono', monospace; font-weight: 700; color: #888888; font-size: clamp(0.82rem, 3.2vw, 0.95rem); }
 
     .bar {
       font-family: 'Space Mono', monospace; font-weight: 700;
@@ -163,10 +164,37 @@
         return '[<span class="used">' + usedStr + '</span><span class="free">' + freeStr + '</span>] <span class="pct">' + pctTxt + '</span>';
       }
 
+      function localStorageBytes() {
+        var total = 0;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            var v = localStorage.getItem(k) || "";
+            total += (k.length + v.length) * 2; // UTF-16 code units
+          }
+        } catch (e) {}
+        return total;
+      }
+
+      function browserName() {
+        var ua = navigator.userAgent;
+        if (navigator.brave) return "brave";
+        if (/Edg\//.test(ua)) return "edge";
+        if (/OPR\//.test(ua) || /\bOpera\b/.test(ua)) return "opera";
+        if (/Firefox\//.test(ua)) return "firefox";
+        if (/Chrome\//.test(ua)) return "chrome";
+        if (/Safari\//.test(ua) && /Version\//.test(ua)) return "safari";
+        return "browser";
+      }
+
       var thisDevice = document.getElementById("thisDevice");
 
       function renderThisDevice(est, persisted) {
-        var usage = (est && typeof est.usage === "number") ? est.usage : null;
+        var localBytes = localStorageBytes();
+        var estUsage = (est && typeof est.usage === "number") ? est.usage : 0;
+        // estimate() usually excludes localStorage, so make sure our real
+        // localStorage footprint is reflected rather than reading as 0.
+        var usage = Math.max(estUsage, localBytes);
         var quota = (est && typeof est.quota === "number") ? est.quota : null;
 
         var dev = document.createElement("div");
@@ -178,13 +206,17 @@
         nm.className = "dev-name";
         nm.textContent = "this browser";
         head.appendChild(nm);
+        var bn = document.createElement("span");
+        bn.className = "dev-browser";
+        bn.textContent = "(" + browserName() + ")";
+        head.appendChild(bn);
         var tag = document.createElement("span");
         tag.className = "dev-tag on";
         tag.textContent = "this device";
         head.appendChild(tag);
         dev.appendChild(head);
 
-        if (usage !== null && quota !== null && quota > 0) {
+        if (quota !== null && quota > 0) {
           var free = Math.max(0, quota - usage);
           var bar = document.createElement("div");
           bar.className = "bar";
@@ -196,10 +228,10 @@
           legend.innerHTML = "Used <b>" + humanBytes(usage) + "</b> \u00b7 Free <b>" + humanBytes(free) + "</b> \u00b7 Allowance <b>" + humanBytes(quota) + "</b>";
           dev.appendChild(legend);
         } else {
-          var na = document.createElement("div");
-          na.className = "legend";
-          na.textContent = "This browser does not report a storage estimate.";
-          dev.appendChild(na);
+          var legend2 = document.createElement("div");
+          legend2.className = "legend";
+          legend2.innerHTML = "Used <b>" + humanBytes(usage) + "</b> \u00b7 Allowance <b>unknown</b>";
+          dev.appendChild(legend2);
         }
 
         var kv = document.createElement("div");
@@ -207,21 +239,22 @@
         kv.innerHTML = "Persistent storage: <b>" + (persisted === true ? "granted" : persisted === false ? "not granted (may be evicted)" : "unknown") + "</b>";
         dev.appendChild(kv);
 
-        // Real per-type breakdown, when the browser provides it (usageDetails).
+        // Real per-type breakdown.
+        var bd = document.createElement("div");
+        bd.className = "breakdown";
+        var bdRow = document.createElement("div");
+        bdRow.className = "row";
+        bdRow.innerHTML = '<span class="k">localStorage (FRAME data)</span><span class="v">' + humanBytes(localBytes) + '</span>';
+        bd.appendChild(bdRow);
         if (est && est.usageDetails && typeof est.usageDetails === "object") {
-          var keys = Object.keys(est.usageDetails);
-          if (keys.length) {
-            var bd = document.createElement("div");
-            bd.className = "breakdown";
-            keys.forEach(function (k) {
-              var row = document.createElement("div");
-              row.className = "row";
-              row.innerHTML = '<span class="k">' + k + '</span><span class="v">' + humanBytes(est.usageDetails[k]) + '</span>';
-              bd.appendChild(row);
-            });
-            dev.appendChild(bd);
-          }
+          Object.keys(est.usageDetails).forEach(function (k) {
+            var row = document.createElement("div");
+            row.className = "row";
+            row.innerHTML = '<span class="k">' + k + '</span><span class="v">' + humanBytes(est.usageDetails[k]) + '</span>';
+            bd.appendChild(row);
+          });
         }
+        dev.appendChild(bd);
 
         var note = document.createElement("div");
         note.className = "note";
