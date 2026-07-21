@@ -47,7 +47,7 @@
       font-size: 0.72rem; color: #888888; margin: clamp(24px, 4vh, 32px) 0 14px;
     }
 
-    .dev { margin-bottom: clamp(18px, 3.4vh, 26px); }
+    .dev { margin-bottom: clamp(14px, 2.6vh, 20px); }
     .dev-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
     .dev-name {
       font-family: 'Space Mono', monospace; font-weight: 700;
@@ -58,7 +58,6 @@
       padding: 2px 7px; border: 1px solid #000000;
     }
     .dev-tag.on { background: #17a34a; border-color: #17a34a; color: #ffffff; }
-    .dev-tag.off { background: #f2f2f2; color: #999999; border-color: #cccccc; }
 
     .bar {
       font-family: 'Space Mono', monospace; font-weight: 700;
@@ -75,13 +74,28 @@
     }
     .legend b { color: #000000; }
 
-    .totals {
-      border: 1.5px solid #000000; padding: 14px 16px; margin-top: 6px;
-      font-family: 'Space Mono', monospace; font-size: clamp(0.8rem, 3vw, 0.92rem);
+    .kv {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(0.75rem, 3vw, 0.88rem); color: #444444;
+      margin-top: 4px;
     }
-    .totals .bar { margin-top: 8px; }
+    .kv b { color: #000000; }
 
-    .note { color: #888888; font-size: 0.8rem; margin-top: 6px; }
+    .breakdown { margin-top: 12px; }
+    .breakdown .row {
+      display: flex; justify-content: space-between; gap: 12px;
+      font-family: 'Space Mono', monospace; font-size: clamp(0.75rem, 3vw, 0.88rem);
+      padding: 5px 0; border-bottom: 1px solid #eeeeee;
+    }
+    .breakdown .row:last-child { border-bottom: 0; }
+    .breakdown .row .k { color: #444444; }
+    .breakdown .row .v { color: #000000; font-weight: 700; }
+
+    .empty {
+      border: 1.5px dashed #cccccc; padding: 16px; text-align: center;
+      color: #888888; font-size: 0.9rem;
+    }
+    .note { color: #888888; font-size: 0.8rem; margin-top: 6px; line-height: 1.4; }
 
     .corner {
       position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px);
@@ -114,7 +128,7 @@
 
   <main class="panel">
     <h2 class="title">Storage</h2>
-    <p class="subtitle">Space used across this device and connected FRAMEs.</p>
+    <p class="subtitle">Real usage reported by this browser.</p>
     <div class="divider"></div>
 
     <div class="section-label">This device</div>
@@ -122,9 +136,6 @@
 
     <div class="section-label">Connected devices</div>
     <div id="connected"></div>
-
-    <div class="section-label">Total across identities</div>
-    <div id="totals" class="totals"></div>
   </main>
 
   <script>
@@ -132,10 +143,9 @@
       var BAR_WIDTH = 34;
 
       function humanBytes(n) {
-        if (n === null || n === undefined || isNaN(n)) return "—";
+        if (n === null || n === undefined || isNaN(n)) return "unknown";
         var units = ["B", "KB", "MB", "GB", "TB", "PB"];
-        var i = 0;
-        var v = n;
+        var i = 0, v = n;
         while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
         var dp = (v >= 100 || i === 0) ? 0 : (v >= 10 ? 1 : 2);
         return v.toFixed(dp) + " " + units[i];
@@ -146,16 +156,19 @@
         var filled = Math.round(pct * BAR_WIDTH);
         if (used > 0 && filled === 0) filled = 1;
         if (used < total && filled === BAR_WIDTH) filled = BAR_WIDTH - 1;
-        var usedStr = "";
-        var freeStr = "";
-        for (var i = 0; i < filled; i++) usedStr += "\u2501";        // ━ heavy
-        for (var j = 0; j < BAR_WIDTH - filled; j++) freeStr += "\u2500"; // ─ light
-        var pctTxt = (pct * 100).toFixed(pct * 100 >= 10 ? 0 : 1) + "%";
+        var usedStr = "", freeStr = "";
+        for (var i = 0; i < filled; i++) usedStr += "\u2501";              // heavy
+        for (var j = 0; j < BAR_WIDTH - filled; j++) freeStr += "\u2500";  // light
+        var pctTxt = (pct * 100).toFixed(pct * 100 >= 10 ? 0 : 2) + "%";
         return '[<span class="used">' + usedStr + '</span><span class="free">' + freeStr + '</span>] <span class="pct">' + pctTxt + '</span>';
       }
 
-      function renderDevice(container, name, used, total, online, tag) {
-        var free = Math.max(0, total - used);
+      var thisDevice = document.getElementById("thisDevice");
+
+      function renderThisDevice(est, persisted) {
+        var usage = (est && typeof est.usage === "number") ? est.usage : null;
+        var quota = (est && typeof est.quota === "number") ? est.quota : null;
+
         var dev = document.createElement("div");
         dev.className = "dev";
 
@@ -163,83 +176,85 @@
         head.className = "dev-head";
         var nm = document.createElement("span");
         nm.className = "dev-name";
-        nm.textContent = name;
+        nm.textContent = "this browser";
         head.appendChild(nm);
-        var t = document.createElement("span");
-        t.className = "dev-tag " + (online ? "on" : "off");
-        t.textContent = online ? "online" : "offline";
-        head.appendChild(t);
+        var tag = document.createElement("span");
+        tag.className = "dev-tag on";
+        tag.textContent = "this device";
+        head.appendChild(tag);
         dev.appendChild(head);
 
-        var bar = document.createElement("div");
-        bar.className = "bar";
-        bar.innerHTML = barHTML(used, total);
-        dev.appendChild(bar);
+        if (usage !== null && quota !== null && quota > 0) {
+          var free = Math.max(0, quota - usage);
+          var bar = document.createElement("div");
+          bar.className = "bar";
+          bar.innerHTML = barHTML(usage, quota);
+          dev.appendChild(bar);
 
-        var legend = document.createElement("div");
-        legend.className = "legend";
-        legend.innerHTML = "Used <b>" + humanBytes(used) + "</b> \u00b7 Free <b>" + humanBytes(free) + "</b> \u00b7 Total <b>" + humanBytes(total) + "</b>";
-        dev.appendChild(legend);
-
-        if (tag) {
-          var note = document.createElement("div");
-          note.className = "note";
-          note.textContent = tag;
-          dev.appendChild(note);
+          var legend = document.createElement("div");
+          legend.className = "legend";
+          legend.innerHTML = "Used <b>" + humanBytes(usage) + "</b> \u00b7 Free <b>" + humanBytes(free) + "</b> \u00b7 Allowance <b>" + humanBytes(quota) + "</b>";
+          dev.appendChild(legend);
+        } else {
+          var na = document.createElement("div");
+          na.className = "legend";
+          na.textContent = "This browser does not report a storage estimate.";
+          dev.appendChild(na);
         }
 
-        container.appendChild(dev);
+        var kv = document.createElement("div");
+        kv.className = "kv";
+        kv.innerHTML = "Persistent storage: <b>" + (persisted === true ? "granted" : persisted === false ? "not granted (may be evicted)" : "unknown") + "</b>";
+        dev.appendChild(kv);
+
+        // Real per-type breakdown, when the browser provides it (usageDetails).
+        if (est && est.usageDetails && typeof est.usageDetails === "object") {
+          var keys = Object.keys(est.usageDetails);
+          if (keys.length) {
+            var bd = document.createElement("div");
+            bd.className = "breakdown";
+            keys.forEach(function (k) {
+              var row = document.createElement("div");
+              row.className = "row";
+              row.innerHTML = '<span class="k">' + k + '</span><span class="v">' + humanBytes(est.usageDetails[k]) + '</span>';
+              bd.appendChild(row);
+            });
+            dev.appendChild(bd);
+          }
+        }
+
+        var note = document.createElement("div");
+        note.className = "note";
+        note.textContent = "Browsers report an allowance for this site (a share of free disk), not the computer's true total capacity. Exact disk size is not exposed to web pages.";
+        dev.appendChild(note);
+
+        thisDevice.appendChild(dev);
       }
-
-      // Simulated connected FRAME nodes (no live functionality yet).
-      var connectedDevices = [
-        { name: "living-room.local", used: 214 * 1e9, total: 512 * 1e9, online: true },
-        { name: "studio-frame",      used: 903 * 1e9, total: 1e12,      online: true },
-        { name: "nas-frame",         used: 3.1e12,    total: 8e12,      online: true },
-        { name: "office-frame",      used: 47 * 1e9,  total: 256 * 1e9, online: false }
-      ];
-
-      var totalUsed = 0, totalCap = 0;
 
       function renderConnected() {
         var container = document.getElementById("connected");
-        connectedDevices.forEach(function (d) {
-          renderDevice(container, d.name, d.used, d.total, d.online, null);
-          totalUsed += d.used;
-          totalCap += d.total;
+        var empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No connected devices. Device-to-device sync is not available from the browser yet.";
+        container.appendChild(empty);
+      }
+
+      function go(est) {
+        var p = (navigator.storage && navigator.storage.persisted)
+          ? navigator.storage.persisted() : Promise.resolve(null);
+        p.then(function (persisted) {
+          renderThisDevice(est, persisted);
+          renderConnected();
+        }).catch(function () {
+          renderThisDevice(est, null);
+          renderConnected();
         });
-        renderTotals();
-      }
-
-      function renderTotals() {
-        var el = document.getElementById("totals");
-        var free = Math.max(0, totalCap - totalUsed);
-        el.innerHTML =
-          "Used <b>" + humanBytes(totalUsed) + "</b> \u00b7 Free <b>" + humanBytes(free) + "</b> \u00b7 Total <b>" + humanBytes(totalCap) + "</b>" +
-          '<div class="bar">' + barHTML(totalUsed, totalCap) + "</div>";
-      }
-
-      function start(used, total) {
-        renderDevice(
-          document.getElementById("thisDevice"),
-          "this device",
-          used, total, true,
-          "Browser storage allowance for this FRAME."
-        );
-        totalUsed += used;
-        totalCap += total;
-        renderConnected();
       }
 
       if (navigator.storage && navigator.storage.estimate) {
-        navigator.storage.estimate().then(function (est) {
-          start(est.usage || 0, est.quota || 0);
-        }).catch(function () {
-          start(0, 0);
-        });
+        navigator.storage.estimate().then(go).catch(function () { go(null); });
       } else {
-        // Fallback estimate if the Storage API is unavailable.
-        start(5 * 1e6, 2 * 1e9);
+        go(null);
       }
     })();
   </script>
