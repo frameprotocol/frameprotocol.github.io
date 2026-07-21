@@ -113,7 +113,7 @@
       <div class="divider"></div>
 
       <div class="field-label">frame identity</div>
-      <div class="idbox" id="frameId">identity:000000</div>
+      <div class="idbox" id="frameId">generating&hellip;</div>
 
       <div class="warn" id="warnBox">Write all of this down and store it in a safe place.<br /><br />This is what lets you import / authenticate your identity to a new device.</div>
 
@@ -138,17 +138,28 @@
   <script src="/frame.js"></script>
   <script>
     (function () {
-      var frameId = "identity:" + FRAME.randomDigits(6);
-      var recoveryKey = FRAME.randomAlnum(17);
-      document.getElementById("frameId").textContent = frameId;
-      document.getElementById("recoveryKey").textContent = recoveryKey;
+      var idBox = document.getElementById("frameId");
+      var recBox = document.getElementById("recoveryKey");
+      var beginBtn = document.getElementById("beginBtn");
+
+      // Generate a real cryptographic identity (Ed25519, P-256 fallback).
+      var identity = null;
+      idBox.textContent = "generating\u2026";
+      beginBtn.disabled = true;
+      FRAME.buildIdentity(null).then(function (obj) {
+        identity = obj;
+        idBox.textContent = obj.frameId;
+        recBox.textContent = obj.recoveryKey;
+        beginBtn.disabled = false;
+      });
 
       var stepIdentity = document.getElementById("step-identity");
       var stepPassword = document.getElementById("step-password");
       var pin = document.getElementById("pin");
       var pinHint = document.getElementById("pinHint");
 
-      document.getElementById("beginBtn").addEventListener("click", function () {
+      beginBtn.addEventListener("click", function () {
+        if (!identity) return;
         stepIdentity.hidden = true;
         stepPassword.hidden = false;
         setTimeout(function () { pin.focus(); }, 50);
@@ -169,17 +180,10 @@
           return;
         }
         try {
-          FRAME.addIdentity({
-            frameId: frameId,
-            recoveryKey: recoveryKey,
-            passcode: pin.value,
-            settings: { maxAttempts: 5, onLimit: "lock" },
-            failedAttempts: 0,
-            locked: false,
-            createdAt: new Date().toISOString()
-          });
-          FRAME.setActiveId(frameId);
-          FRAME.markUnlocked(frameId);
+          identity.passcode = pin.value;
+          FRAME.addIdentity(identity);
+          FRAME.setActiveId(identity.frameId);
+          FRAME.markUnlocked(identity.frameId);
         } catch (err) {}
         window.location.href = "/dashboard.html";
       });

@@ -31,19 +31,20 @@
     .subtitle { color: #666666; font-weight: 500; text-align: center; margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem); }
     .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
 
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: clamp(14px, 3vw, 26px); justify-items: center; }
+    .sec-label { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #999999; margin: clamp(18px, 3vh, 26px) 0 12px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: clamp(14px, 3vw, 24px); justify-items: center; }
     .app {
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
-      text-decoration: none; color: #000000; width: 96px;
-      transition: transform 0.15s ease;
+      display: flex; flex-direction: column; align-items: center; gap: 9px;
+      text-decoration: none; color: #000000; width: 84px; background: none; border: 0; padding: 0; cursor: pointer;
+      transition: transform 0.15s ease; font-family: inherit;
     }
     .app:hover { transform: translateY(-3px); }
     .app .ic {
-      width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
-      color: #000000; flex: 0 0 auto;
+      width: 58px; height: 58px; display: flex; align-items: center; justify-content: center;
+      border-radius: 15px; background: #f4f4f5; color: #000000; flex: 0 0 auto;
     }
-    .app .ic svg { width: 44px; height: 44px; display: block; }
-    .app .name { font-weight: 600; font-size: clamp(0.86rem, 2.6vw, 0.98rem); text-align: center; }
+    .app .ic svg { width: 30px; height: 30px; display: block; }
+    .app .name { font-weight: 600; font-size: clamp(0.78rem, 2.4vw, 0.9rem); text-align: center; line-height: 1.15; }
 
     .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
     .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
@@ -82,12 +83,74 @@
     <p class="subtitle">Apps that run on your FRAME and store data in it.</p>
     <div class="divider"></div>
 
-    <div class="cards">
-      <a class="app" href="/calculator.html">
-        <span class="ic" style="color:#ff8a00"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11"/><line x1="12" y1="11" x2="12" y2="11"/><line x1="16" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg></span>
-        <span class="name">Calculator</span>
-      </a>
-    </div>
+    <div class="sec-label">Installed</div>
+    <div class="cards" id="installed"></div>
+
+    <div class="sec-label">System</div>
+    <div class="cards" id="system"></div>
   </main>
+
+  <script>
+    (function () {
+      var IC = {
+        calc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="15" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg>',
+        home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+        tasks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
+        term: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></svg>',
+        storage: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
+        net: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>',
+        jobs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
+        receipt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z"/><path d="M9 8h6M9 12h6"/></svg>',
+        wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="14" r="1.3"/></svg>',
+        grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+        package: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
+        cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 010-8 5 5 0 019.6-1.5A3.5 3.5 0 0117 18H7z"/></svg>',
+        ai: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/><circle cx="12" cy="12" r="2.5"/></svg>',
+        builder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-9 9-4 1 1-4 8-8z"/><path d="M13 7l4 4"/></svg>'
+      };
+
+      // Installed user dApps (persist to your FRAME storage).
+      var installed = [
+        { id: "frame.dapp.calculator", name: "Calculator", href: "/calculator.html", color: "#ff8a00", icon: IC.calc }
+      ];
+
+      // Real FRAME system dApp catalog (ids match ui/src/dapps/system/*).
+      var system = [
+        { id: "frame.system.welcome", name: "Welcome", color: "#1a73e8", icon: IC.home },
+        { id: "frame.system.tasks", name: "Tasks", color: "#17a34a", icon: IC.tasks },
+        { id: "frame.system.terminal", name: "Terminal", color: "#111111", icon: IC.term },
+        { id: "frame.system.storage_explorer", name: "Storage", color: "#0891b2", icon: IC.storage },
+        { id: "frame.system.network_monitor", name: "Network", color: "#7c5cff", icon: IC.net },
+        { id: "frame.system.job_dashboard", name: "Jobs", color: "#d97706", icon: IC.jobs },
+        { id: "frame.system.receipt_audit", name: "Receipts", color: "#0f7a3d", icon: IC.receipt },
+        { id: "frame.system.wallet", name: "Wallet", color: "#b45309", icon: IC.wallet },
+        { id: "frame.system.dapp_manager", name: "dApp Manager", color: "#e11d48", icon: IC.grid },
+        { id: "frame.system.distributions", name: "Distributions", color: "#9b59b6", icon: IC.package },
+        { id: "frame.system.personal_cloud", name: "Personal Cloud", color: "#0ea5e9", icon: IC.cloud },
+        { id: "frame.ai.api", name: "AI API", color: "#db2777", icon: IC.ai },
+        { id: "frame.dapp.builder", name: "dApp Builder", color: "#f59e0b", icon: IC.builder }
+      ];
+
+      function tile(d) {
+        var el = document.createElement(d.href ? "a" : "button");
+        el.className = "app";
+        if (d.href) el.href = d.href; else el.type = "button";
+        el.title = d.id;
+        el.innerHTML = '<span class="ic" style="color:' + d.color + '">' + d.icon + '</span>' +
+          '<span class="name">' + d.name + '</span>';
+        if (!d.href) el.addEventListener("click", function () {
+          el.classList.add("soon");
+          var n = el.querySelector(".name"); var t = n.textContent;
+          n.textContent = "Coming soon"; setTimeout(function () { n.textContent = t; }, 1200);
+        });
+        return el;
+      }
+
+      var insEl = document.getElementById("installed");
+      installed.forEach(function (d) { insEl.appendChild(tile(d)); });
+      var sysEl = document.getElementById("system");
+      system.forEach(function (d) { sysEl.appendChild(tile(d)); });
+    })();
+  </script>
 </body>
 </html>

@@ -86,18 +86,80 @@ window.FRAME = (function () {
     return out;
   }
 
+  /* --- Real cryptographic identity (mirrors frame ui/src/crypto.ts) --- */
+  function bufToB64(buf) {
+    var a = new Uint8Array(buf), s = "";
+    for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]);
+    return btoa(s);
+  }
+  function bufToHex(buf) {
+    var a = new Uint8Array(buf), s = "";
+    for (var i = 0; i < a.length; i++) s += a[i].toString(16).padStart(2, "0");
+    return s;
+  }
+  function packKeyMaterial(alg, b64) {
+    var tag = alg === "Ed25519" ? "ed25519" : "p256";
+    return "v1:" + tag + ":" + b64;
+  }
+  function hashHex(str) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(bufToHex);
+  }
+  // Short stable id from packed public key material: fid_<first 32 hex of sha256>.
+  function deriveIdentityId(publicKey) {
+    return hashHex(publicKey).then(function (h) { return "fid_" + h.slice(0, 32); });
+  }
+  function supportsEd25519() {
+    try {
+      return crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"])
+        .then(function (k) { return !!k.publicKey; })
+        .catch(function () { return false; });
+    } catch (e) { return Promise.resolve(false); }
+  }
+  function generateKeypair() {
+    return supportsEd25519().then(function (ok) {
+      if (ok) {
+        return crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]).then(function (pair) {
+          return Promise.all([
+            crypto.subtle.exportKey("raw", pair.publicKey),
+            crypto.subtle.exportKey("pkcs8", pair.privateKey)
+          ]).then(function (r) {
+            return { publicKey: packKeyMaterial("Ed25519", bufToB64(r[0])), privateKey: packKeyMaterial("Ed25519", bufToB64(r[1])) };
+          });
+        });
+      }
+      return crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]).then(function (pair) {
+        return Promise.all([
+          crypto.subtle.exportKey("spki", pair.publicKey),
+          crypto.subtle.exportKey("pkcs8", pair.privateKey)
+        ]).then(function (r) {
+          return { publicKey: packKeyMaterial("ECDSA-P256", bufToB64(r[0])), privateKey: packKeyMaterial("ECDSA-P256", bufToB64(r[1])) };
+        });
+      });
+    });
+  }
+
+  // Build (but do not store) a new identity object with a real keypair + fid_ id.
+  function buildIdentity(passcode) {
+    return generateKeypair().then(function (kp) {
+      return deriveIdentityId(kp.publicKey).then(function (id) {
+        return {
+          frameId: id,
+          publicKey: kp.publicKey,
+          privateKey: kp.privateKey,
+          recoveryKey: randomAlnum(17),
+          passcode: passcode || null,
+          settings: { maxAttempts: 5, onLimit: "lock" },
+          failedAttempts: 0,
+          locked: false,
+          createdAt: new Date().toISOString()
+        };
+      });
+    });
+  }
+
+  // Async: create + store a real identity. Returns a Promise<identity>.
   function createIdentity(passcode) {
-    var obj = {
-      frameId: "identity:" + randomDigits(6),
-      recoveryKey: randomAlnum(17),
-      passcode: passcode || null,
-      settings: { maxAttempts: 5, onLimit: "lock" },
-      failedAttempts: 0,
-      locked: false,
-      createdAt: new Date().toISOString()
-    };
-    addIdentity(obj);
-    return obj;
+    return buildIdentity(passcode).then(function (obj) { addIdentity(obj); return obj; });
   }
 
   function isUnlocked(id) {
@@ -215,6 +277,10 @@ window.FRAME = (function () {
     addIdentity: addIdentity,
     removeIdentity: removeIdentity,
     createIdentity: createIdentity,
+    buildIdentity: buildIdentity,
+    generateKeypair: generateKeypair,
+    deriveIdentityId: deriveIdentityId,
+    packKeyMaterial: packKeyMaterial,
     isUnlocked: isUnlocked,
     markUnlocked: markUnlocked,
     lockSession: lockSession,

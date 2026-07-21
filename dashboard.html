@@ -63,8 +63,10 @@
       try {
         var idents = FRAME.getIdentities();
         if (idents.length === 0) {
-          var created = FRAME.createIdentity(null);
-          FRAME.setActiveId(created.frameId);
+          // Auto-create a real cryptographic identity (async keypair).
+          FRAME.createIdentity(null).then(function (created) {
+            FRAME.setActiveId(created.frameId);
+          });
           return; // no passcode yet, stay on the dashboard
         }
         var active = FRAME.getActive();
