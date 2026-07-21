@@ -47,7 +47,10 @@
       line-height: 1;
     }
     .home-link { color: inherit; text-decoration: none; }
-    .hl-orange, .hl-gray, .hl-green, .hl-yellow, .hl-xpblue {
+    .hl-orange, .hl-gray, .hl-green, .hl-yellow, .hl-xpblue,
+    .hl-blue-w, .hl-rainbow, .hl-purple, .hl-black-w,
+    .hl-sandbox, .hl-verify, .hl-security, .hl-design,
+    .hl-surf, .hl-local, .hl-first {
       color: #000000;
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
@@ -58,6 +61,31 @@
     .hl-green { background: #4caf50; }
     .hl-yellow { background: #ffe600; }
     .hl-xpblue { background: #245edc; }
+    .hl-blue-w { background: #1a73e8; color: #ffffff; }
+    .hl-purple { background: #9b59b6; color: #000000; }
+    .hl-black-w { background: #000000; color: #ffffff; }
+    .hl-sandbox { background: #000000; color: #ffe600; }
+    .hl-verify { background: #ffffff; color: #1a9e3f; }
+    .hl-security { background: #000000; color: #ff3b30; }
+    .hl-design { background: #bdbdbd; color: #5aa9ff; }
+    .hl-local { background: #ffe600; color: #ff8a00; }
+    .hl-first { background: #ffe600; color: #000000; }
+    .hl-rainbow {
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      color: #000000;
+      animation: hue-move 6s linear infinite;
+    }
+    .hl-surf {
+      background: linear-gradient(90deg,#25d366,#00e0ff,#1a73e8,#25d366);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: hue-move 4s linear infinite;
+    }
+    @keyframes hue-move { to { background-position: 200% center; } }
 
     .corner {
       position: fixed;
@@ -405,7 +433,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Local First</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-local">Local</span> <span class="hl-first">First</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">Your computer should understand its own data.</p>
         <p>Your computer should be capable of understanding its own data.</p>
@@ -416,7 +444,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Runs Everywhere</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-gray">Runs</span> <span class="hl-surf">Everywhere</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">One architecture, every deployment model.</p>
         <p>FRAME is designed to run wherever you need it.</p>
@@ -428,7 +456,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Security by Design</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-security">Security</span> by <span class="hl-design">Design</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">Permissions, not passwords.</p>
         <p>Most systems rely on passwords and broad trust.</p>
@@ -443,7 +471,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Sandboxed and Verifiable</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-sandbox">Sandboxed</span> and <span class="hl-verify">Verifiable</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">Everything runs sandboxed, and every FRAME can prove it hasn't been tampered with.</p>
         <p>FRAME is sandboxed from the ground up.</p>
@@ -515,7 +543,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Identity, Moved Up a Layer</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-blue-w">Identity</span>, Moved Up a Layer</h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">One identity you own, with application-level roles layered on top.</p>
         <div class="table-wrap">
@@ -538,7 +566,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Built for AI</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2>Built for <span class="hl-rainbow">AI</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">AI works with the same shared reality as everyone else.</p>
         <p>Artificial intelligence is becoming another consumer of information, not a replacement for it.</p>
@@ -549,7 +577,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Built for More Than One Industry</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-purple">Built for More</span> Than One Industry</h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">One kernel, countless industries.</p>
         <p>FRAME is intentionally domain-agnostic.</p>
@@ -573,7 +601,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Open by Design</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-black-w">Open by Design</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">Open, stable, and verifiable by design.</p>
         <p>FRAME is designed to be fully open source.</p>
