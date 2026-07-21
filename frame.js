@@ -110,6 +110,76 @@ window.FRAME = (function () {
   function markUnlocked(id) { try { sessionStorage.setItem(SS_UNLOCKED, id); } catch (e) {} }
   function lockSession() { try { sessionStorage.removeItem(SS_UNLOCKED); } catch (e) {} }
 
+  function humanBytes(n) {
+    if (n === null || n === undefined || isNaN(n)) return "unknown";
+    var units = ["B", "KB", "MB", "GB", "TB", "PB"];
+    var i = 0, v = n;
+    while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+    var dp = (v >= 100 || i === 0) ? 0 : (v >= 10 ? 1 : 2);
+    return v.toFixed(dp) + " " + units[i];
+  }
+
+  function localStorageBytes() {
+    var total = 0;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        var v = localStorage.getItem(k) || "";
+        total += (k.length + v.length) * 2; // UTF-16 code units
+      }
+    } catch (e) {}
+    return total;
+  }
+
+  function browserName() {
+    // Prefer high-entropy client hints when available.
+    try {
+      var uaData = navigator.userAgentData;
+      if (uaData && uaData.brands && uaData.brands.length) {
+        var ignore = /not.a.brand|not_a_brand|not a brand/i;
+        var pick = null, chromium = null;
+        uaData.brands.forEach(function (b) {
+          if (ignore.test(b.brand)) return;
+          if (/chromium/i.test(b.brand)) { chromium = b.brand; return; }
+          pick = b.brand;
+        });
+        if (pick) return pick.toLowerCase();
+        if (chromium) return chromium.toLowerCase();
+      }
+    } catch (e) {}
+
+    var ua = navigator.userAgent || "";
+    try { if (navigator.brave) return "brave"; } catch (e) {}
+
+    var tests = [
+      [/Edg(A|iOS)?\//, "edge"],
+      [/OPR\/|OPiOS\/|\bOpera\b/, "opera"],
+      [/\bYaBrowser\//, "yandex"],
+      [/\bVivaldi\//, "vivaldi"],
+      [/\bBrave\//, "brave"],
+      [/\bSamsungBrowser\//, "samsung internet"],
+      [/\bUCBrowser\/|\bUCWEB\//, "uc browser"],
+      [/\bDuckDuckGo\/|\bDDG\//, "duckduckgo"],
+      [/\bQQBrowser\//, "qq browser"],
+      [/\bMiuiBrowser\//, "miui browser"],
+      [/\bSilk\//, "silk"],
+      [/\bFxiOS\/|Firefox\/|Waterfox\//, "firefox"],
+      [/\bCriOS\//, "chrome"],
+      [/\bEdgiOS\//, "edge"],
+      [/Chrome\//, "chrome"],
+      [/Chromium\//, "chromium"],
+      [/\bVersion\/.*\bSafari\/|iPhone|iPad|iPod|\bSafari\//, "safari"],
+      [/\bMSIE |Trident\//, "internet explorer"]
+    ];
+    for (var i = 0; i < tests.length; i++) {
+      if (tests[i][0].test(ua)) return tests[i][1];
+    }
+    // Last resort: use the trailing Name/Version token from the UA string.
+    var m = ua.match(/([A-Za-z][A-Za-z ]+)\/[\d.]+\s*$/);
+    if (m) return m[1].trim().toLowerCase();
+    return "unknown browser";
+  }
+
   return {
     getIdentities: getIdentities,
     saveIdentities: saveIdentities,
@@ -125,6 +195,9 @@ window.FRAME = (function () {
     markUnlocked: markUnlocked,
     lockSession: lockSession,
     randomDigits: randomDigits,
-    randomAlnum: randomAlnum
+    randomAlnum: randomAlnum,
+    humanBytes: humanBytes,
+    localStorageBytes: localStorageBytes,
+    browserName: browserName
   };
 })();

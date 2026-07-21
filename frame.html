@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000;
+      -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+
+    .panel { width: min(92vw, 620px); }
+    .title {
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700;
+      letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem);
+      margin: 0; text-align: center;
+    }
+    .subtitle {
+      color: #666666; font-weight: 500; text-align: center;
+      margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem);
+    }
+    .frameline { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .frame-name { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(0.95rem, 3.6vw, 1.15rem); }
+    .verified {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #17a34a; color: #ffffff; border-radius: 999px;
+      padding: 3px 10px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .verified svg { width: 13px; height: 13px; }
+    .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: clamp(12px, 1.8vw, 18px);
+    }
+    .feat {
+      border: 1px solid #e6e6e6;
+      border-radius: 14px;
+      padding: clamp(16px, 2.4vw, 22px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #ffffff;
+      text-decoration: none;
+      color: #000000;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .feat:hover { border-color: #000000; transform: translateY(-2px); }
+    .feat .ic {
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 10px; background: #f2f2f2; color: #000000; flex: 0 0 auto;
+    }
+    .feat .ic svg { width: 20px; height: 20px; display: block; }
+    .feat h3 {
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700;
+      font-size: clamp(1.05rem, 2.4vw, 1.2rem); letter-spacing: 0.01em;
+      line-height: 1.2; margin: 0;
+    }
+    .feat .line {
+      font-family: 'Space Mono', monospace; font-weight: 700;
+      font-size: clamp(0.9rem, 3vw, 1.02rem); word-break: break-all;
+    }
+    .feat .sub { font-size: clamp(0.82rem, 2.2vw, 0.92rem); color: #666666; line-height: 1.45; }
+    .feat .bar {
+      font-family: 'Space Mono', monospace; font-weight: 700;
+      font-size: clamp(0.72rem, 2.6vw, 0.9rem); white-space: nowrap; overflow-x: auto;
+    }
+    .feat .bar .used { color: #000000; }
+    .feat .bar .free { color: #c8c8c8; }
+    .feat .row-open {
+      margin-top: 2px; font-weight: 600; font-size: 0.82rem; color: #000000;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .feat .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #17a34a; color: #ffffff; border-radius: 999px;
+      padding: 2px 9px; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .feat .pill svg { width: 11px; height: 11px; }
+
+    .corner {
+      position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px);
+      border-color: #000000; border-style: solid; border-width: 0; pointer-events: none;
+    }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      try {
+        var idents = FRAME.getIdentities();
+        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
+        var active = FRAME.getActive();
+        if (!active) { window.location.replace("/identity.html"); return; }
+        if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); }
+      } catch (e) {}
+    })();
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <h2 class="title">Frame</h2>
+    <p class="subtitle">Your FRAME at a glance.</p>
+    <div class="frameline">
+      <span class="frame-name">Frame: Frame:1</span>
+      <span class="verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="cards">
+      <a class="feat" href="/storage.html">
+        <span class="ic" style="color:#1a73e8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></span>
+        <h3>Storage</h3>
+        <div class="bar" id="stBar">[<span class="free">──────────────────</span>]</div>
+        <div class="line" id="stUsed">Used —</div>
+        <div class="sub" id="stSub">Loading storage estimate…</div>
+        <span class="row-open">Open storage &rarr;</span>
+      </a>
+
+      <a class="feat" href="/identity.html">
+        <span class="ic" style="color:#17a34a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <h3>Identity</h3>
+        <div class="line" id="idActive">identity:—</div>
+        <div class="sub" id="idSub">—</div>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
+        <span class="row-open">Manage identities &rarr;</span>
+      </a>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var BAR_WIDTH = 18;
+      function barHTML(used, total) {
+        var pct = total > 0 ? Math.min(1, used / total) : 0;
+        var filled = Math.round(pct * BAR_WIDTH);
+        if (used > 0 && filled === 0) filled = 1;
+        if (used < total && filled === BAR_WIDTH) filled = BAR_WIDTH - 1;
+        var u = "", f = "";
+        for (var i = 0; i < filled; i++) u += "\u2501";
+        for (var j = 0; j < BAR_WIDTH - filled; j++) f += "\u2500";
+        var pctTxt = (pct * 100).toFixed(pct * 100 >= 10 ? 0 : 2) + "%";
+        return '[<span class="used">' + u + '</span><span class="free">' + f + '</span>] ' + pctTxt;
+      }
+
+      // Identity card
+      var active = FRAME.getActive();
+      var count = FRAME.getIdentities().length;
+      if (active) document.getElementById("idActive").textContent = active.frameId;
+      document.getElementById("idSub").textContent =
+        count + (count === 1 ? " identity" : " identities") + " on this device \u00b7 " + FRAME.browserName();
+
+      // Storage card
+      function fillStorage(usage, quota) {
+        document.getElementById("stUsed").textContent = "Used " + FRAME.humanBytes(usage);
+        if (quota && quota > 0) {
+          document.getElementById("stBar").innerHTML = barHTML(usage, quota);
+          document.getElementById("stSub").textContent = "of " + FRAME.humanBytes(quota) + " allowance \u00b7 " + FRAME.humanBytes(Math.max(0, quota - usage)) + " free";
+        } else {
+          document.getElementById("stBar").innerHTML = barHTML(usage, usage || 1);
+          document.getElementById("stSub").textContent = "Allowance not reported by this browser";
+        }
+      }
+
+      var localBytes = FRAME.localStorageBytes();
+      if (navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then(function (est) {
+          fillStorage(Math.max(est.usage || 0, localBytes), est.quota || 0);
+        }).catch(function () { fillStorage(localBytes, 0); });
+      } else {
+        fillStorage(localBytes, 0);
+      }
+    })();
+  </script>
+</body>
+</html>
