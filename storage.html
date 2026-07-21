@@ -54,18 +54,10 @@
     }
     .dev-tag.on { background: #17a34a; border-color: #17a34a; color: #ffffff; }
 
-    /* Pixel map */
-    .pxwrap {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 12px);
-      grid-auto-rows: 12px;
-      gap: 3px;
-      margin: 12px 0 10px;
-      justify-content: start;
-    }
-    .px { width: 12px; height: 12px; border-radius: 2px; cursor: pointer; transition: transform 0.08s ease; }
-    .px:hover { transform: scale(1.35); }
-    .px.free { background: #eef0f2; }
+    /* File blocks (one block per stored item, sized by bytes) */
+    .pxwrap { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px; margin: 14px 0 10px; }
+    .cell { border-radius: 3px; cursor: pointer; transition: transform 0.08s ease, box-shadow 0.08s ease; }
+    .cell:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.22); }
 
     .pctline { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(0.8rem, 3vw, 0.95rem); }
     .legend2 {
@@ -195,28 +187,6 @@
         return segs;
       }
 
-      function allocate(segs, pixels) {
-        var total = 0;
-        segs.forEach(function (s) { total += s.bytes; });
-        if (total <= 0) return [];
-        var alloc = segs.map(function (s) {
-          var exact = s.bytes / total * pixels;
-          return { seg: s, exact: exact, frac: exact - Math.floor(exact), n: Math.max(1, Math.floor(exact)) };
-        });
-        var sum = 0; alloc.forEach(function (a) { sum += a.n; });
-        var rem = pixels - sum;
-        if (rem > 0) {
-          var byFrac = alloc.slice().sort(function (a, b) { return b.frac - a.frac; });
-          var i = 0;
-          while (rem > 0) { byFrac[i % byFrac.length].n++; rem--; i++; }
-        } else if (rem < 0) {
-          var byN = alloc.slice().sort(function (a, b) { return b.n - a.n; });
-          var j = 0;
-          while (rem < 0) { if (byN[j % byN.length].n > 1) { byN[j % byN.length].n--; rem++; } j++; if (j > pixels * 4) break; }
-        }
-        return alloc;
-      }
-
       function positionTip(x, y) {
         tip.style.left = x + "px";
         tip.style.top = y + "px";
@@ -245,21 +215,24 @@
           return;
         }
 
-        var alloc = allocate(segs, PIXELS);
-        alloc.forEach(function (a) {
-          for (var i = 0; i < a.n; i++) {
-            var px = document.createElement("div");
-            px.className = "px";
-            px.style.background = a.seg.color;
-            px._seg = a.seg;
-            wrap.appendChild(px);
-          }
+        // One distinct block per stored item, sized by its byte share.
+        var maxB = 1;
+        segs.forEach(function (s) { if (s.bytes > maxB) maxB = s.bytes; });
+        segs.slice().sort(function (a, b) { return b.bytes - a.bytes; }).forEach(function (s) {
+          var cell = document.createElement("div");
+          cell.className = "cell";
+          var size = 20 + Math.round(Math.sqrt(s.bytes / maxB) * 52); // 20px..72px
+          cell.style.width = size + "px";
+          cell.style.height = size + "px";
+          cell.style.background = s.color;
+          cell._seg = s;
+          wrap.appendChild(cell);
         });
 
         wrap.addEventListener("pointerover", function (e) {
           if (pinned) return;
           var t = e.target;
-          if (t && t.classList.contains("px") && t._seg) showTip(t._seg, total, e.clientX, e.clientY);
+          if (t && t.classList.contains("cell") && t._seg) showTip(t._seg, total, e.clientX, e.clientY);
         });
         wrap.addEventListener("pointermove", function (e) {
           if (pinned) return;
@@ -268,7 +241,7 @@
         wrap.addEventListener("pointerleave", function () { if (!pinned) hideTip(); });
         wrap.addEventListener("click", function (e) {
           var t = e.target;
-          if (t && t.classList.contains("px") && t._seg) {
+          if (t && t.classList.contains("cell") && t._seg) {
             pinned = true;
             showTip(t._seg, total, e.clientX, e.clientY);
             e.stopPropagation();
@@ -344,7 +317,7 @@
 
         var note = document.createElement("div");
         note.className = "note";
-        note.textContent = "Each pixel is a slice of what FRAME and this site store. Hover or tap a pixel for details. Browsers report an allowance (a share of free disk), not the computer's true capacity.";
+        note.textContent = "Each block is one stored item, sized by its share of used space. Hover or tap a block for details. Browsers report an allowance (a share of free disk), not the computer's true capacity.";
         dev.appendChild(note);
 
         thisDevice.appendChild(dev);
