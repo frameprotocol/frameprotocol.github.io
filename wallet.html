@@ -151,8 +151,27 @@
     .add-row input { flex: 1 1 auto; border: 1.5px solid #000000; border-radius: 10px; padding: 10px 12px; font-family: inherit; font-size: 0.92rem; }
 
     .empty { border: 1px dashed #cccccc; border-radius: 14px; padding: 28px; text-align: center; color: #888888; font-size: 0.92rem; }
-    .ident-card { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(14px, 2.2vw, 18px); margin-bottom: 16px; background: #fafafa; }
-    .ident-card h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 0.95rem; margin: 0 0 8px; }
+    .ident-card { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(12px, 2vw, 16px); margin-bottom: 16px; background: #fafafa; }
+    .ident-card h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 0.95rem; margin: 0; }
+    .ident-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .ident-list { display: flex; flex-direction: column; gap: 6px; }
+    .ident-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center;
+      padding: 8px 10px; border: 1px solid #e8e8e8; border-radius: 10px; background: #ffffff;
+    }
+    .ident-row.active { border-color: #000000; }
+    .ident-main { min-width: 0; }
+    .ident-id {
+      font-family: 'Space Mono', monospace; font-size: 0.78rem; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ident-meta {
+      font-family: 'Space Mono', monospace; font-size: 0.68rem; color: #888888;
+      margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ident-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .ident-row .badge { margin: 0; }
+    .ident-busy { opacity: 0.55; pointer-events: none; }
 
     .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
     .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
@@ -195,10 +214,11 @@
     <!-- WALLETS -->
     <section class="pane on" id="pane-wallets">
       <div class="ident-card">
-        <h3>FRAME identity account</h3>
-        <div class="row"><span class="k">identity</span><span class="v" id="wId">&mdash;</span></div>
-        <div class="row"><span class="k">scheme</span><span class="v" id="wAlg">&mdash;</span></div>
-        <div class="row"><span class="k">address</span><span class="v" id="wPub">&mdash;<button class="copy" id="wCopy" type="button">copy</button></span></div>
+        <div class="ident-head">
+          <h3>FRAME identity accounts</h3>
+          <button class="btn sm" id="newIdentBtn" type="button">New identity</button>
+        </div>
+        <div class="ident-list" id="identList"></div>
       </div>
 
       <div class="toolbar">
@@ -395,23 +415,115 @@
         t.addEventListener("click", function () { showTab(t.getAttribute("data-tab")); });
       });
 
-      /* ---- Identity header ---- */
-      if (active) {
-        document.getElementById("wId").textContent = active.frameId;
-        document.getElementById("wAlg").textContent = active.publicKey
-          ? ("FRAME_SIGNATURE_V1 \u00b7 " + FRAME.keyAlgLabel(active.publicKey))
-          : "no key material";
-        var pub = active.publicKey || "\u2014";
-        document.getElementById("wPub").childNodes[0].nodeValue = pub.length > 44 ? pub.slice(0, 44) + "\u2026" : pub;
-        document.getElementById("wCopy").addEventListener("click", function () {
-          try {
-            navigator.clipboard.writeText(active.publicKey || "");
-            var c = document.getElementById("wCopy");
-            c.textContent = "copied";
-            setTimeout(function () { c.textContent = "copy"; }, 1200);
-          } catch (e) {}
+      /* ---- Identity accounts ---- */
+      function refreshActive() {
+        try { active = FRAME.getActive(); } catch (e) { active = null; }
+      }
+
+      function renderIdents() {
+        refreshActive();
+        var list = document.getElementById("identList");
+        var idents = FRAME.getIdentities();
+        list.innerHTML = "";
+        if (idents.length === 0) {
+          list.innerHTML = '<div class="empty" style="padding:16px">No identities. Create one to continue.</div>';
+          return;
+        }
+        var activeId = FRAME.getActiveId();
+        idents.forEach(function (ident) {
+          var isActive = ident.frameId === activeId;
+          var unlocked = FRAME.isUnlocked(ident.frameId);
+          var alg = ident.publicKey ? FRAME.keyAlgLabel(ident.publicKey) : "no key";
+          var pub = ident.publicKey || "";
+          var pubShort = pub ? shorten(pub, 28) : "—";
+          var row = document.createElement("div");
+          row.className = "ident-row" + (isActive ? " active" : "");
+          row.innerHTML =
+            '<div class="ident-main">' +
+              '<div class="ident-id">' + esc(ident.frameId) + '</div>' +
+              '<div class="ident-meta">' + esc(alg) +
+                (ident.publicKey ? " \u00b7 " + esc(pubShort) : "") +
+                (ident.passcode ? (unlocked ? " \u00b7 unlocked" : " \u00b7 locked") : " \u00b7 no passcode") +
+              '</div>' +
+            '</div>' +
+            '<div class="ident-actions">' +
+              (isActive ? '<span class="badge frame">active</span>' : '<button class="btn sm" data-use-id="' + esc(ident.frameId) + '" type="button">Use</button>') +
+              (ident.publicKey ? '<button class="btn ghost sm" data-copy-pub="' + esc(ident.publicKey) + '" type="button">Copy</button>' : "") +
+              '<button class="btn ghost sm danger" data-del-id="' + esc(ident.frameId) + '" type="button">Delete</button>' +
+            '</div>';
+          list.appendChild(row);
+        });
+
+        list.querySelectorAll("[data-use-id]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-use-id");
+            FRAME.setActiveId(id);
+            var ident = FRAME.getById(id);
+            if (ident && ident.passcode && !FRAME.isUnlocked(id)) {
+              window.location.href = "/unlock.html";
+              return;
+            }
+            if (ident && !ident.passcode) FRAME.markUnlocked(id);
+            refreshActive();
+            renderIdents();
+            ensureAllDappsSigned();
+          });
+        });
+        list.querySelectorAll("[data-copy-pub]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            try {
+              navigator.clipboard.writeText(b.getAttribute("data-copy-pub") || "");
+              b.textContent = "Copied";
+              setTimeout(function () { b.textContent = "Copy"; }, 1000);
+            } catch (e) {}
+          });
+        });
+        list.querySelectorAll("[data-del-id]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var id = b.getAttribute("data-del-id");
+            var remaining = FRAME.getIdentities().length;
+            var msg = remaining <= 1
+              ? "Delete this identity? It is your last one."
+              : "Delete " + id + "?";
+            if (!confirm(msg)) return;
+            FRAME.removeIdentity(id);
+            refreshActive();
+            if (FRAME.getIdentities().length === 0) {
+              window.location.replace("/dashboard.html");
+              return;
+            }
+            // If we deleted the active one, unlock the new active if it has no passcode
+            var next = FRAME.getActive();
+            if (next && !next.passcode) FRAME.markUnlocked(next.frameId);
+            else if (next && next.passcode && !FRAME.isUnlocked(next.frameId)) {
+              window.location.href = "/unlock.html";
+              return;
+            }
+            renderIdents();
+          });
         });
       }
+
+      document.getElementById("newIdentBtn").addEventListener("click", function () {
+        var btn = document.getElementById("newIdentBtn");
+        var list = document.getElementById("identList");
+        btn.disabled = true;
+        btn.textContent = "Creating\u2026";
+        list.classList.add("ident-busy");
+        FRAME.createIdentity(null).then(function (created) {
+          FRAME.setActiveId(created.frameId);
+          FRAME.markUnlocked(created.frameId);
+          refreshActive();
+          renderIdents();
+          ensureAllDappsSigned();
+        }).catch(function () {
+          alert("Could not create identity.");
+        }).then(function () {
+          btn.disabled = false;
+          btn.textContent = "New identity";
+          list.classList.remove("ident-busy");
+        });
+      });
 
       /* ---- Wallets ---- */
       var walletForm = document.getElementById("walletForm");
@@ -843,6 +955,7 @@
       load();
       persist(); // always write + sign (stubs from dapps.html were left unsigned)
       ensureAllDappsSigned();
+      renderIdents();
       renderWallets();
       renderJobs();
       renderTasks();
