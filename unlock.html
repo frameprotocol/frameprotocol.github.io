@@ -46,6 +46,17 @@
       font-size: clamp(0.85rem, 3.2vw, 1rem); color: #000000;
       word-break: break-all;
     }
+    .detected {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      margin-top: 8px; color: #17a34a; font-weight: 600;
+      font-size: 0.8rem; letter-spacing: 0.02em;
+    }
+    .detected .dot { width: 7px; height: 7px; border-radius: 50%; background: #17a34a; }
+    .reclink {
+      display: block; text-align: center; margin-top: 14px;
+      color: #000000; font-weight: 600; font-size: 0.85rem;
+      text-decoration: underline; cursor: pointer;
+    }
     .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
 
     .pin {
@@ -117,11 +128,13 @@
     <h2 class="title">Enter passcode</h2>
     <p class="subtitle">Unlock your FRAME identity.</p>
     <div class="idline" id="idLine"></div>
+    <div class="detected"><span class="dot"></span><span id="detectedVia">Detected via this browser's storage</span></div>
     <div class="divider"></div>
     <form id="pwForm" novalidate>
       <input class="pin" id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="off" aria-label="5-digit passcode" />
       <div class="hint" id="pinHint">Enter your 5-digit passcode.</div>
       <button class="btn" id="unlockBtn" type="submit">Unlock</button>
+      <a class="reclink" href="/recover.html">Forgot passcode? Restore with recovery key</a>
     </form>
 
     <div class="altsep">or</div>

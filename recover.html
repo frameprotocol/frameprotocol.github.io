@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000;
+      -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+
+    .panel { width: min(90vw, 420px); }
+    .title {
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700;
+      letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem);
+      margin: 0; text-align: center;
+    }
+    .subtitle {
+      color: #666666; font-weight: 500; text-align: center;
+      margin: 8px 0 0; font-size: clamp(0.95rem, 3.2vw, 1.05rem);
+    }
+    .idline {
+      text-align: center; margin-top: 6px;
+      font-family: 'Space Mono', monospace; font-weight: 700;
+      font-size: clamp(0.85rem, 3.2vw, 1rem); color: #000000; word-break: break-all;
+    }
+    .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
+
+    .field-label {
+      font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.72rem; color: #888888; margin: 0 0 8px;
+    }
+    .key {
+      display: block; width: 100%; text-align: center;
+      border: 1.5px solid #000000; padding: 14px;
+      font-family: 'Space Mono', monospace; font-weight: 700;
+      font-size: clamp(1rem, 5vw, 1.4rem); letter-spacing: 0.14em;
+      background: #ffffff; color: #000000; text-transform: uppercase;
+    }
+    .pin {
+      display: block; width: 100%; text-align: center;
+      border: 1.5px solid #000000; padding: 16px;
+      font-family: 'Space Mono', monospace; font-weight: 700;
+      font-size: clamp(1.6rem, 8vw, 2.4rem); letter-spacing: 0.5em;
+      text-indent: 0.5em; background: #ffffff; color: #000000;
+    }
+    .key:focus, .pin:focus { outline: 2px solid #000000; outline-offset: 2px; }
+    .hint { text-align: center; color: #888888; font-size: 0.85rem; margin-top: 10px; min-height: 1.1em; }
+    .hint.err { color: #c1121f; font-weight: 600; }
+
+    .btn {
+      display: block; width: 100%; box-sizing: border-box;
+      padding: clamp(13px, 2.6vh, 17px) 18px; margin-top: clamp(18px, 3vh, 24px);
+      background: #000000; color: #ffffff; border: 1.5px solid #000000;
+      text-align: center; text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      letter-spacing: 0.02em; font-size: clamp(1rem, 3.6vw, 1.15rem); cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .btn:hover { background: #ffffff; color: #000000; }
+    .backlink {
+      display: block; text-align: center; margin-top: 14px;
+      color: #000000; font-weight: 600; font-size: 0.85rem; text-decoration: underline;
+    }
+
+    .corner {
+      position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px);
+      border-color: #000000; border-style: solid; border-width: 0; pointer-events: none;
+    }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script>
+    try {
+      if (!localStorage.getItem("frame.instance")) {
+        window.location.replace("/start.html");
+      }
+    } catch (e) {}
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <section id="step-key">
+      <h2 class="title">Restore access</h2>
+      <p class="subtitle">Enter your recovery key to reset the passcode.</p>
+      <div class="idline" id="idLine"></div>
+      <div class="divider"></div>
+      <form id="keyForm" novalidate>
+        <div class="field-label">recovery key</div>
+        <input class="key" id="keyInput" type="text" maxlength="17" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Recovery key" placeholder="17-character key" />
+        <div class="hint" id="keyHint">Enter the 17-character recovery key.</div>
+        <button class="btn" type="submit">Verify recovery key</button>
+        <a class="backlink" href="/unlock.html">Back to passcode</a>
+      </form>
+    </section>
+
+    <section id="step-newpass" hidden>
+      <h2 class="title">New passcode</h2>
+      <p class="subtitle">Set a new 5-digit passcode for this device.</p>
+      <div class="divider"></div>
+      <form id="passForm" novalidate>
+        <input class="pin" id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="new-password" aria-label="New 5-digit passcode" />
+        <div class="hint" id="pinHint">Enter 5 digits.</div>
+        <button class="btn" type="submit">Save and unlock</button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = JSON.parse(localStorage.getItem("frame.instance") || "null"); } catch (e) {}
+      if (!stored) { window.location.replace("/start.html"); return; }
+
+      if (stored.frameId) document.getElementById("idLine").textContent = stored.frameId;
+
+      var stepKey = document.getElementById("step-key");
+      var stepNew = document.getElementById("step-newpass");
+      var keyInput = document.getElementById("keyInput");
+      var keyHint = document.getElementById("keyHint");
+      var pin = document.getElementById("pin");
+      var pinHint = document.getElementById("pinHint");
+
+      function norm(s) { return (s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+
+      setTimeout(function () { keyInput.focus(); }, 50);
+
+      keyInput.addEventListener("input", function () {
+        var pos = keyInput.selectionStart;
+        keyInput.value = norm(keyInput.value).slice(0, 17);
+        keyHint.classList.remove("err");
+        keyHint.textContent = "Enter the 17-character recovery key.";
+      });
+
+      document.getElementById("keyForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var entered = norm(keyInput.value);
+        if (entered.length !== 17) {
+          keyHint.classList.add("err");
+          keyHint.textContent = "The recovery key is 17 characters.";
+          keyInput.focus();
+          return;
+        }
+        if (entered === norm(stored.recoveryKey)) {
+          stepKey.hidden = true;
+          stepNew.hidden = false;
+          setTimeout(function () { pin.focus(); }, 50);
+        } else {
+          keyHint.classList.add("err");
+          keyHint.textContent = "That recovery key does not match this identity.";
+          keyInput.focus();
+        }
+      });
+
+      pin.addEventListener("input", function () {
+        pin.value = pin.value.replace(/\D/g, "").slice(0, 5);
+        pinHint.classList.remove("err");
+        pinHint.textContent = "Enter 5 digits.";
+      });
+
+      document.getElementById("passForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (pin.value.length !== 5) {
+          pinHint.classList.add("err");
+          pinHint.textContent = "Passcode must be exactly 5 digits.";
+          pin.focus();
+          return;
+        }
+        stored.passcode = pin.value;
+        try {
+          localStorage.setItem("frame.instance", JSON.stringify(stored));
+          localStorage.removeItem("frame.failedAttempts");
+          localStorage.removeItem("frame.locked");
+          sessionStorage.setItem("frame.unlocked", "1");
+        } catch (err) {}
+        window.location.href = "/dashboard.html";
+      });
+    })();
+  </script>
+</body>
+</html>
