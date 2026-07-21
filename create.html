@@ -193,6 +193,7 @@
             createdAt: new Date().toISOString()
           }));
         } catch (err) {}
+        try { sessionStorage.setItem("frame.unlocked", "1"); } catch (err2) {}
         window.location.href = "/dashboard.html";
       });
     })();
