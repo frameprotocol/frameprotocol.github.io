@@ -180,6 +180,68 @@
       font-size: clamp(1.2rem, 3.5vw, 1.6rem);
       line-height: 1.4;
     }
+
+    .site-footer {
+      border-top: 1px solid #000000;
+      padding: clamp(40px, 7vh, 88px) clamp(24px, 6vw, 64px) clamp(64px, 10vh, 120px);
+    }
+    .foot-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .foot-kicker {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      margin: 0 0 clamp(12px, 2vh, 18px);
+    }
+    .foot-tag {
+      max-width: 620px;
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+      font-weight: 400;
+      line-height: 1.6;
+      margin: 0 0 clamp(28px, 5vh, 48px);
+    }
+    .foot-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 3vw, 36px);
+      margin: 0 0 clamp(36px, 7vh, 72px);
+    }
+    .flink {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #000000;
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.72;
+      transition: opacity 0.15s ease;
+    }
+    .flink:hover { opacity: 1; }
+    .foot-brand {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      line-height: 0.82;
+      letter-spacing: 0.01em;
+      font-size: clamp(4rem, 22vw, 15rem);
+      margin: 0 0 clamp(24px, 4vh, 40px);
+    }
+    .foot-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 24px;
+      padding-top: clamp(16px, 2.4vh, 22px);
+      border-top: 1px solid #000000;
+      font-size: clamp(0.82rem, 1.9vw, 0.95rem);
+      letter-spacing: 0.02em;
+      opacity: 0.72;
+    }
   </style>
 </head>
 <body>
@@ -517,5 +579,25 @@ Applications</div>
 
     <p class="footer-note">The internet connected computers.<br />FRAME aims to make software speak the same language.</p>
   </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <p class="foot-kicker">Join us</p>
+      <p class="foot-tag">We're building a shared foundation where software speaks the same language. Come build on it.</p>
+      <nav class="foot-links">
+        <a class="flink">Overview</a>
+        <a class="flink">Why FRAME</a>
+        <a class="flink">How it works</a>
+        <a class="flink">Start</a>
+        <a class="flink">GitHub</a>
+        <a class="flink">X</a>
+      </nav>
+      <div class="foot-brand">FRAME</div>
+      <div class="foot-bottom">
+        <span>&copy; 2026 FRAME</span>
+        <span>Open source &middot; Local-first &middot; Verifiable</span>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
