@@ -33,20 +33,61 @@
       gap: clamp(2px, 0.4vh, 6px);
       padding: 0 24px;
     }
-    .nav-why {
+    .home-link {
+      color: inherit;
+      text-decoration: none;
+    }
+    .nav {
       position: fixed;
       top: calc(50% - 2in);
-      right: clamp(24px, 6vw, 72px);
-      transform: translateY(-50%);
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .nav a {
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
       color: #000000;
-      font-size: clamp(1.4rem, 4vw, 2rem);
       letter-spacing: 0.05em;
-      text-align: right;
       text-decoration: none;
     }
-    .nav-why:hover { text-decoration: underline; }
+    .nav .side {
+      align-self: flex-end;
+      margin-right: clamp(24px, 6vw, 72px);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      text-align: right;
+    }
+    .nav .nav-how { margin-top: clamp(10px, 2vh, 18px); }
+    .nav .side:hover { text-decoration: underline; }
+
+    .begin-wrap {
+      align-self: center;
+      position: relative;
+      margin-top: clamp(28px, 6vh, 56px);
+    }
+    .begin-glow {
+      position: absolute;
+      inset: -24px -48px;
+      z-index: -1;
+      border-radius: 60px;
+      filter: blur(30px);
+      opacity: 0.45;
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      animation: rainbow-move 6s linear infinite;
+    }
+    .nav-begin {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: rainbow-move 6s linear infinite;
+    }
+    @keyframes rainbow-move { to { background-position: 200% center; } }
     h1 {
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
@@ -98,10 +139,17 @@
   <span class="corner bl"></span>
   <span class="corner br"></span>
   <div class="stage">
-    <h1>FRAME</h1>
+    <h1><a class="home-link" href="/">FRAME</a></h1>
     <div class="typewriter"><span id="tw-text"></span><span class="cursor">&nbsp;</span></div>
   </div>
-  <a class="nav-why" href="/why.html">Why?</a>
+  <nav class="nav">
+    <a class="side nav-why" href="/why.html">Why?</a>
+    <a class="side nav-how" href="/how.html">How it works</a>
+    <div class="begin-wrap">
+      <span class="begin-glow"></span>
+      <a class="nav-begin" href="/begin.html">Begin</a>
+    </div>
+  </nav>
   <script>
     (function () {
       const phrases = [
