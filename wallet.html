@@ -105,20 +105,37 @@
     .pill.done { background: #e9f7ef; color: #0f7a3d; }
     .pill.queued { background: #f4f4f5; color: #555555; }
 
-    /* Continuous sweeping ring around receipt status pills */
+    /* Soft line that travels around the pill edge (no element rotation) */
     #receiptList .pill::before {
-      content: ""; position: absolute; inset: -3px; border-radius: 999px;
-      padding: 1.5px; z-index: -1;
-      background: conic-gradient(from 0deg, transparent 0%, transparent 68%, currentColor 86%, transparent 100%);
-      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      content: ""; position: absolute; inset: -3px; border-radius: inherit;
+      pointer-events: none; z-index: -1;
+      --ring: 0deg;
+      background: conic-gradient(
+        from var(--ring),
+        transparent 0deg,
+        transparent 300deg,
+        currentColor 340deg,
+        transparent 360deg
+      );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
       mask-composite: exclude;
-      opacity: 0.95; pointer-events: none;
-      animation: pill-spin 6s linear infinite;
+      padding: 1.5px;
+      opacity: 0.9;
+      animation: pill-sweep 6s linear infinite;
     }
-    @keyframes pill-spin {
-      to { transform: rotate(360deg); }
+    @property --ring {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+    @keyframes pill-sweep {
+      to { --ring: 360deg; }
     }
 
     .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
