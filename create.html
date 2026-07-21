@@ -108,14 +108,14 @@
 
   <main class="panel">
     <section id="step-identity">
-      <h2 class="title">Your FRAME</h2>
-      <p class="subtitle">A new FRAME instance has been created.</p>
+      <h2 class="title">Your identity</h2>
+      <p class="subtitle">A new frame identity has been created.</p>
       <div class="divider"></div>
 
-      <div class="field-label">FRAME ID</div>
-      <div class="idbox" id="frameId">frame:000000</div>
+      <div class="field-label">frame identity</div>
+      <div class="idbox" id="frameId">frameid:000000</div>
 
-      <div class="warn" id="warnBox">Write all of this down and store it in a safe place. If you ever need to get back directly to this FRAME instance, you will need it. This is what lets you import this FRAME instance, with its identity, to a new or different device.</div>
+      <div class="warn" id="warnBox">Write all of this down and store it in a safe place.<br /><br />This is what lets you import / authenticate your identity to a new device.</div>
 
       <div class="field-label">Recovery Key</div>
       <div class="keybox" id="recoveryKey">00000000000000000</div>
@@ -155,7 +155,7 @@
         return out;
       }
 
-      var frameId = "frame:" + randomDigits(6);
+      var frameId = "frameid:" + randomDigits(6);
       var recoveryKey = randomAlnum(17);
       document.getElementById("frameId").textContent = frameId;
       document.getElementById("recoveryKey").textContent = recoveryKey;
