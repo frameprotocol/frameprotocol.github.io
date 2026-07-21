@@ -47,8 +47,17 @@
       line-height: 1;
     }
     .home-link { color: inherit; text-decoration: none; }
-    .hl-orange { background: #ff8a00; color: #000000; box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0.02em 0.12em; }
-    .hl-gray { background: #d0d0d0; color: #000000; box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0.02em 0.12em; }
+    .hl-orange, .hl-gray, .hl-green, .hl-yellow, .hl-xpblue {
+      color: #000000;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      padding: 0.02em 0.12em;
+    }
+    .hl-orange { background: #ff8a00; }
+    .hl-gray { background: #d0d0d0; }
+    .hl-green { background: #4caf50; }
+    .hl-yellow { background: #ffe600; }
+    .hl-xpblue { background: #245edc; }
 
     .corner {
       position: fixed;
@@ -450,7 +459,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Many Chains, One Foundation</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-xpblue">Many Chains, One Foundation</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">Chain-agnostic by design: one model across many blockchains.</p>
         <p>Blockchains gave the world verifiable ownership, settlement, and trust without intermediaries, but each chain became its own island, with its own accounts, tokens, and rules.</p>
@@ -465,7 +474,7 @@ Applications</div>
     </section>
 
     <section class="sec">
-      <div class="sec-head"><h2>Abstractions That Let dApps Emerge</h2><span class="hline"></span></div>
+      <div class="sec-head"><h2><span class="hl-yellow">Abstractions</span> That Let <span class="hl-green">dApps</span> Emerge</h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">When the hard parts become shared abstractions, dApps flourish.</p>
         <p>Most decentralized applications today are forced to rebuild the same low-level machinery: wallets, key management, indexing, cross-chain bridges, and custom data formats.</p>
