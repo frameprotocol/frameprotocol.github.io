@@ -102,6 +102,13 @@
   </style>
 </head>
 <body>
+  <script>
+    try {
+      if (localStorage.getItem("frame.instance")) {
+        window.location.replace("/dashboard.html");
+      }
+    } catch (e) {}
+  </script>
   <span class="corner tl"></span>
   <span class="corner tr"></span>
   <span class="corner bl"></span>
