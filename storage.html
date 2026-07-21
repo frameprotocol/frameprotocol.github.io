@@ -214,6 +214,15 @@
         positionTip(x, y);
         tip.classList.add("show");
       }
+      function showFreeTip(free, x, y) {
+        ttSw.style.background = "#e9ecef";
+        ttName.textContent = "Unused";
+        var pct = free.quota > 0 ? (free.bytes / free.quota * 100) : 0;
+        var pctTxt = pct >= 1 ? pct.toFixed(1) : pct.toPrecision(2);
+        ttMeta.textContent = hb(free.bytes) + " free \u00b7 " + pctTxt + "% of allowance";
+        positionTip(x, y);
+        tip.classList.add("show");
+      }
       function hideTip() { tip.classList.remove("show"); }
 
       function renderMap(container, segs) {
@@ -278,6 +287,7 @@
         if (quota && quota > 0) {
           var freeSeg = document.createElement("div");
           freeSeg.className = "ios-free";
+          freeSeg._free = { bytes: Math.max(0, quota - usage), quota: quota };
           bar.appendChild(freeSeg);
         }
 
@@ -285,6 +295,7 @@
           if (pinned) return;
           var t = e.target;
           if (t && t.classList.contains("ios-seg") && t._seg) showTip(t._seg, usedTotal, e.clientX, e.clientY);
+          else if (t && t.classList.contains("ios-free") && t._free) showFreeTip(t._free, e.clientX, e.clientY);
         });
         bar.addEventListener("pointermove", function (e) {
           if (pinned) return;
@@ -295,6 +306,8 @@
           var t = e.target;
           if (t && t.classList.contains("ios-seg") && t._seg) {
             pinned = true; showTip(t._seg, usedTotal, e.clientX, e.clientY); e.stopPropagation();
+          } else if (t && t.classList.contains("ios-free") && t._free) {
+            pinned = true; showFreeTip(t._free, e.clientX, e.clientY); e.stopPropagation();
           }
         });
         container.appendChild(bar);
