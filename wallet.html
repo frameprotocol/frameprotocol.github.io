@@ -138,6 +138,44 @@
       to { --ring: 360deg; }
     }
 
+    /* Condensed receipts */
+    .rcpt-search {
+      width: 100%; border: 1.5px solid #000000; border-radius: 10px;
+      padding: 10px 12px; font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem;
+      margin-bottom: 10px; background: #ffffff;
+    }
+    .rcpt-search::placeholder { color: #999999; }
+    #receiptList { display: flex; flex-direction: column; gap: 6px; }
+    #receiptList .card {
+      border: 1px solid #e8e8e8; border-radius: 10px; padding: 0;
+      margin-bottom: 0; background: #ffffff; overflow: hidden;
+    }
+    #receiptList .rcpt-head {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 8px 10px;
+      align-items: center; padding: 8px 10px; cursor: pointer; user-select: none;
+    }
+    #receiptList .rcpt-chev {
+      width: 14px; height: 14px; color: #888888; flex: 0 0 auto;
+      transition: transform 0.15s ease;
+    }
+    #receiptList .card.open .rcpt-chev { transform: rotate(90deg); }
+    #receiptList .rcpt-main { min-width: 0; }
+    #receiptList .card-name {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.88rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #receiptList .rcpt-sub {
+      font-family: 'Space Mono', monospace; font-size: 0.68rem; color: #888888;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;
+    }
+    #receiptList .pill { margin-left: 0; font-size: 0.66rem; padding: 3px 9px; }
+    #receiptList .rcpt-body {
+      display: none !important; padding: 0 10px 10px; border-top: 1px solid #f0f0f0;
+    }
+    #receiptList .card.open .rcpt-body { display: block !important; padding-top: 8px; }
+    #receiptList .row { margin-top: 3px; font-size: 0.72rem; grid-template-columns: 84px 1fr; }
+    #receiptList .card.rcpt-hidden { display: none; }
+
     .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
     .task:last-child { border-bottom: 0; }
     .task input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; accent-color: #000000; cursor: pointer; flex: 0 0 auto; }
@@ -392,6 +430,7 @@
       <div class="toolbar">
         <span class="summary" id="receiptSummary">Checking&hellip;</span>
       </div>
+      <input class="rcpt-search" id="receiptSearch" type="search" placeholder="Search receipts…" autocomplete="off" />
       <div id="receiptList"></div>
     </section>
 
@@ -1114,6 +1153,8 @@
       /* ---- Receipts ---- */
       var receiptTimer = null;
       var receiptSeq = 0;
+      var receiptOpen = {};
+      var receiptQuery = "";
 
       function schemeInfo(d, pubKey) {
         var scheme = d.sigScheme || (d.signature ? "FRAME_SIGNATURE_V1" : "none");
@@ -1122,33 +1163,15 @@
         var encoding = "base64";
         var over = "raw digest bytes";
         if (scheme === "none" || !d.signature) {
-          return {
-            scheme: "unsigned",
-            alg: "—",
-            digest: "—",
-            encoding: "—",
-            over: "—",
-            label: "unsigned"
-          };
+          return { scheme: "unsigned", alg: "—", digest: "—", encoding: "—", over: "—", label: "unsigned" };
         }
-        // Known FRAME schemes
         if (scheme === "FRAME_SIGNATURE_V1" || scheme.indexOf("FRAME_SIGNATURE") === 0) {
-          return {
-            scheme: scheme,
-            alg: alg,
-            digest: digest,
-            encoding: encoding,
-            over: over,
-            label: scheme + " · " + alg
-          };
+          return { scheme: scheme, alg: alg, digest: digest, encoding: encoding, over: over, label: scheme + " · " + alg };
         }
         return {
-          scheme: scheme,
-          alg: alg,
-          digest: d.digest || digest,
-          encoding: d.encoding || encoding,
-          over: d.signedOver || "payload",
-          label: scheme + " · " + alg
+          scheme: scheme, alg: alg,
+          digest: d.digest || digest, encoding: d.encoding || encoding,
+          over: d.signedOver || "payload", label: scheme + " · " + alg
         };
       }
 
@@ -1167,11 +1190,11 @@
         var listEl = document.getElementById("receiptList");
         var summaryEl = document.getElementById("receiptSummary");
         var mySeq = ++receiptSeq;
+        refreshActive();
 
         function paint(records) {
           if (mySeq !== receiptSeq) return;
 
-          // Build a map of existing cards so we can update in place (keeps ring animation alive).
           var existing = {};
           Array.prototype.forEach.call(listEl.querySelectorAll(".card[data-key]"), function (c) {
             existing[c.getAttribute("data-key")] = c;
@@ -1184,12 +1207,12 @@
             return;
           }
 
-          // Drop the empty state if present
           var empty = listEl.querySelector(".empty");
           if (empty) empty.remove();
 
-          var verifiedCount = 0, unsignedCount = 0, total = 0, pending = records.length;
+          var verifiedCount = 0, unsignedCount = 0, total = 0, pending = records.length, visible = 0;
           var noKey = !active || !active.privateKey || !active.publicKey;
+          var q = (receiptQuery || "").trim().toLowerCase();
 
           records.forEach(function (rec) {
             var d = rec.d;
@@ -1202,30 +1225,59 @@
             var note = (noKey && !hasSig)
               ? "unsigned because this identity has no signing key (create a new identity)"
               : "";
+            var title = d.name || rec.key;
+            var searchBlob = [title, rec.key, info.scheme, info.alg, d.signedBy, d.sigScheme].join(" ").toLowerCase();
+            var matches = !q || searchBlob.indexOf(q) >= 0;
 
             if (!card) {
               card = document.createElement("div");
               card.className = "card";
               card.setAttribute("data-key", rec.key);
               card.innerHTML =
-                '<div class="card-head">' +
-                  '<span class="card-name"></span>' +
+                '<div class="rcpt-head">' +
+                  '<svg class="rcpt-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>' +
+                  '<div class="rcpt-main">' +
+                    '<div class="card-name"></div>' +
+                    '<div class="rcpt-sub" data-f="sub"></div>' +
+                  '</div>' +
                   '<span class="pill pending">verifying\u2026</span>' +
                 '</div>' +
-                '<div class="row"><span class="k">dApp</span><span class="v" data-f="dapp"></span></div>' +
-                '<div class="row"><span class="k">scheme</span><span class="v" data-f="scheme"></span></div>' +
-                '<div class="row"><span class="k">algorithm</span><span class="v" data-f="alg"></span></div>' +
-                '<div class="row"><span class="k">digest</span><span class="v" data-f="digest"></span></div>' +
-                '<div class="row"><span class="k">encoding</span><span class="v" data-f="encoding"></span></div>' +
-                '<div class="row"><span class="k">signed by</span><span class="v" data-f="signer"></span></div>' +
-                '<div class="row"><span class="k">updated</span><span class="v" data-f="updated"></span></div>' +
-                '<div class="row"><span class="k">signature</span><span class="v" data-f="sig"></span></div>' +
-                '<div class="row" data-f="noterow" hidden><span class="k">note</span><span class="v" data-f="note"></span></div>';
+                '<div class="rcpt-body" hidden>' +
+                  '<div class="row"><span class="k">dApp</span><span class="v" data-f="dapp"></span></div>' +
+                  '<div class="row"><span class="k">scheme</span><span class="v" data-f="scheme"></span></div>' +
+                  '<div class="row"><span class="k">algorithm</span><span class="v" data-f="alg"></span></div>' +
+                  '<div class="row"><span class="k">digest</span><span class="v" data-f="digest"></span></div>' +
+                  '<div class="row"><span class="k">encoding</span><span class="v" data-f="encoding"></span></div>' +
+                  '<div class="row"><span class="k">signed by</span><span class="v" data-f="signer"></span></div>' +
+                  '<div class="row"><span class="k">updated</span><span class="v" data-f="updated"></span></div>' +
+                  '<div class="row"><span class="k">signature</span><span class="v" data-f="sig"></span></div>' +
+                  '<div class="row" data-f="noterow" hidden><span class="k">note</span><span class="v" data-f="note"></span></div>' +
+                '</div>';
+              (function (key, el) {
+                el.querySelector(".rcpt-head").addEventListener("click", function (e) {
+                  if (e.target.closest(".pill")) return;
+                  var open = !el.classList.contains("open");
+                  el.classList.toggle("open", open);
+                  var body = el.querySelector(".rcpt-body");
+                  if (body) body.hidden = !open;
+                  receiptOpen[key] = open;
+                });
+              })(rec.key, card);
               listEl.appendChild(card);
             }
             seen[rec.key] = true;
 
-            card.querySelector(".card-name").textContent = d.name || rec.key;
+            var isOpen = !!receiptOpen[rec.key];
+            card.classList.toggle("open", isOpen);
+            var bodyEl = card.querySelector(".rcpt-body");
+            if (bodyEl) bodyEl.hidden = !isOpen;
+            card.classList.toggle("rcpt-hidden", !matches);
+            if (matches) visible++;
+
+            card.querySelector(".card-name").textContent = title;
+            card.querySelector('[data-f="sub"]').textContent =
+              info.scheme + (info.alg !== "—" ? " · " + info.alg : "") +
+              (d.updatedAt ? " · " + shorten(d.updatedAt, 19) : "");
             card.querySelector('[data-f="dapp"]').textContent = rec.key;
             card.querySelector('[data-f="scheme"]').textContent = info.scheme;
             card.querySelector('[data-f="alg"]').textContent = info.alg;
@@ -1243,7 +1295,6 @@
             }
 
             var pill = card.querySelector(".pill");
-            // Don't reset pill class to pending if we're only refreshing — keeps ring continuous.
             if (!pill.dataset.busy) {
               pill.className = "pill pending";
               pill.textContent = "verifying\u2026";
@@ -1256,7 +1307,8 @@
               pending--;
               if (pending === 0 && mySeq === receiptSeq) {
                 var tip = noKey ? " · identity missing keys" : "";
-                summaryEl.textContent = verifiedCount + " verified · " + unsignedCount + " unsigned · " + total + " total · auto every 6s" + tip;
+                var vis = q ? (" · " + visible + " shown") : "";
+                summaryEl.textContent = verifiedCount + " verified · " + unsignedCount + " unsigned · " + total + " total" + vis + " · auto every 6s" + tip;
               }
             }
 
@@ -1293,18 +1345,59 @@
             });
           });
 
-          // Remove cards for deleted dApps
           Object.keys(existing).forEach(function (k) {
             if (!seen[k]) existing[k].remove();
           });
+
+          var miss = listEl.querySelector(".rcpt-miss");
+          if (q && visible === 0) {
+            if (!miss) {
+              miss = document.createElement("div");
+              miss.className = "empty rcpt-miss";
+              listEl.appendChild(miss);
+            }
+            miss.textContent = "No receipts match \u201c" + receiptQuery + "\u201d.";
+          } else if (miss) {
+            miss.remove();
+          }
         }
 
-        // Sign any unsigned dApp records first (stubs from install often lack signatures),
-        // then verify. That is why receipts were stuck on "unsigned".
         summaryEl.textContent = "signing / verifying\u2026";
         ensureAllDappsSigned().then(function () {
           if (mySeq !== receiptSeq) return;
           paint(collectReceipts());
+        });
+      }
+
+      var receiptSearch = document.getElementById("receiptSearch");
+      if (receiptSearch && !receiptSearch.dataset.bound) {
+        receiptSearch.dataset.bound = "1";
+        receiptSearch.addEventListener("input", function () {
+          receiptQuery = receiptSearch.value || "";
+          var q = receiptQuery.trim().toLowerCase();
+          var cards = document.querySelectorAll("#receiptList .card[data-key]");
+          var visible = 0;
+          cards.forEach(function (card) {
+            var name = (card.querySelector(".card-name") || {}).textContent || "";
+            var sub = (card.querySelector('[data-f="sub"]') || {}).textContent || "";
+            var dapp = (card.querySelector('[data-f="dapp"]') || {}).textContent || "";
+            var blob = (name + " " + sub + " " + dapp).toLowerCase();
+            var ok = !q || blob.indexOf(q) >= 0;
+            card.classList.toggle("rcpt-hidden", !ok);
+            if (ok) visible++;
+          });
+          var listEl = document.getElementById("receiptList");
+          var miss = listEl.querySelector(".rcpt-miss");
+          if (q && visible === 0) {
+            if (!miss) {
+              miss = document.createElement("div");
+              miss.className = "empty rcpt-miss";
+              listEl.appendChild(miss);
+            }
+            miss.textContent = "No receipts match \u201c" + receiptQuery + "\u201d.";
+          } else if (miss) {
+            miss.remove();
+          }
         });
       }
 
