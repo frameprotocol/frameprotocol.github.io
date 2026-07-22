@@ -405,6 +405,48 @@
       </button>
 
     </div>
+
+    <div class="section-label">Import package</div>
+    <div class="methods">
+      <div class="method scan">
+        <div class="scan-head">
+          <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          <div class="m-body">
+            <div class="m-title">Import identity file</div>
+            <div class="m-desc">Load a <code>frame.identity.v1</code> JSON export from another device.</div>
+            <div class="field-row">
+              <input class="field" id="importFile" type="file" accept="application/json,.json" aria-label="Identity JSON file" />
+              <button class="go" id="importBtn" type="button">Import</button>
+            </div>
+            <div id="importMsg" style="margin-top:8px;font-size:0.82rem;color:#666"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      var file = document.getElementById("importFile");
+      var msg = document.getElementById("importMsg");
+      document.getElementById("importBtn").addEventListener("click", function () {
+        if (!file.files || !file.files[0]) { msg.textContent = "Choose a JSON file first."; return; }
+        var reader = new FileReader();
+        reader.onload = function () {
+          FRAME.importIdentity(String(reader.result || "")).then(function (ident) {
+            FRAME.setActiveId(ident.frameId);
+            FRAME.markUnlocked(ident.frameId);
+            msg.style.color = "#0f7a3d";
+            msg.textContent = "Imported " + ident.frameId + ". Opening Wallet\u2026";
+            setTimeout(function () { window.location.href = "/wallet.html"; }, 600);
+          }).catch(function (err) {
+            msg.style.color = "#c0392b";
+            msg.textContent = (err && err.message) ? err.message : "Import failed.";
+          });
+        };
+        reader.readAsText(file.files[0]);
+      });
+    })();
+  </script>
 </body>
 </html>

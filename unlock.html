@@ -116,11 +116,11 @@
     (function () {
       try {
         var idents = FRAME.getIdentities();
-        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
+        if (idents.length === 0) { window.location.replace("/dapps.html"); return; }
         var active = FRAME.getActive();
-        if (!active) { window.location.replace("/identity.html"); return; }
-        if (!active.passcode) { FRAME.markUnlocked(active.frameId); window.location.replace("/dashboard.html"); return; }
-        if (FRAME.isUnlocked(active.frameId)) { window.location.replace("/dashboard.html"); return; }
+        if (!active) { window.location.replace("/wallet.html"); return; }
+        if (!active.passcode) { FRAME.markUnlocked(active.frameId); window.location.replace("/dapps.html"); return; }
+        if (FRAME.isUnlocked(active.frameId)) { window.location.replace("/dapps.html"); return; }
       } catch (e) {}
     })();
   </script>
@@ -145,7 +145,7 @@
 
     <div class="altsep">or</div>
     <div class="alt">
-      <a href="/identity.html">Manage identities</a>
+      <a href="/wallet.html">Manage identities</a>
       <a href="/create.html">Create identity</a>
       <a href="/connect.html">Connect to existing identity</a>
     </div>
@@ -154,7 +154,7 @@
   <script>
     (function () {
       var active = FRAME.getActive();
-      if (!active) { window.location.replace("/identity.html"); return; }
+      if (!active) { window.location.replace("/wallet.html"); return; }
 
       if (active.frameId) document.getElementById("idLine").textContent = active.frameId;
 
@@ -196,39 +196,47 @@
           pin.focus();
           return;
         }
-        if (pin.value === active.passcode) {
-          active.failedAttempts = 0;
-          active.locked = false;
-          FRAME.updateIdentity(active);
-          FRAME.markUnlocked(active.frameId);
-          window.location.href = "/dashboard.html";
-          return;
-        }
-
-        var fails = (active.failedAttempts || 0) + 1;
-        active.failedAttempts = fails;
-        FRAME.updateIdentity(active);
-        pin.value = "";
-
-        if (maxAttempts !== null && maxAttempts !== undefined && fails >= maxAttempts) {
-          if (onLimit === "wipe") {
-            FRAME.removeIdentity(active.frameId);
-            alert("Too many incorrect attempts. This identity has been erased from this device.");
-            window.location.href = "/dashboard.html";
+        unlockBtn.disabled = true;
+        FRAME.verifyPasscode(active, pin.value).then(function (ok) {
+          unlockBtn.disabled = false;
+          if (ok) {
+            active.failedAttempts = 0;
+            active.locked = false;
+            FRAME.updateIdentity(active);
+            FRAME.markUnlocked(active.frameId);
+            window.location.href = "/dapps.html";
             return;
           }
-          lockDevice();
-          return;
-        }
 
-        pinHint.classList.add("err");
-        if (maxAttempts === null || maxAttempts === undefined) {
-          pinHint.textContent = "Incorrect passcode. Try again.";
-        } else {
-          var remaining = maxAttempts - fails;
-          pinHint.textContent = "Incorrect passcode. " + remaining + " attempt" + (remaining === 1 ? "" : "s") + " remaining.";
-        }
-        pin.focus();
+          var fails = (active.failedAttempts || 0) + 1;
+          active.failedAttempts = fails;
+          FRAME.updateIdentity(active);
+          pin.value = "";
+
+          if (maxAttempts !== null && maxAttempts !== undefined && fails >= maxAttempts) {
+            if (onLimit === "wipe") {
+              FRAME.removeIdentity(active.frameId);
+              alert("Too many incorrect attempts. This identity has been erased from this device.");
+              window.location.href = "/dapps.html";
+              return;
+            }
+            lockDevice();
+            return;
+          }
+
+          pinHint.classList.add("err");
+          if (maxAttempts === null || maxAttempts === undefined) {
+            pinHint.textContent = "Incorrect passcode. Try again.";
+          } else {
+            var remaining = maxAttempts - fails;
+            pinHint.textContent = "Incorrect passcode. " + remaining + " attempt" + (remaining === 1 ? "" : "s") + " remaining.";
+          }
+          pin.focus();
+        }).catch(function () {
+          unlockBtn.disabled = false;
+          pinHint.classList.add("err");
+          pinHint.textContent = "Could not verify passcode.";
+        });
       });
     })();
   </script>

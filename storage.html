@@ -135,13 +135,7 @@
   <script src="/frame.js"></script>
   <script>
     (function () {
-      try {
-        var idents = FRAME.getIdentities();
-        if (idents.length === 0) { window.location.replace("/dashboard.html"); return; }
-        var active = FRAME.getActive();
-        if (!active) { window.location.replace("/identity.html"); return; }
-        if (!FRAME.isUnlocked(active.frameId)) { window.location.replace("/unlock.html"); }
-      } catch (e) {}
+      FRAME.gate().then(function (active) { if (!active) return; });
     })();
   </script>
   <span class="corner tl"></span>

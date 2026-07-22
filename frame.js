@@ -142,17 +142,20 @@ window.FRAME = (function () {
   function buildIdentity(passcode) {
     return generateKeypair().then(function (kp) {
       return deriveIdentityId(kp.publicKey).then(function (id) {
-        return {
+        var obj = {
           frameId: id,
           publicKey: kp.publicKey,
           privateKey: kp.privateKey,
           recoveryKey: randomAlnum(17),
-          passcode: passcode || null,
+          passcode: null,
+          label: null,
           settings: { maxAttempts: 5, onLimit: "lock" },
           failedAttempts: 0,
           locked: false,
           createdAt: new Date().toISOString()
         };
+        if (!passcode) return obj;
+        return hashPasscode(passcode).then(function (h) { obj.passcode = h; return obj; });
       });
     });
   }
@@ -160,6 +163,123 @@ window.FRAME = (function () {
   // Async: create + store a real identity. Returns a Promise<identity>.
   function createIdentity(passcode) {
     return buildIdentity(passcode).then(function (obj) { addIdentity(obj); return obj; });
+  }
+
+  /* --- Passcode hashing (FRAME_PASSCODE_V1) --- */
+  function hashPasscode(pin) {
+    return hashHex("frame.passcode.v1:" + String(pin || "")).then(function (h) {
+      return "v1:sha256:" + h;
+    });
+  }
+  function isHashedPasscode(p) {
+    return typeof p === "string" && /^v1:sha256:[0-9a-f]{64}$/i.test(p);
+  }
+  function verifyPasscode(ident, pin) {
+    if (!ident || !ident.passcode) return Promise.resolve(true);
+    if (isHashedPasscode(ident.passcode)) {
+      return hashPasscode(pin).then(function (h) { return h === ident.passcode; });
+    }
+    // Legacy plaintext: accept once, then migrate to hash.
+    if (String(ident.passcode) === String(pin)) {
+      return hashPasscode(pin).then(function (h) {
+        ident.passcode = h;
+        updateIdentity(ident);
+        return true;
+      });
+    }
+    return Promise.resolve(false);
+  }
+  function setPasscode(ident, pin) {
+    if (!ident) return Promise.reject(new Error("no identity"));
+    if (!pin) {
+      ident.passcode = null;
+      updateIdentity(ident);
+      return Promise.resolve(ident);
+    }
+    return hashPasscode(pin).then(function (h) {
+      ident.passcode = h;
+      updateIdentity(ident);
+      return ident;
+    });
+  }
+
+  /* --- Export / import identity --- */
+  function exportIdentity(id) {
+    var ident = getById(id || getActiveId());
+    if (!ident) return null;
+    return {
+      format: "frame.identity.v1",
+      exportedAt: new Date().toISOString(),
+      identity: {
+        frameId: ident.frameId,
+        publicKey: ident.publicKey || null,
+        privateKey: ident.privateKey || null,
+        recoveryKey: ident.recoveryKey || null,
+        label: ident.label || null,
+        settings: ident.settings || { maxAttempts: 5, onLimit: "lock" },
+        createdAt: ident.createdAt || new Date().toISOString()
+      }
+    };
+  }
+  function importIdentity(raw) {
+    var data = raw;
+    if (typeof raw === "string") {
+      try { data = JSON.parse(raw); } catch (e) { return Promise.reject(new Error("invalid JSON")); }
+    }
+    if (!data || data.format !== "frame.identity.v1" || !data.identity) {
+      return Promise.reject(new Error("unsupported identity package"));
+    }
+    var src = data.identity;
+    if (!src.frameId || typeof src.frameId !== "string") {
+      return Promise.reject(new Error("missing frameId"));
+    }
+    if (getById(src.frameId)) {
+      return Promise.reject(new Error("identity already on this device"));
+    }
+    var obj = {
+      frameId: src.frameId,
+      publicKey: src.publicKey || null,
+      privateKey: src.privateKey || null,
+      recoveryKey: src.recoveryKey || randomAlnum(17),
+      passcode: null,
+      label: src.label || null,
+      settings: src.settings || { maxAttempts: 5, onLimit: "lock" },
+      failedAttempts: 0,
+      locked: false,
+      createdAt: src.createdAt || new Date().toISOString()
+    };
+    addIdentity(obj);
+    return Promise.resolve(obj);
+  }
+
+  /* --- Page gate: ensure an unlocked active identity, else redirect --- */
+  function gate(opts) {
+    opts = opts || {};
+    var home = opts.home || "/dapps.html";
+    var unlock = opts.unlock || "/unlock.html";
+    try {
+      var idents = getIdentities();
+      if (idents.length === 0) {
+        return createIdentity(null).then(function (created) {
+          setActiveId(created.frameId);
+          markUnlocked(created.frameId);
+          return created;
+        });
+      }
+      var active = getActive();
+      if (!active) {
+        setActiveId(idents[0].frameId);
+        active = getActive();
+      }
+      if (!active) { window.location.replace(home); return Promise.resolve(null); }
+      if (!isUnlocked(active.frameId)) {
+        window.location.replace(unlock);
+        return Promise.resolve(null);
+      }
+      return Promise.resolve(active);
+    } catch (e) {
+      return Promise.resolve(null);
+    }
   }
 
   /* --- FRAME_SIGNATURE_V1 (mirrors frame ui/src/crypto.ts signDigest/verifyDigest) ---
@@ -328,6 +448,13 @@ window.FRAME = (function () {
     generateKeypair: generateKeypair,
     deriveIdentityId: deriveIdentityId,
     packKeyMaterial: packKeyMaterial,
+    hashPasscode: hashPasscode,
+    isHashedPasscode: isHashedPasscode,
+    verifyPasscode: verifyPasscode,
+    setPasscode: setPasscode,
+    exportIdentity: exportIdentity,
+    importIdentity: importIdentity,
+    gate: gate,
     sha256Bytes: sha256Bytes,
     signDigest: signDigest,
     verifyDigest: verifyDigest,

@@ -179,13 +179,16 @@
           pin.focus();
           return;
         }
-        try {
-          identity.passcode = pin.value;
+        FRAME.hashPasscode(pin.value).then(function (h) {
+          identity.passcode = h;
           FRAME.addIdentity(identity);
           FRAME.setActiveId(identity.frameId);
           FRAME.markUnlocked(identity.frameId);
-        } catch (err) {}
-        window.location.href = "/dashboard.html";
+          window.location.href = "/dapps.html";
+        }).catch(function () {
+          pinHint.classList.add("err");
+          pinHint.textContent = "Could not save passcode.";
+        });
       });
     })();
   </script>
