@@ -345,32 +345,50 @@
         try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; }
       }
 
+      function pad2(n) { n = Math.max(0, Math.floor(n)); return n < 10 ? "0" + n : String(n); }
+
+      function formatClock(ms) {
+        var sec = Math.max(0, Math.ceil(ms / 1000));
+        return pad2(Math.floor(sec / 60)) + ":" + pad2(sec % 60);
+      }
+
+      function liveTimerState() {
+        var t = readJson("frame.dapp.timer");
+        var st = (t && t.state) || {};
+        var running = !!st.running;
+        var done = !!st.done;
+        var ms = st.remainingMs != null ? Number(st.remainingMs) : Number(st.totalMs) || 0;
+        if (running && st.endsAt) {
+          ms = Math.max(0, Number(st.endsAt) - Date.now());
+          if (ms <= 0) { running = false; done = true; ms = 0; }
+        }
+        var status = done ? "done" : running ? "running" : (ms > 0 && ms < (st.totalMs || ms) ? "paused" : "ready");
+        return { ms: ms, status: status, totalMs: st.totalMs || ms };
+      }
+
       function infoFor(d) {
         var lines = [];
         if (d.id === "frame.dapp.calculator") {
           var c = readJson("frame.dapp.calculator");
-          var display = (c && c.state && c.state.display != null) ? c.state.display : "0";
+          var st = (c && c.state) || {};
+          var display = st.display != null ? st.display : "0";
           lines.push('<span class="k">display</span> ' + escapeHtml(String(display)));
+          if (st.expr) lines.push('<span class="k">expr</span> ' + escapeHtml(String(st.expr)));
           if (c && c.updatedAt && FRAME.formatLocalDateTime) {
             lines.push('<span class="k">updated</span> ' + escapeHtml(FRAME.formatLocalDateTime(c.updatedAt)));
           }
         } else if (d.id === "frame.dapp.timer") {
-          var t = readJson("frame.dapp.timer");
-          var st = (t && t.state) || {};
-          var ms = st.remainingMs != null ? st.remainingMs : (st.totalMs || 0);
-          var sec = Math.max(0, Math.ceil(ms / 1000));
-          var mm = Math.floor(sec / 60);
-          var ss = sec % 60;
-          var clock = (mm < 10 ? "0" : "") + mm + ":" + (ss < 10 ? "0" : "") + ss;
-          lines.push('<span class="k">time</span> ' + clock);
-          lines.push('<span class="k">status</span> ' + (st.done ? "done" : st.running ? "running" : "ready"));
+          var live = liveTimerState();
+          lines.push('<span class="k">time</span> ' + formatClock(live.ms));
+          lines.push('<span class="k">status</span> ' + live.status);
+          if (live.totalMs) lines.push('<span class="k">set</span> ' + formatClock(live.totalMs));
         } else if (d.id === "frame.dapp.wallet") {
           var w = readJson("frame.dapp.wallet");
-          var st = (w && w.state) || {};
+          var wst = (w && w.state) || {};
           var ids = [];
           try { ids = FRAME.getIdentities(); } catch (e) {}
           lines.push('<span class="k">identities</span> ' + ids.length);
-          lines.push('<span class="k">tasks</span> ' + ((st.tasks || []).length) + ' · <span class="k">jobs</span> ' + ((st.jobs || []).length));
+          lines.push('<span class="k">tasks</span> ' + ((wst.tasks || []).length) + ' · <span class="k">jobs</span> ' + ((wst.jobs || []).length));
         } else if (d.id === "frame.system.command") {
           try {
             var shell = FRAME.getFrame();
@@ -397,6 +415,69 @@
       function escapeHtml(s) {
         return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       }
+
+      var liveTiles = [];
+      var liveTimer = null;
+
+      function refreshLiveTiles() {
+        liveTiles.forEach(function (item) {
+          var info = item.el.querySelector(".info");
+          if (!info) return;
+          info.innerHTML = infoFor(item.d);
+        });
+      }
+
+      function ensureLiveLoop() {
+        var any = liveTiles.some(function (item) { return item.hovering; });
+        if (any && !liveTimer) {
+          liveTimer = setInterval(refreshLiveTiles, 200);
+        } else if (!any && liveTimer) {
+          clearInterval(liveTimer);
+          liveTimer = null;
+        }
+      }
+
+      function bindLiveInfo(el, d) {
+        if (d.id !== "frame.dapp.calculator" && d.id !== "frame.dapp.timer") return;
+        var item = { el: el, d: d, hovering: false };
+        liveTiles.push(item);
+        function onEnter() {
+          item.hovering = true;
+          refreshLiveTiles();
+          ensureLiveLoop();
+        }
+        function onLeave() {
+          item.hovering = false;
+          ensureLiveLoop();
+        }
+        el.addEventListener("pointerenter", onEnter);
+        el.addEventListener("pointerleave", onLeave);
+        el.addEventListener("focusin", onEnter);
+        el.addEventListener("focusout", function () {
+          // delay so moving within tile doesn't stop
+          setTimeout(function () {
+            if (!el.contains(document.activeElement) && !el.matches(":hover")) onLeave();
+          }, 0);
+        });
+      }
+
+      window.addEventListener("storage", function (e) {
+        if (!e.key) return;
+        if (e.key === "frame.dapp.calculator" || e.key === "frame.dapp.timer") {
+          refreshLiveTiles();
+          ensureLiveLoop();
+        }
+      });
+
+      // Same-tab updates while Timer/Calculator persist (storage event does not fire here)
+      var _setItem = localStorage.setItem.bind(localStorage);
+      localStorage.setItem = function (k, v) {
+        _setItem(k, v);
+        if (k === "frame.dapp.calculator" || k === "frame.dapp.timer") {
+          refreshLiveTiles();
+          ensureLiveLoop();
+        }
+      };
 
       var sheet = document.getElementById("sheet");
       var sheetIc = document.getElementById("sheetIc");
@@ -517,6 +598,7 @@
             '<span class="info">' + infoFor(d) + "</span>" +
           "</span>";
         bindHold(el, d);
+        bindLiveInfo(el, d);
         return el;
       }
 
