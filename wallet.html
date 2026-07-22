@@ -1202,17 +1202,52 @@
           if (e.name.indexOf("frame.dapp.") !== 0) return;
           var d = null; try { d = JSON.parse(localStorage.getItem(e.name)); } catch (x) {}
           if (!d) return;
-          out.push({ key: e.name, d: d });
+          out.push({ key: e.name, kind: "dapp", d: d });
         });
+        try {
+          var chain = FRAME.getReceiptChain ? FRAME.getReceiptChain() : null;
+          (chain && chain.entries ? chain.entries : []).slice().reverse().forEach(function (e) {
+            out.push({
+              key: "frame.chain:" + e.id,
+              kind: "chain",
+              entry: e,
+              d: {
+                name: e.title || e.action,
+                signature: e.signature,
+                signedBy: e.signedBy || e.identity_id,
+                sigAlg: e.sigAlg || e.sig_alg,
+                sigScheme: e.sigScheme || "FRAME_SIGNATURE_V1",
+                updatedAt: e.timestamp ? new Date(e.timestamp).toISOString() : null,
+                state: {
+                  action: e.action,
+                  dapp: e.dapp,
+                  sequence: e.sequence,
+                  prev_hash: e.prev_hash,
+                  receipt_hash: e.receipt_hash,
+                  payload: e.payload,
+                  result: e.result
+                }
+              }
+            });
+          });
+        } catch (x) {}
         return out;
       }
 
       function receiptCatId(rec) {
+        if (rec.kind === "chain") {
+          if (rec.entry && rec.entry.action && rec.entry.action.indexOf("calc.") === 0) return "calculator";
+          return "chain";
+        }
         var title = (rec.d && rec.d.name) || rec.key.replace(/^frame\.dapp\./, "") || "other";
         return String(title).trim().toLowerCase();
       }
 
       function receiptCatLabel(rec) {
+        if (rec.kind === "chain") {
+          if (rec.entry && rec.entry.action && rec.entry.action.indexOf("calc.") === 0) return "Calculator";
+          return "Chain";
+        }
         if (rec.d && rec.d.name) return rec.d.name;
         var slug = rec.key.replace(/^frame\.dapp\./, "");
         return slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "Other";
@@ -1371,6 +1406,12 @@
                 '</div>' +
                 '<div class="rcpt-body" hidden>' +
                   '<div class="row"><span class="k">dApp</span><span class="v" data-f="dapp"></span></div>' +
+                  '<div class="row" data-f="actionrow" hidden><span class="k">action</span><span class="v" data-f="action"></span></div>' +
+                  '<div class="row" data-f="seqrow" hidden><span class="k">sequence</span><span class="v" data-f="seq"></span></div>' +
+                  '<div class="row" data-f="prevrow" hidden><span class="k">prev</span><span class="v" data-f="prev"></span></div>' +
+                  '<div class="row" data-f="hashrow" hidden><span class="k">hash</span><span class="v" data-f="rhash"></span></div>' +
+                  '<div class="row" data-f="payloadrow" hidden><span class="k">payload</span><span class="v" data-f="payload"></span></div>' +
+                  '<div class="row" data-f="resultrow" hidden><span class="k">result</span><span class="v" data-f="result"></span></div>' +
                   '<div class="row"><span class="k">scheme</span><span class="v" data-f="scheme"></span></div>' +
                   '<div class="row"><span class="k">algorithm</span><span class="v" data-f="alg"></span></div>' +
                   '<div class="row"><span class="k">digest</span><span class="v" data-f="digest"></span></div>' +
@@ -1407,11 +1448,40 @@
             var tickEl = card.querySelector('[data-f="tick"]');
             whenEl.textContent = d.updatedAt ? String(d.updatedAt).slice(0, 10) : "—";
             tickEl.hidden = true;
-            card.querySelector('[data-f="dapp"]').textContent = rec.key;
+            var isChain = rec.kind === "chain";
+            card.querySelector('[data-f="dapp"]').textContent = isChain
+              ? ((rec.entry && rec.entry.dapp) || "frame.receipts.chain.v1")
+              : rec.key;
+            function showExtra(rowAttr, valAttr, text) {
+              var row = card.querySelector('[data-f="' + rowAttr + '"]');
+              var cell = card.querySelector('[data-f="' + valAttr + '"]');
+              if (!row || !cell) return;
+              if (text == null || text === "") { row.hidden = true; return; }
+              row.hidden = false;
+              cell.textContent = text;
+            }
+            if (isChain && rec.entry) {
+              var e = rec.entry;
+              showExtra("actionrow", "action", e.action || "");
+              showExtra("seqrow", "seq", e.sequence != null ? String(e.sequence) : "");
+              showExtra("prevrow", "prev", e.prev_hash ? shorten(e.prev_hash, 24) : "(genesis)");
+              showExtra("hashrow", "rhash", e.receipt_hash ? shorten(e.receipt_hash, 24) : "");
+              showExtra("payloadrow", "payload", e.payload != null ? shorten(JSON.stringify(e.payload), 80) : "");
+              showExtra("resultrow", "result", e.result != null ? shorten(JSON.stringify(e.result), 80) : "");
+              card.querySelector('[data-f="digest"]').textContent = "SHA-256 over identity|action|payload_hash|result_hash|prev";
+              card.querySelector('[data-f="encoding"]').textContent = "hex hashes · base64 sig";
+            } else {
+              showExtra("actionrow", "action", "");
+              showExtra("seqrow", "seq", "");
+              showExtra("prevrow", "prev", "");
+              showExtra("hashrow", "rhash", "");
+              showExtra("payloadrow", "payload", "");
+              showExtra("resultrow", "result", "");
+              card.querySelector('[data-f="digest"]').textContent = info.digest + (info.over !== "—" ? " over " + info.over : "");
+              card.querySelector('[data-f="encoding"]').textContent = info.encoding;
+            }
             card.querySelector('[data-f="scheme"]').textContent = info.scheme;
             card.querySelector('[data-f="alg"]').textContent = info.alg;
-            card.querySelector('[data-f="digest"]').textContent = info.digest + (info.over !== "—" ? " over " + info.over : "");
-            card.querySelector('[data-f="encoding"]').textContent = info.encoding;
             card.querySelector('[data-f="signer"]').textContent = d.signedBy || "—";
             card.querySelector('[data-f="updated"]').textContent = d.updatedAt || "—";
             card.querySelector('[data-f="sig"]').textContent = d.signature ? shorten(d.signature, 60) : "—";
@@ -1452,7 +1522,7 @@
               done();
               return;
             }
-            if (!pubKey) {
+            if (!pubKey && !isChain) {
               pill.className = "pill bad";
               pill.textContent = "signer not found";
               tickEl.hidden = true;
@@ -1461,7 +1531,11 @@
               return;
             }
 
-            FRAME.verifyData(pubKey, payload, d.signature).then(function (ok) {
+            var verifyPromise = isChain && FRAME.verifyChainReceipt
+              ? FRAME.verifyChainReceipt(rec.entry)
+              : FRAME.verifyData(pubKey, payload, d.signature);
+
+            verifyPromise.then(function (ok) {
               if (mySeq !== receiptSeq) return;
               if (ok) {
                 pill.className = "pill ok";

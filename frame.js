@@ -468,6 +468,167 @@ window.FRAME = (function () {
     return val + " " + unit;
   }
 
+  /* --- Hash-linked receipt chain (mirrors frame ui executionChain + MutationReceipt) ---
+     Each entry: action + payload/result hashes, prev_hash → head, FRAME_SIGNATURE_V1. */
+  var LS_CHAIN = "frame.receipts.chain.v1";
+  var CHAIN_MAX = 512;
+
+  function bytesToHex(buf) {
+    var a = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+    var s = "";
+    for (var i = 0; i < a.length; i++) s += a[i].toString(16).padStart(2, "0");
+    return s;
+  }
+
+  function stableStringify(value) {
+    var seen = typeof WeakSet !== "undefined" ? new WeakSet() : null;
+    function walk(v) {
+      if (v === null || typeof v !== "object") return v;
+      if (seen) {
+        if (seen.has(v)) return null;
+        seen.add(v);
+      }
+      if (Array.isArray(v)) return v.map(walk);
+      var out = {};
+      Object.keys(v).sort().forEach(function (k) { out[k] = walk(v[k]); });
+      return out;
+    }
+    return JSON.stringify(walk(value) ?? null);
+  }
+
+  function sha256Hex(str) {
+    return sha256Bytes(str).then(function (d) { return bytesToHex(d); });
+  }
+
+  function emptyChain() {
+    return { version: 1, head_hash: null, next_sequence: 0, entries: [] };
+  }
+
+  function getReceiptChain() {
+    var raw = readJSON(localStorage, LS_CHAIN);
+    if (!raw || raw.version !== 1 || !Array.isArray(raw.entries)) return emptyChain();
+    return {
+      version: 1,
+      head_hash: typeof raw.head_hash === "string" ? raw.head_hash : null,
+      next_sequence: typeof raw.next_sequence === "number" ? raw.next_sequence : raw.entries.length,
+      entries: raw.entries
+    };
+  }
+
+  function saveReceiptChain(state) {
+    try {
+      var trimmed = {
+        version: 1,
+        head_hash: state.head_hash,
+        next_sequence: state.next_sequence,
+        entries: (state.entries || []).slice(-CHAIN_MAX)
+      };
+      localStorage.setItem(LS_CHAIN, JSON.stringify(trimmed));
+    } catch (e) {}
+  }
+
+  function receiptSigningMaterial(entry) {
+    return [
+      String(entry.identity_id || "").trim(),
+      String(entry.action || "").trim(),
+      String(entry.payload_hash || ""),
+      String(entry.result_hash || ""),
+      entry.prev_hash == null ? "" : String(entry.prev_hash)
+    ].join("|");
+  }
+
+  /** Append a signed, hash-linked receipt. Returns Promise<entry>. */
+  function appendReceipt(args) {
+    args = args || {};
+    var active = getActive();
+    if (!active || !active.privateKey || !active.publicKey) {
+      return Promise.reject(new Error("appendReceipt: no signing identity"));
+    }
+    var action = String(args.action || "unknown").trim();
+    var payload = args.payload != null ? args.payload : null;
+    var result = args.result != null ? args.result : { ok: true };
+    var dapp = args.dapp || null;
+    var title = args.title || args.name || action;
+    var state = getReceiptChain();
+    var prev = state.head_hash;
+    var seq = state.next_sequence || 0;
+    var id = "r_" + Date.now().toString(36) + "_" + randomAlnum(8).toLowerCase();
+    var payloadCanon = stableStringify(payload);
+    var resultCanon = stableStringify(result);
+
+    return Promise.all([sha256Hex(payloadCanon), sha256Hex(resultCanon)]).then(function (hashes) {
+      var payload_hash = hashes[0];
+      var result_hash = hashes[1];
+      var draft = {
+        identity_id: active.frameId,
+        action: action,
+        payload_hash: payload_hash,
+        result_hash: result_hash,
+        prev_hash: prev
+      };
+      var material = receiptSigningMaterial(draft);
+      var alg = keyAlgLabel(active.publicKey);
+      return signData(active.privateKey, material).then(function (sig) {
+        return verifyData(active.publicKey, material, sig).then(function (ok) {
+          if (!ok) throw new Error("appendReceipt: self-verify failed");
+          var body = {
+            id: id,
+            identity_id: active.frameId,
+            action: action,
+            payload_hash: payload_hash,
+            result_hash: result_hash,
+            prev_hash: prev,
+            timestamp: Date.now(),
+            signature: sig,
+            provider_id: active.frameId,
+            sig_alg: "FRAME_SIGNATURE_V1",
+            signedBy: active.frameId,
+            sigScheme: "FRAME_SIGNATURE_V1",
+            sigAlg: alg,
+            dapp: dapp,
+            title: title,
+            payload: payload,
+            result: result,
+            sequence: seq
+          };
+          return sha256Hex(stableStringify({
+            id: body.id,
+            identity_id: body.identity_id,
+            action: body.action,
+            payload_hash: body.payload_hash,
+            result_hash: body.result_hash,
+            prev_hash: body.prev_hash,
+            timestamp: body.timestamp,
+            signature: body.signature,
+            provider_id: body.provider_id,
+            sig_alg: body.sig_alg
+          })).then(function (receipt_hash) {
+            body.receipt_hash = receipt_hash;
+            state.entries.push(body);
+            state.head_hash = receipt_hash;
+            state.next_sequence = seq + 1;
+            saveReceiptChain(state);
+            return body;
+          });
+        });
+      });
+    });
+  }
+
+  function verifyChainReceipt(entry) {
+    if (!entry || !entry.signature || !entry.signedBy) return Promise.resolve(false);
+    var signer = getById(entry.signedBy) || getById(entry.identity_id);
+    if (!signer || !signer.publicKey) return Promise.resolve(false);
+    var material = receiptSigningMaterial({
+      identity_id: entry.identity_id || entry.signedBy,
+      action: entry.action,
+      payload_hash: entry.payload_hash,
+      result_hash: entry.result_hash,
+      prev_hash: entry.prev_hash
+    });
+    return verifyData(signer.publicKey, material, entry.signature);
+  }
+
   function localStorageEntries() {
     var out = [];
     try {
@@ -582,6 +743,11 @@ window.FRAME = (function () {
     humanBytesLong: humanBytesLong,
     localStorageBytes: localStorageBytes,
     localStorageEntries: localStorageEntries,
-    browserName: browserName
+    browserName: browserName,
+    stableStringify: stableStringify,
+    sha256Hex: sha256Hex,
+    getReceiptChain: getReceiptChain,
+    appendReceipt: appendReceipt,
+    verifyChainReceipt: verifyChainReceipt
   };
 })();

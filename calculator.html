@@ -231,6 +231,22 @@
         if (payload !== undefined) refreshSig(payload);
       }
 
+      function opLabel(o) {
+        return ({ "+": "+", "-": "\u2212", "*": "\u00d7", "/": "\u00f7" })[o] || o;
+      }
+
+      /** Log every input / equation onto the hash-linked receipt chain. */
+      function logChain(action, payload, result, title) {
+        if (!FRAME.appendReceipt) return;
+        FRAME.appendReceipt({
+          action: "calc." + action,
+          dapp: KEY,
+          title: title || ("calc." + action),
+          payload: payload,
+          result: result
+        }).catch(function () {});
+      }
+
       function fmt(n) {
         if (!isFinite(n)) return "Error";
         var r = Math.round((n + Number.EPSILON) * 1e10) / 1e10;
@@ -238,23 +254,40 @@
       }
       function render() {
         resultEl.textContent = current;
-        var opSym = { "+": "+", "-": "\u2212", "*": "\u00d7", "/": "\u00f7" };
-        exprEl.textContent = (op !== null && stored !== null) ? (fmt(stored) + " " + opSym[op]) : "";
+        exprEl.textContent = (op !== null && stored !== null) ? (fmt(stored) + " " + opLabel(op)) : "";
       }
 
       function inputDigit(d) {
+        var before = current;
         if (replace) { current = (d === "0") ? "0" : d; replace = false; }
         else { if (current === "0") current = d; else current += d; }
         render(); persist();
+        logChain("input", { kind: "digit", digit: d, before: before }, { display: current }, "input " + d + " → " + current);
       }
       function inputDot() {
+        var before = current;
         if (replace) { current = "0."; replace = false; }
         else if (current.indexOf(".") < 0) current += ".";
+        else return;
         render(); persist();
+        logChain("input", { kind: "dot", before: before }, { display: current }, "input . → " + current);
       }
-      function clearAll() { current = "0"; stored = null; op = null; replace = true; render(); persist(); }
-      function sign() { if (current !== "0") current = current.charAt(0) === "-" ? current.slice(1) : "-" + current; render(); persist(); }
-      function percent() { current = fmt(parseFloat(current) / 100); replace = true; render(); persist(); }
+      function clearAll() {
+        var before = { display: current, stored: stored, op: op };
+        current = "0"; stored = null; op = null; replace = true; render(); persist();
+        logChain("clear", before, { display: current }, "clear");
+      }
+      function sign() {
+        var before = current;
+        if (current !== "0") current = current.charAt(0) === "-" ? current.slice(1) : "-" + current;
+        render(); persist();
+        logChain("sign", { before: before }, { display: current }, "+/− → " + current);
+      }
+      function percent() {
+        var before = current;
+        current = fmt(parseFloat(current) / 100); replace = true; render(); persist();
+        logChain("percent", { before: before }, { display: current }, "% → " + current);
+      }
 
       function compute(a, b, o) {
         switch (o) { case "+": return a + b; case "-": return a - b; case "*": return a * b; case "/": return b === 0 ? NaN : a / b; }
@@ -262,17 +295,31 @@
       }
       function setOp(o) {
         var val = parseFloat(current);
-        if (op !== null && !replace) { var r = compute(stored, val, op); current = fmt(r); stored = parseFloat(current); }
-        else { stored = val; }
+        var before = { display: current, stored: stored, op: op };
+        var partial = null;
+        if (op !== null && !replace) {
+          var r = compute(stored, val, op);
+          partial = { left: stored, op: op, right: val, value: r };
+          current = fmt(r); stored = parseFloat(current);
+        } else {
+          stored = val;
+        }
         op = o; replace = true; render(); persist();
         highlight(o);
+        var title = partial
+          ? (fmt(partial.left) + " " + opLabel(partial.op) + " " + fmt(partial.right) + " = " + current + " · then " + opLabel(o))
+          : (current + " " + opLabel(o));
+        logChain("op", before, { display: current, stored: stored, op: op, partial: partial }, title);
       }
       function equals() {
         if (op === null || stored === null) return;
         var val = parseFloat(current);
+        var left = stored, o = op, right = val;
         var r = compute(stored, val, op);
         current = fmt(r); stored = null; op = null; replace = true; render(); persist();
         highlight(null);
+        var eq = fmt(left) + " " + opLabel(o) + " " + fmt(right) + " = " + current;
+        logChain("equals", { left: left, op: o, right: right }, { value: current, equation: eq }, eq);
       }
 
       function highlight(o) {
