@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>frame</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -15,7 +15,8 @@
     html, body {
       height: 100%;
       margin: 0;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
     body {
       display: flex;
@@ -64,7 +65,7 @@
     .begin-wrap {
       position: fixed;
       left: 50%;
-      bottom: clamp(12px, 3vh, 28px);
+      bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 12px));
       transform: translateX(-50%);
     }
     .nav-begin {
@@ -84,8 +85,7 @@
     @keyframes rainbow-move { to { background-position: 200% center; } }
     .brand {
       position: fixed;
-      top: 8px;
-      left: 8px;
+      top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px));
       margin: 0;
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
@@ -123,10 +123,26 @@
       border-style: solid;
       border-width: 0;
     }
-    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
-    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
-    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
-    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+    .corner.tl { top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: env(safe-area-inset-bottom, 0px); right: env(safe-area-inset-right, 0px); border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  
+    /* mobile: safe-area, overflow, touch */
+    html { overflow-x: hidden; }
+    @media (max-width: 480px) {
+      .row { grid-template-columns: minmax(72px, 34%) 1fr !important; }
+    }
+
+  
+    @media (max-height: 560px), (max-width: 400px) {
+      .nav { top: auto; bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 72px)); }
+      .nav .side { font-size: clamp(1.15rem, 5vw, 1.5rem); margin-right: max(16px, env(safe-area-inset-right, 0px)); }
+      .nav .nav-how { margin-top: 14px; }
+      .nav-begin { font-size: clamp(2.2rem, 10vw, 3rem); }
+      .stage { margin-top: max(48px, calc(env(safe-area-inset-top, 0px) + 40px)); padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+    }
+    /* index mobile */
   </style>
 </head>
 <body>

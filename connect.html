@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>frame</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -22,13 +22,12 @@
       color: #000000;
       -webkit-font-smoothing: antialiased;
       font-family: 'Space Grotesk', sans-serif;
-      padding: clamp(64px, 12vh, 96px) 0 clamp(56px, 10vh, 88px);
+      padding: max(64px, calc(env(safe-area-inset-top, 0px) + 52px)) max(16px, env(safe-area-inset-right, 0px)) max(56px, calc(env(safe-area-inset-bottom, 0px) + 32px)) max(16px, env(safe-area-inset-left, 0px));
     }
     .home-link { color: inherit; text-decoration: none; }
     .brand {
       position: fixed;
-      top: 8px;
-      left: 8px;
+      top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px));
       margin: 0;
       z-index: 6;
       font-family: 'Chakra Petch', sans-serif;
@@ -40,7 +39,7 @@
     }
 
     .panel {
-      width: min(90vw, 620px);
+      width: min(100%, 620px);
       margin: 0 auto;
     }
     .title {
@@ -80,7 +79,7 @@
       width: 100%;
       background: transparent;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(0.95rem, 3.4vw, 1.05rem);
+      font-size: 16px;
       color: #000000;
     }
     .search input::placeholder { color: #999999; }
@@ -192,7 +191,7 @@
       border: 1.5px solid #000000;
       padding: 11px 12px;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.95rem;
+      font-size: 16px;
       background: #ffffff;
       color: #000000;
     }
@@ -217,10 +216,28 @@
       border-width: 0;
       pointer-events: none;
     }
-    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
-    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
-    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
-    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+    .corner.tl { top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: env(safe-area-inset-bottom, 0px); right: env(safe-area-inset-right, 0px); border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  
+    /* mobile: safe-area, overflow, touch */
+    html { overflow-x: hidden; }
+    @media (max-width: 480px) {
+      .row { grid-template-columns: minmax(72px, 34%) 1fr !important; }
+    }
+
+  
+    @media (max-width: 430px) {
+      .field-row { flex-direction: column; }
+      .go { width: 100%; min-height: 44px; }
+      .scan-head { flex-wrap: wrap; }
+      .chip { margin-left: 0; margin-top: 8px; }
+      .dev { flex-wrap: wrap; }
+      .dev .d-name { min-width: 0; flex: 1 1 auto; word-break: break-word; }
+      .dev .d-meta { margin-left: 0; white-space: normal; width: 100%; }
+    }
+    /* connect mobile */
   </style>
 </head>
 <body>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>frame - how</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -36,8 +36,7 @@
     }
     .brand {
       position: fixed;
-      top: 8px;
-      left: 8px;
+      top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px));
       margin: 0;
       z-index: 8;
       font-family: 'Chakra Petch', sans-serif;
@@ -78,15 +77,15 @@
       z-index: 10;
       pointer-events: none;
     }
-    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
-    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
-    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
-    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+    .corner.tl { top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: env(safe-area-inset-bottom, 0px); right: env(safe-area-inset-right, 0px); border-bottom-width: 2.5px; border-right-width: 2.5px; }
 
     main {
       max-width: 760px;
       margin: 0 auto;
-      padding: clamp(88px, 14vh, 120px) clamp(24px, 6vw, 48px) clamp(96px, 16vh, 140px);
+      padding: max(88px, calc(env(safe-area-inset-top, 0px) + 72px)) max(16px, env(safe-area-inset-right, 0px), clamp(16px, 6vw, 48px)) max(96px, calc(env(safe-area-inset-bottom, 0px) + 64px)) max(16px, env(safe-area-inset-left, 0px), clamp(16px, 6vw, 48px));
     }
 
     .sec { margin: 0 0 clamp(40px, 7vh, 64px); }
@@ -260,6 +259,19 @@
       letter-spacing: 0.02em;
       opacity: 0.72;
     }
+  
+    /* mobile: safe-area, overflow, touch */
+    html { overflow-x: hidden; }
+    @media (max-width: 480px) {
+      .row { grid-template-columns: minmax(72px, 34%) 1fr !important; }
+    }
+
+  
+    @media (max-width: 480px) {
+      .sec-head { margin-left: 0; }
+      .features { grid-template-columns: 1fr; }
+    }
+    /* docs mobile */
   </style>
 </head>
 <body>
