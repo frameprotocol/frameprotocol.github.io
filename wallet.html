@@ -145,6 +145,20 @@
       margin-bottom: 10px; background: #ffffff;
     }
     .rcpt-search::placeholder { color: #999999; }
+    .rcpt-cats {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin: 0 0 12px;
+    }
+    .rcpt-cat {
+      border: 1.5px solid #d0d0d0; border-radius: 10px;
+      padding: 6px 11px; background: #ffffff; color: #555555;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.76rem; font-weight: 600;
+      cursor: pointer; line-height: 1;
+    }
+    .rcpt-cat:hover { border-color: #000000; color: #000000; }
+    .rcpt-cat.on {
+      border-color: #000000; background: #000000; color: #ffffff;
+    }
     #receiptList { display: flex; flex-direction: column; gap: 6px; }
     #receiptList .card {
       border: 1px solid #e8e8e8; border-radius: 10px; padding: 0;
@@ -436,6 +450,7 @@
         <span class="summary" id="receiptSummary">Checking&hellip;</span>
       </div>
       <input class="rcpt-search" id="receiptSearch" type="search" placeholder="Search receipts…" autocomplete="off" />
+      <div class="rcpt-cats" id="receiptCats" role="tablist" aria-label="Receipt categories"></div>
       <div id="receiptList"></div>
     </section>
 
@@ -1160,6 +1175,7 @@
       var receiptSeq = 0;
       var receiptOpen = {};
       var receiptQuery = "";
+      var receiptCategory = "all";
 
       function schemeInfo(d, pubKey) {
         var scheme = d.sigScheme || (d.signature ? "FRAME_SIGNATURE_V1" : "none");
@@ -1191,6 +1207,108 @@
         return out;
       }
 
+      function receiptCatId(rec) {
+        var title = (rec.d && rec.d.name) || rec.key.replace(/^frame\.dapp\./, "") || "other";
+        return String(title).trim().toLowerCase();
+      }
+
+      function receiptCatLabel(rec) {
+        if (rec.d && rec.d.name) return rec.d.name;
+        var slug = rec.key.replace(/^frame\.dapp\./, "");
+        return slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "Other";
+      }
+
+      function cardMatchesReceiptFilters(card) {
+        var q = (receiptQuery || "").trim().toLowerCase();
+        var cat = receiptCategory || "all";
+        var name = (card.querySelector(".card-name") || {}).textContent || "";
+        var when = (card.querySelector('[data-f="when"]') || {}).textContent || "";
+        var dapp = (card.querySelector('[data-f="dapp"]') || {}).textContent || "";
+        var blob = (name + " " + when + " " + dapp).toLowerCase();
+        var searchOk = !q || blob.indexOf(q) >= 0;
+        var catOk = true;
+        if (cat === "verified" || cat === "unsigned") {
+          catOk = (card.getAttribute("data-status") || "") === cat;
+        } else if (cat !== "all") {
+          catOk = (card.getAttribute("data-cat") || "") === cat;
+        }
+        return searchOk && catOk;
+      }
+
+      function applyReceiptFilters() {
+        var listEl = document.getElementById("receiptList");
+        if (!listEl) return;
+        var cards = listEl.querySelectorAll(".card[data-key]");
+        var visible = 0;
+        cards.forEach(function (card) {
+          var ok = cardMatchesReceiptFilters(card);
+          card.classList.toggle("rcpt-hidden", !ok);
+          if (ok) visible++;
+        });
+        var miss = listEl.querySelector(".rcpt-miss");
+        var filtering = !!(receiptQuery || "").trim() || (receiptCategory && receiptCategory !== "all");
+        if (filtering && visible === 0 && cards.length > 0) {
+          if (!miss) {
+            miss = document.createElement("div");
+            miss.className = "empty rcpt-miss";
+            listEl.appendChild(miss);
+          }
+          if ((receiptQuery || "").trim()) {
+            miss.textContent = "No receipts match \u201c" + receiptQuery + "\u201d.";
+          } else {
+            miss.textContent = "No receipts in this category.";
+          }
+        } else if (miss) {
+          miss.remove();
+        }
+        return visible;
+      }
+
+      function renderReceiptCats(records) {
+        var el = document.getElementById("receiptCats");
+        if (!el) return;
+        var byId = {};
+        records.forEach(function (rec) {
+          var id = receiptCatId(rec);
+          if (!byId[id]) byId[id] = receiptCatLabel(rec);
+        });
+        var ids = Object.keys(byId).sort(function (a, b) {
+          return byId[a].localeCompare(byId[b]);
+        });
+        if (receiptCategory !== "all" && receiptCategory !== "verified" && receiptCategory !== "unsigned" && !byId[receiptCategory]) {
+          receiptCategory = "all";
+        }
+        var items = [{ id: "all", label: "All" }].concat(ids.map(function (id) {
+          return { id: id, label: byId[id] };
+        })).concat([
+          { id: "verified", label: "Verified" },
+          { id: "unsigned", label: "Unsigned" }
+        ]);
+        var sig = items.map(function (i) { return i.id; }).join("|") + "#" + receiptCategory;
+        if (el.dataset.sig === sig) return;
+        el.dataset.sig = sig;
+        el.innerHTML = "";
+        items.forEach(function (item) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "rcpt-cat" + (receiptCategory === item.id ? " on" : "");
+          btn.setAttribute("data-cat", item.id);
+          btn.setAttribute("role", "tab");
+          btn.setAttribute("aria-selected", receiptCategory === item.id ? "true" : "false");
+          btn.textContent = item.label;
+          btn.addEventListener("click", function () {
+            receiptCategory = item.id;
+            Array.prototype.forEach.call(el.querySelectorAll(".rcpt-cat"), function (b) {
+              var on = b.getAttribute("data-cat") === receiptCategory;
+              b.classList.toggle("on", on);
+              b.setAttribute("aria-selected", on ? "true" : "false");
+            });
+            applyReceiptFilters();
+          });
+          el.appendChild(btn);
+        });
+      }
+
       function renderReceipts() {
         var listEl = document.getElementById("receiptList");
         var summaryEl = document.getElementById("receiptSummary");
@@ -1206,6 +1324,8 @@
           });
           var seen = {};
 
+          renderReceiptCats(records);
+
           if (records.length === 0) {
             listEl.innerHTML = '<div class="empty">No dApp receipts yet. Use Calculator or Wallet to create signed state.</div>';
             summaryEl.textContent = "0 receipts · auto-verifying every 6s";
@@ -1215,7 +1335,7 @@
           var empty = listEl.querySelector(".empty");
           if (empty) empty.remove();
 
-          var verifiedCount = 0, unsignedCount = 0, total = 0, pending = records.length, visible = 0;
+          var verifiedCount = 0, unsignedCount = 0, total = 0, pending = records.length;
           var noKey = !active || !active.privateKey || !active.publicKey;
           var q = (receiptQuery || "").trim().toLowerCase();
 
@@ -1231,8 +1351,7 @@
               ? "unsigned because this identity has no signing key (create a new identity)"
               : "";
             var title = d.name || rec.key;
-            var searchBlob = [title, rec.key, info.scheme, info.alg, d.signedBy, d.sigScheme].join(" ").toLowerCase();
-            var matches = !q || searchBlob.indexOf(q) >= 0;
+            var catId = receiptCatId(rec);
 
             if (!card) {
               card = document.createElement("div");
@@ -1275,12 +1394,13 @@
             }
             seen[rec.key] = true;
 
+            card.setAttribute("data-cat", catId);
+            if (!card.getAttribute("data-status")) card.setAttribute("data-status", hasSig ? "pending" : "unsigned");
+
             var isOpen = !!receiptOpen[rec.key];
             card.classList.toggle("open", isOpen);
             var bodyEl = card.querySelector(".rcpt-body");
             if (bodyEl) bodyEl.hidden = !isOpen;
-            card.classList.toggle("rcpt-hidden", !matches);
-            if (matches) visible++;
 
             card.querySelector(".card-name").textContent = title;
             var whenEl = card.querySelector('[data-f="when"]');
@@ -1314,10 +1434,12 @@
             function done() {
               delete pill.dataset.busy;
               pending--;
+              applyReceiptFilters();
               if (pending === 0 && mySeq === receiptSeq) {
                 var tip = noKey ? " · identity missing keys" : "";
-                var vis = q ? (" · " + visible + " shown") : "";
-                summaryEl.textContent = verifiedCount + " verified · " + unsignedCount + " unsigned · " + total + " total" + vis + " · auto every 6s" + tip;
+                var vis = applyReceiptFilters();
+                var filterTip = (q || (receiptCategory && receiptCategory !== "all")) ? (" · " + vis + " shown") : "";
+                summaryEl.textContent = verifiedCount + " verified · " + unsignedCount + " unsigned · " + total + " total" + filterTip + " · auto every 6s" + tip;
               }
             }
 
@@ -1325,6 +1447,7 @@
               pill.className = "pill unsigned";
               pill.textContent = "unsigned";
               tickEl.hidden = true;
+              card.setAttribute("data-status", "unsigned");
               unsignedCount++;
               done();
               return;
@@ -1333,6 +1456,7 @@
               pill.className = "pill bad";
               pill.textContent = "signer not found";
               tickEl.hidden = true;
+              card.setAttribute("data-status", "unsigned");
               done();
               return;
             }
@@ -1343,11 +1467,13 @@
                 pill.className = "pill ok";
                 pill.innerHTML = CHECK + "verified";
                 tickEl.hidden = false;
+                card.setAttribute("data-status", "verified");
                 verifiedCount++;
               } else {
                 pill.className = "pill bad";
                 pill.textContent = "invalid";
                 tickEl.hidden = true;
+                card.setAttribute("data-status", "unsigned");
               }
               done();
             }).catch(function () {
@@ -1355,6 +1481,7 @@
               pill.className = "pill bad";
               pill.textContent = "error";
               tickEl.hidden = true;
+              card.setAttribute("data-status", "unsigned");
               done();
             });
           });
@@ -1363,17 +1490,7 @@
             if (!seen[k]) existing[k].remove();
           });
 
-          var miss = listEl.querySelector(".rcpt-miss");
-          if (q && visible === 0) {
-            if (!miss) {
-              miss = document.createElement("div");
-              miss.className = "empty rcpt-miss";
-              listEl.appendChild(miss);
-            }
-            miss.textContent = "No receipts match \u201c" + receiptQuery + "\u201d.";
-          } else if (miss) {
-            miss.remove();
-          }
+          applyReceiptFilters();
         }
 
         summaryEl.textContent = "signing / verifying\u2026";
@@ -1388,30 +1505,7 @@
         receiptSearch.dataset.bound = "1";
         receiptSearch.addEventListener("input", function () {
           receiptQuery = receiptSearch.value || "";
-          var q = receiptQuery.trim().toLowerCase();
-          var cards = document.querySelectorAll("#receiptList .card[data-key]");
-          var visible = 0;
-          cards.forEach(function (card) {
-            var name = (card.querySelector(".card-name") || {}).textContent || "";
-            var when = (card.querySelector('[data-f="when"]') || {}).textContent || "";
-            var dapp = (card.querySelector('[data-f="dapp"]') || {}).textContent || "";
-            var blob = (name + " " + when + " " + dapp).toLowerCase();
-            var ok = !q || blob.indexOf(q) >= 0;
-            card.classList.toggle("rcpt-hidden", !ok);
-            if (ok) visible++;
-          });
-          var listEl = document.getElementById("receiptList");
-          var miss = listEl.querySelector(".rcpt-miss");
-          if (q && visible === 0) {
-            if (!miss) {
-              miss = document.createElement("div");
-              miss.className = "empty rcpt-miss";
-              listEl.appendChild(miss);
-            }
-            miss.textContent = "No receipts match \u201c" + receiptQuery + "\u201d.";
-          } else if (miss) {
-            miss.remove();
-          }
+          applyReceiptFilters();
         });
       }
 
