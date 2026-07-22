@@ -470,6 +470,54 @@ window.FRAME = (function () {
     return val + " " + unit;
   }
 
+  /** Parse any stored time as an absolute instant (UTC epoch / ISO). */
+  function parseUtcInstant(input) {
+    if (input == null || input === "") return null;
+    if (input instanceof Date) {
+      return isNaN(input.getTime()) ? null : input;
+    }
+    if (typeof input === "number" && isFinite(input)) {
+      var fromNum = new Date(input);
+      return isNaN(fromNum.getTime()) ? null : fromNum;
+    }
+    var s = String(input).trim();
+    if (!s) return null;
+    // Pure epoch millis string
+    if (/^\d{10,13}$/.test(s)) {
+      var n = Number(s);
+      if (s.length === 10) n *= 1000;
+      var fromEpoch = new Date(n);
+      return isNaN(fromEpoch.getTime()) ? null : fromEpoch;
+    }
+    // ISO without timezone → treat as UTC (chain / storage convention)
+    if (/^\d{4}-\d{2}-\d{2}T/.test(s) && !/[zZ]|[+-]\d{2}:?\d{2}$/.test(s)) {
+      s = s + "Z";
+    }
+    var d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /** Local display: 7-22-2026 8:06 PM (from UTC-backed instant). */
+  function formatLocalDateTime(input) {
+    var d = parseUtcInstant(input);
+    if (!d) return "—";
+    var month = d.getMonth() + 1;
+    var day = d.getDate();
+    var year = d.getFullYear();
+    var h = d.getHours();
+    var mins = d.getMinutes();
+    var ampm = h >= 12 ? "PM" : "AM";
+    var h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    var mm = mins < 10 ? "0" + mins : String(mins);
+    return month + "-" + day + "-" + year + " " + h12 + ":" + mm + " " + ampm;
+  }
+
+  /** Canonical UTC ISO for storage / chain (always Zulu). */
+  function utcNowIso() {
+    return new Date().toISOString();
+  }
+
   /* --- Hash-linked receipt chain (mirrors frame ui executionChain + MutationReceipt) ---
      Each entry: action + payload/result hashes, prev_hash → head, FRAME_SIGNATURE_V1. */
   var LS_CHAIN = "frame.receipts.chain.v1";
@@ -580,7 +628,8 @@ window.FRAME = (function () {
             payload_hash: payload_hash,
             result_hash: result_hash,
             prev_hash: prev,
-            timestamp: Date.now(),
+            timestamp: Date.now(), // UTC epoch ms (chain / signing)
+            timestamp_utc: new Date().toISOString(), // explicit Zulu for readers
             signature: sig,
             provider_id: active.frameId,
             sig_alg: "FRAME_SIGNATURE_V1",
@@ -960,6 +1009,9 @@ window.FRAME = (function () {
     randomAlnum: randomAlnum,
     humanBytes: humanBytes,
     humanBytesLong: humanBytesLong,
+    formatLocalDateTime: formatLocalDateTime,
+    parseUtcInstant: parseUtcInstant,
+    utcNowIso: utcNowIso,
     localStorageBytes: localStorageBytes,
     localStorageEntries: localStorageEntries,
     browserName: browserName,

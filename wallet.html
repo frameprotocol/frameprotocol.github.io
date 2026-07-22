@@ -1283,7 +1283,9 @@
                 signedBy: e.signedBy || e.identity_id,
                 sigAlg: e.sigAlg || e.sig_alg,
                 sigScheme: e.sigScheme || "FRAME_SIGNATURE_V1",
-                updatedAt: e.timestamp ? new Date(e.timestamp).toISOString() : null,
+                updatedAt: e.timestamp != null
+                  ? (e.timestamp_utc || new Date(e.timestamp).toISOString())
+                  : null,
                 state: {
                   action: e.action,
                   dapp: e.dapp,
@@ -1512,7 +1514,7 @@
             card.querySelector(".card-name").textContent = title;
             var whenEl = card.querySelector('[data-f="when"]');
             var tickEl = card.querySelector('[data-f="tick"]');
-            whenEl.textContent = d.updatedAt ? String(d.updatedAt).slice(0, 10) : "—";
+            whenEl.textContent = d.updatedAt ? FRAME.formatLocalDateTime(d.updatedAt) : "—";
             tickEl.hidden = true;
             var isChain = rec.kind === "chain";
             card.querySelector('[data-f="dapp"]').textContent = isChain
@@ -1549,7 +1551,9 @@
             card.querySelector('[data-f="scheme"]').textContent = info.scheme;
             card.querySelector('[data-f="alg"]').textContent = info.alg;
             card.querySelector('[data-f="signer"]').textContent = d.signedBy || "—";
-            card.querySelector('[data-f="updated"]').textContent = d.updatedAt || "—";
+            card.querySelector('[data-f="updated"]').textContent = d.updatedAt
+              ? FRAME.formatLocalDateTime(d.updatedAt)
+              : "—";
             card.querySelector('[data-f="sig"]').textContent = d.signature ? shorten(d.signature, 60) : "—";
             var noteRow = card.querySelector('[data-f="noterow"]');
             if (note) {
