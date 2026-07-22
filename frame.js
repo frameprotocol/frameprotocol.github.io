@@ -366,6 +366,7 @@ window.FRAME = (function () {
         return createIdentity(null).then(function (created) {
           setActiveId(created.frameId);
           markUnlocked(created.frameId);
+          ensureDefaultGrants(created.frameId);
           return created;
         });
       }
@@ -379,6 +380,7 @@ window.FRAME = (function () {
         window.location.replace(unlock);
         return Promise.resolve(null);
       }
+      ensureDefaultGrants(active.frameId);
       return Promise.resolve(active);
     } catch (e) {
       return Promise.resolve(null);
@@ -629,6 +631,223 @@ window.FRAME = (function () {
     return verifyData(signer.publicKey, material, entry.signature);
   }
 
+  /** Audit link integrity + signatures (Receipt Audit dApp idea). */
+  function auditReceiptChain() {
+    var state = getReceiptChain();
+    var entries = state.entries || [];
+    var report = {
+      ok: true,
+      count: entries.length,
+      head_hash: state.head_hash,
+      next_sequence: state.next_sequence,
+      broken_links: [],
+      bad_signatures: [],
+      missing_signers: [],
+      recomputed_head: null
+    };
+    if (entries.length === 0) {
+      report.ok = state.head_hash == null;
+      return Promise.resolve(report);
+    }
+    var prev = null;
+    var i = 0;
+    function step() {
+      if (i >= entries.length) {
+        report.recomputed_head = prev;
+        if (state.head_hash && state.head_hash !== prev) {
+          report.ok = false;
+          report.broken_links.push({ at: "head", expected: prev, actual: state.head_hash });
+        }
+        return report;
+      }
+      var e = entries[i];
+      if ((e.prev_hash || null) !== prev) {
+        report.ok = false;
+        report.broken_links.push({
+          at: e.sequence != null ? e.sequence : i,
+          id: e.id,
+          expected_prev: prev,
+          actual_prev: e.prev_hash || null
+        });
+      }
+      var signer = getById(e.signedBy) || getById(e.identity_id);
+      if (!signer || !signer.publicKey) {
+        report.ok = false;
+        report.missing_signers.push(e.id);
+        prev = e.receipt_hash || prev;
+        i++;
+        return Promise.resolve().then(step);
+      }
+      return verifyChainReceipt(e).then(function (ok) {
+        if (!ok) {
+          report.ok = false;
+          report.bad_signatures.push(e.id);
+        }
+        prev = e.receipt_hash || prev;
+        i++;
+        return step();
+      });
+    }
+    return Promise.resolve().then(step);
+  }
+
+  /* --- Capability grants (explicit-only, mirrors frame capabilities.ts spirit) --- */
+  var LS_GRANTS = "frame.grants.v1";
+  var DEFAULT_CAPS = [
+    "calc.write", "calc.read",
+    "wallet.write", "wallet.export", "wallet.import",
+    "frame.rename", "frame.clone", "frame.export",
+    "identity.switch", "identity.create", "identity.export", "identity.import",
+    "command.exec", "storage.read", "chain.verify", "grant.manage"
+  ];
+
+  function getGrantStore() {
+    var raw = readJSON(localStorage, LS_GRANTS);
+    if (!raw || typeof raw !== "object") return { version: 1, grants: {} };
+    return { version: 1, grants: raw.grants && typeof raw.grants === "object" ? raw.grants : {} };
+  }
+
+  function saveGrantStore(store) {
+    try { localStorage.setItem(LS_GRANTS, JSON.stringify({ version: 1, grants: store.grants || {} })); } catch (e) {}
+  }
+
+  function listGrants(identityId) {
+    var id = identityId || getActiveId();
+    if (!id) return [];
+    var store = getGrantStore();
+    var g = store.grants[id];
+    return Array.isArray(g) ? g.slice().sort() : [];
+  }
+
+  function hasCapability(identityId, capability) {
+    var caps = listGrants(identityId);
+    if (caps.indexOf("*") >= 0) return true;
+    return caps.indexOf(String(capability || "").trim()) >= 0;
+  }
+
+  function grantCapability(identityId, capability, opts) {
+    opts = opts || {};
+    var id = identityId || getActiveId();
+    var cap = String(capability || "").trim();
+    if (!id || !cap) return Promise.reject(new Error("grant: missing identity or capability"));
+    var actor = getActiveId();
+    if (opts.skipGate !== true && actor && !hasCapability(actor, "grant.manage") && listGrants(id).length > 0) {
+      // Bootstrapping empty identities is allowed; otherwise need grant.manage.
+      if (listGrants(actor).length > 0) {
+        return Promise.reject(new Error("capability denied: grant.manage"));
+      }
+    }
+    var store = getGrantStore();
+    if (!Array.isArray(store.grants[id])) store.grants[id] = [];
+    if (store.grants[id].indexOf(cap) < 0) store.grants[id].push(cap);
+    saveGrantStore(store);
+    if (opts.silent) return Promise.resolve({ identityId: id, capability: cap });
+    return appendReceipt({
+      action: "grant.add",
+      dapp: "frame.system.grants",
+      title: "grant " + cap + " → " + id.slice(0, 12) + "…",
+      payload: { identityId: id, capability: cap },
+      result: { grants: listGrants(id) }
+    }).then(function () { return { identityId: id, capability: cap }; });
+  }
+
+  function revokeCapability(identityId, capability) {
+    var id = identityId || getActiveId();
+    var cap = String(capability || "").trim();
+    var actor = getActiveId();
+    if (actor && !hasCapability(actor, "grant.manage")) {
+      return Promise.reject(new Error("capability denied: grant.manage"));
+    }
+    var store = getGrantStore();
+    var list = Array.isArray(store.grants[id]) ? store.grants[id] : [];
+    store.grants[id] = list.filter(function (c) { return c !== cap; });
+    saveGrantStore(store);
+    return appendReceipt({
+      action: "grant.revoke",
+      dapp: "frame.system.grants",
+      title: "revoke " + cap + " from " + (id || "").slice(0, 12) + "…",
+      payload: { identityId: id, capability: cap },
+      result: { grants: listGrants(id) }
+    }).then(function () { return { identityId: id, capability: cap }; });
+  }
+
+  function ensureDefaultGrants(identityId) {
+    var id = identityId || getActiveId();
+    if (!id) return;
+    var store = getGrantStore();
+    if (Array.isArray(store.grants[id]) && store.grants[id].length) return;
+    store.grants[id] = DEFAULT_CAPS.slice();
+    saveGrantStore(store);
+  }
+
+  function requireCapability(capability) {
+    var id = getActiveId();
+    if (!id) throw new Error("capability denied: no active identity");
+    ensureDefaultGrants(id);
+    if (!hasCapability(id, capability)) {
+      throw new Error("capability denied: " + capability);
+    }
+    return true;
+  }
+
+  /**
+   * Capability-gated mutation: check grant → append signed chain receipt → optional apply().
+   * Mirrors frame's intent → receipt → projection funnel (browser-local).
+   */
+  function mutate(opts) {
+    opts = opts || {};
+    try {
+      if (opts.capability) requireCapability(opts.capability);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+    return appendReceipt({
+      action: opts.action,
+      dapp: opts.dapp,
+      title: opts.title,
+      payload: opts.payload,
+      result: opts.result != null ? opts.result : { ok: true }
+    }).then(function (entry) {
+      if (typeof opts.apply === "function") {
+        try { opts.apply(entry); } catch (e) {}
+      }
+      return entry;
+    });
+  }
+
+  /** Project latest dApp display/state from chain receipts (chain as source of truth). */
+  function projectFromChain(dappKey, actions) {
+    var state = getReceiptChain();
+    var latest = null;
+    (state.entries || []).forEach(function (e) {
+      if (dappKey && e.dapp !== dappKey) return;
+      if (actions && actions.length && actions.indexOf(e.action) < 0) return;
+      latest = e;
+    });
+    return latest;
+  }
+
+  function projectCalculatorState() {
+    var state = getReceiptChain();
+    var display = null;
+    (state.entries || []).forEach(function (e) {
+      if (e.dapp !== "frame.dapp.calculator") return;
+      if (e.result && e.result.display != null) display = String(e.result.display);
+      else if (e.result && e.result.value != null) display = String(e.result.value);
+    });
+    return display != null ? { display: display, fromChain: true } : null;
+  }
+
+  function projectWalletState() {
+    var latest = projectFromChain("frame.dapp.wallet", [
+      "wallet.persist", "wallet.add", "wallet.remove", "wallet.job", "wallet.task"
+    ]);
+    if (latest && latest.result && latest.result.state) {
+      return { state: latest.result.state, fromChain: true, receipt: latest };
+    }
+    return null;
+  }
+
   function localStorageEntries() {
     var out = [];
     try {
@@ -748,6 +967,18 @@ window.FRAME = (function () {
     sha256Hex: sha256Hex,
     getReceiptChain: getReceiptChain,
     appendReceipt: appendReceipt,
-    verifyChainReceipt: verifyChainReceipt
+    verifyChainReceipt: verifyChainReceipt,
+    auditReceiptChain: auditReceiptChain,
+    listGrants: listGrants,
+    hasCapability: hasCapability,
+    grantCapability: grantCapability,
+    revokeCapability: revokeCapability,
+    ensureDefaultGrants: ensureDefaultGrants,
+    requireCapability: requireCapability,
+    mutate: mutate,
+    projectFromChain: projectFromChain,
+    projectCalculatorState: projectCalculatorState,
+    projectWalletState: projectWalletState,
+    DEFAULT_CAPS: DEFAULT_CAPS
   };
 })();

@@ -218,8 +218,9 @@
         } else if (d.id === "frame.system.command") {
           try {
             var shell = FRAME.getFrame();
+            var chain = FRAME.getReceiptChain ? FRAME.getReceiptChain() : { entries: [] };
             lines.push('<span class="k">id</span> ' + escapeHtml(shell.id));
-            lines.push('<span class="k">uid</span> ' + escapeHtml(String(shell.uid).slice(0, 16)) + "…");
+            lines.push('<span class="k">chain</span> ' + (chain.entries || []).length + " receipts");
           } catch (e) {
             lines.push("FRAME shell");
           }

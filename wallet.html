@@ -194,6 +194,14 @@
     #receiptList .card.open .rcpt-body { display: block !important; padding-top: 8px; }
     #receiptList .row { margin-top: 3px; font-size: 0.72rem; grid-template-columns: 84px 1fr; }
     #receiptList .card.rcpt-hidden { display: none; }
+    .audit-box {
+      border: 1.5px solid #000000; border-radius: 10px; padding: 10px 12px;
+      margin-bottom: 10px; font-family: 'Space Mono', monospace; font-size: 0.74rem;
+      background: #fafafa; line-height: 1.45;
+    }
+    .audit-box.ok { border-color: #0f7a3d; background: #e9f7ef; }
+    .audit-box.bad { border-color: #c0392b; background: #fdecec; }
+    .audit-box[hidden] { display: none; }
 
     .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
     .task:last-child { border-bottom: 0; }
@@ -448,7 +456,9 @@
     <section class="pane" id="pane-receipts">
       <div class="toolbar">
         <span class="summary" id="receiptSummary">Checking&hellip;</span>
+        <button class="btn ghost sm" id="auditChainBtn" type="button">Audit chain</button>
       </div>
+      <div class="audit-box" id="auditBox" hidden></div>
       <input class="rcpt-search" id="receiptSearch" type="search" placeholder="Search receipts…" autocomplete="off" />
       <div class="rcpt-cats" id="receiptCats" role="tablist" aria-label="Receipt categories"></div>
       <div id="receiptList"></div>
@@ -503,11 +513,18 @@
 
       function load() {
         refreshActive();
+        var projected = FRAME.projectWalletState ? FRAME.projectWalletState() : null;
+        if (projected && projected.state) {
+          state.jobs = Array.isArray(projected.state.jobs) ? projected.state.jobs : [];
+          state.tasks = Array.isArray(projected.state.tasks) ? projected.state.tasks : [];
+        }
         try {
           var d = JSON.parse(localStorage.getItem(KEY) || "null");
           if (d && d.state) {
-            state.jobs = Array.isArray(d.state.jobs) ? d.state.jobs : [];
-            state.tasks = Array.isArray(d.state.tasks) ? d.state.tasks : [];
+            if (!projected) {
+              state.jobs = Array.isArray(d.state.jobs) ? d.state.jobs : [];
+              state.tasks = Array.isArray(d.state.tasks) ? d.state.tasks : [];
+            }
             // Legacy: wallets used to live on the FRAME dApp record — migrate onto the active identity.
             if (active && Array.isArray(d.state.wallets) && d.state.wallets.length && !Array.isArray(active.wallets)) {
               active.wallets = d.state.wallets;
@@ -538,7 +555,28 @@
         FRAME.updateIdentity(active);
       }
 
-      function persist() {
+      function chainSnapshot() {
+        return {
+          jobs: state.jobs,
+          tasks: state.tasks,
+          wallets: state.wallets,
+          activeWalletId: state.activeWalletId
+        };
+      }
+
+      function logWallet(action, title, payload) {
+        if (!FRAME.mutate) return;
+        FRAME.mutate({
+          capability: "wallet.write",
+          action: action,
+          dapp: KEY,
+          title: title || action,
+          payload: payload || null,
+          result: { state: chainSnapshot(), ok: true }
+        }).catch(function () {});
+      }
+
+      function persist(meta) {
         persistWalletsToIdentity();
         var payload;
         try {
@@ -556,6 +594,9 @@
           localStorage.setItem(KEY, JSON.stringify(d));
         } catch (e) {}
         if (payload !== undefined) signRecord(KEY, payload);
+        if (meta && meta.chain !== false) {
+          logWallet((meta && meta.action) || "wallet.persist", (meta && meta.title) || "wallet persist", meta && meta.payload);
+        }
       }
 
       // Sign a dApp localStorage record with the active identity (FRAME_SIGNATURE_V1).
@@ -724,11 +765,22 @@
               var newName = (input.value || "").trim();
               if (newName) {
                 try {
+                  var prev = FRAME.getFrame().id;
                   FRAME.setFrameId(newName);
                   frameName.textContent = FRAME.getFrame().id;
                   var uidMeta = document.getElementById("frameUidMeta");
                   if (uidMeta) uidMeta.textContent = "uid " + FRAME.getFrame().uid + " (stable)";
                   setFramePending();
+                  if (FRAME.mutate) {
+                    FRAME.mutate({
+                      capability: "frame.rename",
+                      action: "frame.rename",
+                      dapp: "frame.shell",
+                      title: "rename FRAME · " + newName,
+                      payload: { from: prev, to: newName },
+                      result: { id: FRAME.getFrame().id, uid: FRAME.getFrame().uid }
+                    }).catch(function () {});
+                  }
                 } catch (err) {
                   alert((err && err.message) ? err.message : "Could not rename FRAME id.");
                 }
@@ -924,6 +976,7 @@
         list.querySelectorAll("[data-use-id]").forEach(function (b) {
           b.addEventListener("click", function () {
             var id = b.getAttribute("data-use-id");
+            var prev = FRAME.getActiveId();
             FRAME.setActiveId(id);
             var ident = FRAME.getById(id);
             if (ident && ident.passcode && !FRAME.isUnlocked(id)) {
@@ -931,6 +984,17 @@
               return;
             }
             if (ident && !ident.passcode) FRAME.markUnlocked(id);
+            if (FRAME.ensureDefaultGrants) FRAME.ensureDefaultGrants(id);
+            if (FRAME.mutate) {
+              FRAME.mutate({
+                capability: "identity.switch",
+                action: "identity.switch",
+                dapp: "frame.system.identity",
+                title: "switch identity",
+                payload: { from: prev, to: id },
+                result: { activeId: id }
+              }).catch(function () {});
+            }
             refreshActive();
             loadWalletsFromIdentity();
             renderIdents();
@@ -1107,7 +1171,7 @@
         };
         state.wallets.unshift(w);
         if (!state.activeWalletId) state.activeWalletId = w.id;
-        persist();
+        persist({ action: "wallet.add", title: "add wallet · " + name, payload: { wallet: w } });
         walletForm.reset();
         walletForm.classList.add("hidden");
         renderWallets();
@@ -1157,7 +1221,8 @@
         list.querySelectorAll("[data-use]").forEach(function (b) {
           b.addEventListener("click", function () {
             state.activeWalletId = b.getAttribute("data-use");
-            persist(); renderWallets();
+            persist({ action: "wallet.use", title: "use wallet", payload: { id: state.activeWalletId } });
+            renderWallets();
           });
         });
         list.querySelectorAll("[data-del]").forEach(function (b) {
@@ -1165,7 +1230,8 @@
             var id = b.getAttribute("data-del");
             state.wallets = state.wallets.filter(function (x) { return x.id !== id; });
             if (state.activeWalletId === id) state.activeWalletId = state.wallets[0] ? state.wallets[0].id : null;
-            persist(); renderWallets();
+            persist({ action: "wallet.remove", title: "remove wallet", payload: { id: id } });
+            renderWallets();
           });
         });
       }
@@ -1583,6 +1649,45 @@
         });
       }
 
+      var auditBtn = document.getElementById("auditChainBtn");
+      var auditBox = document.getElementById("auditBox");
+      if (auditBtn && auditBox && !auditBtn.dataset.bound) {
+        auditBtn.dataset.bound = "1";
+        auditBtn.addEventListener("click", function () {
+          auditBox.hidden = false;
+          auditBox.className = "audit-box";
+          auditBox.textContent = "Auditing chain…";
+          try { FRAME.requireCapability("chain.verify"); } catch (err) {
+            auditBox.className = "audit-box bad";
+            auditBox.textContent = String(err.message || err);
+            return;
+          }
+          FRAME.auditReceiptChain().then(function (r) {
+            auditBox.className = "audit-box " + (r.ok ? "ok" : "bad");
+            var lines = [];
+            lines.push(r.ok ? "Chain OK" : "Chain problems found");
+            lines.push(r.count + " entries · head " + (r.head_hash ? r.head_hash.slice(0, 16) + "…" : "(empty)"));
+            if (r.broken_links && r.broken_links.length) lines.push("broken links: " + r.broken_links.length);
+            if (r.bad_signatures && r.bad_signatures.length) lines.push("bad signatures: " + r.bad_signatures.length);
+            if (r.missing_signers && r.missing_signers.length) lines.push("missing signers: " + r.missing_signers.length);
+            auditBox.textContent = lines.join("\n");
+            if (FRAME.mutate) {
+              FRAME.mutate({
+                capability: "chain.verify",
+                action: "chain.audit",
+                dapp: "frame.system.receipt_audit",
+                title: r.ok ? "audit OK" : "audit FAIL",
+                payload: { count: r.count },
+                result: { ok: r.ok, broken: (r.broken_links || []).length, bad_sig: (r.bad_signatures || []).length }
+              }).catch(function () {});
+            }
+          }).catch(function (err) {
+            auditBox.className = "audit-box bad";
+            auditBox.textContent = String(err && err.message ? err.message : err);
+          });
+        });
+      }
+
       function startReceiptLoop() {
         if (receiptTimer) return;
         renderReceipts();
@@ -1615,7 +1720,7 @@
           id: uid(), title: title, status: "queued",
           createdAt: new Date().toISOString()
         });
-        persist();
+        persist({ action: "wallet.job", title: "enqueue · " + title, payload: { title: title } });
         jobForm.reset();
         jobForm.classList.add("hidden");
         renderJobs();
@@ -1654,21 +1759,24 @@
           b.addEventListener("click", function () {
             var id = b.getAttribute("data-run");
             state.jobs.forEach(function (j) { if (j.id === id) j.status = "running"; });
-            persist(); renderJobs();
+            persist({ action: "wallet.job", title: "start job", payload: { id: id, status: "running" } });
+            renderJobs();
           });
         });
         list.querySelectorAll("[data-finish]").forEach(function (b) {
           b.addEventListener("click", function () {
             var id = b.getAttribute("data-finish");
             state.jobs.forEach(function (j) { if (j.id === id) j.status = "done"; });
-            persist(); renderJobs();
+            persist({ action: "wallet.job", title: "complete job", payload: { id: id, status: "done" } });
+            renderJobs();
           });
         });
         list.querySelectorAll("[data-jdel]").forEach(function (b) {
           b.addEventListener("click", function () {
             var id = b.getAttribute("data-jdel");
             state.jobs = state.jobs.filter(function (j) { return j.id !== id; });
-            persist(); renderJobs();
+            persist({ action: "wallet.job", title: "remove job", payload: { id: id } });
+            renderJobs();
           });
         });
       }
@@ -1681,12 +1789,12 @@
         if (!text) return;
         state.tasks.unshift({ id: uid(), text: text, done: false, createdAt: new Date().toISOString() });
         input.value = "";
-        persist();
+        persist({ action: "wallet.task", title: "add task", payload: { text: text } });
         renderTasks();
       });
       document.getElementById("clearDone").addEventListener("click", function () {
         state.tasks = state.tasks.filter(function (t) { return !t.done; });
-        persist();
+        persist({ action: "wallet.task", title: "clear done tasks" });
         renderTasks();
       });
 
@@ -1714,21 +1822,23 @@
           c.addEventListener("change", function () {
             var id = c.getAttribute("data-tog");
             state.tasks.forEach(function (t) { if (t.id === id) t.done = !!c.checked; });
-            persist(); renderTasks();
+            persist({ action: "wallet.task", title: c.checked ? "complete task" : "reopen task", payload: { id: id, done: !!c.checked } });
+            renderTasks();
           });
         });
         list.querySelectorAll("[data-tdel]").forEach(function (b) {
           b.addEventListener("click", function () {
             var id = b.getAttribute("data-tdel");
             state.tasks = state.tasks.filter(function (t) { return t.id !== id; });
-            persist(); renderTasks();
+            persist({ action: "wallet.task", title: "delete task", payload: { id: id } });
+            renderTasks();
           });
         });
       }
 
       /* ---- Boot ---- */
       load();
-      persist(); // always write + sign (stubs from dapps.html were left unsigned)
+      persist({ chain: false }); // always write + sign (stubs from dapps.html were left unsigned)
       ensureAllDappsSigned();
       renderGlance();
       renderIdents();

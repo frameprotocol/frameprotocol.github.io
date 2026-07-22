@@ -214,6 +214,11 @@
       var replace = true;
 
       function load() {
+        var projected = FRAME.projectCalculatorState ? FRAME.projectCalculatorState() : null;
+        if (projected && projected.display != null) {
+          current = projected.display;
+          return;
+        }
         try {
           var d = JSON.parse(localStorage.getItem(KEY) || "null");
           if (d && d.state && typeof d.state.display === "string") current = d.state.display;
@@ -235,10 +240,11 @@
         return ({ "+": "+", "-": "\u2212", "*": "\u00d7", "/": "\u00f7" })[o] || o;
       }
 
-      /** Log every input / equation onto the hash-linked receipt chain. */
+      /** Log every input / equation onto the hash-linked receipt chain (capability-gated). */
       function logChain(action, payload, result, title) {
-        if (!FRAME.appendReceipt) return;
-        FRAME.appendReceipt({
+        if (!FRAME.mutate) return;
+        FRAME.mutate({
+          capability: "calc.write",
           action: "calc." + action,
           dapp: KEY,
           title: title || ("calc." + action),
