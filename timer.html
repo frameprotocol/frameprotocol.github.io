@@ -91,6 +91,21 @@
     .btn.primary:hover { background: #fff; color: #000; }
     .btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
     .btn.wide { grid-column: 1 / -1; }
+    .btn.ghost {
+      border-color: #cccccc; background: #fff; color: #333; font-weight: 600; font-size: 0.85rem;
+      padding: 10px 0;
+    }
+    .btn.ghost:hover { border-color: #000; background: #000; color: #fff; }
+    .btn.ghost.on { border-color: #000; background: #000; color: #fff; }
+
+    .sound-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 0;
+    }
+    .sound-hint {
+      grid-column: 1 / -1; text-align: center; margin: 0;
+      font-size: 0.72rem; color: #888888;
+    }
+    .sound-hint.warn { color: #c0392b; }
 
     .back {
       display: block; text-align: center; margin-top: 16px;
@@ -160,6 +175,12 @@
       <button class="btn wide" id="resetBtn" type="button">Reset</button>
     </div>
 
+    <div class="sound-row">
+      <button class="btn ghost on" id="soundToggle" type="button" aria-pressed="true">Sound on</button>
+      <button class="btn ghost" id="soundTest" type="button">Test chime</button>
+      <p class="sound-hint" id="soundHint">Uses capability sound.play</p>
+    </div>
+
     <a class="back" href="/dapps.html">Back to dApps</a>
   </main>
 
@@ -173,6 +194,9 @@
       var startBtn = document.getElementById("startBtn");
       var pauseBtn = document.getElementById("pauseBtn");
       var resetBtn = document.getElementById("resetBtn");
+      var soundToggle = document.getElementById("soundToggle");
+      var soundTest = document.getElementById("soundTest");
+      var soundHint = document.getElementById("soundHint");
       var panel = document.getElementById("panel");
 
       var ident = null;
@@ -184,6 +208,8 @@
       var endsAt = null;
       var tickTimer = null;
       var done = false;
+      var soundEnabled = true;
+      var soundArmed = false;
 
       function pad(n) { n = Math.max(0, Math.floor(n)); return n < 10 ? "0" + n : String(n); }
 
@@ -201,8 +227,67 @@
           remainingMs: remainingMs,
           running: running,
           endsAt: endsAt,
-          done: done
+          done: done,
+          soundEnabled: soundEnabled
         };
+      }
+
+      function canPlaySound() {
+        try {
+          var id = FRAME.getActiveId && FRAME.getActiveId();
+          if (!id) return false;
+          if (FRAME.ensureDefaultGrants) FRAME.ensureDefaultGrants(id);
+          return !!(FRAME.hasCapability && FRAME.hasCapability(id, "sound.play"));
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function updateSoundUi() {
+        var ok = canPlaySound();
+        soundToggle.classList.toggle("on", soundEnabled);
+        soundToggle.setAttribute("aria-pressed", soundEnabled ? "true" : "false");
+        soundToggle.textContent = soundEnabled ? "Sound on" : "Sound off";
+        soundTest.disabled = !ok;
+        soundHint.classList.toggle("warn", !ok);
+        if (!ok) {
+          soundHint.textContent = "Missing sound.play — grant it in Command / Wallet";
+        } else if (!soundEnabled) {
+          soundHint.textContent = "Chime muted for this timer";
+        } else if (!soundArmed) {
+          soundHint.textContent = "Start once to unlock audio in this browser";
+        } else {
+          soundHint.textContent = "Timer-done chime ready (sound.play)";
+        }
+      }
+
+      function armAudio() {
+        if (!FRAME.unlockAudio) return Promise.resolve(false);
+        return FRAME.unlockAudio().then(function (ok) {
+          if (ok) soundArmed = true;
+          updateSoundUi();
+          return ok;
+        }).catch(function () {
+          updateSoundUi();
+          return false;
+        });
+      }
+
+      function playDoneSound(kind) {
+        if (!soundEnabled) return Promise.resolve(null);
+        if (!FRAME.playSound) return Promise.resolve(null);
+        return FRAME.playSound({ kind: kind || "timer.done", dapp: KEY }).then(function (r) {
+          soundArmed = true;
+          updateSoundUi();
+          return r;
+        }).catch(function (err) {
+          updateSoundUi();
+          if (soundHint) {
+            soundHint.classList.add("warn");
+            soundHint.textContent = (err && err.message) ? String(err.message) : "Could not play sound";
+          }
+          return null;
+        });
       }
 
       function refreshSig(payload) {
@@ -316,6 +401,7 @@
         document.querySelectorAll(".preset").forEach(function (b) {
           b.classList.toggle("on", Number(b.getAttribute("data-sec")) === sec && !running && remainingMs === totalMs);
         });
+        updateSoundUi();
       }
 
       function applyFromInputs() {
@@ -352,19 +438,7 @@
         try {
           if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 200]);
         } catch (e) {}
-        try {
-          var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (Ctx) {
-            var ctx = new Ctx();
-            var o = ctx.createOscillator();
-            var g = ctx.createGain();
-            o.type = "sine"; o.frequency.value = 880;
-            g.gain.value = 0.04;
-            o.connect(g); g.connect(ctx.destination);
-            o.start();
-            setTimeout(function () { o.stop(); ctx.close(); }, 500);
-          }
-        } catch (e) {}
+        playDoneSound("timer.done");
       }
 
       function tick() {
@@ -390,6 +464,7 @@
         persist();
         logChain("start", "timer start · " + fmt(remainingMs), { remainingMs: remainingMs, totalMs: totalMs });
         syncTimerJob("running");
+        armAudio();
         tick();
       }
 
@@ -432,6 +507,7 @@
             running = !!d.state.running;
             endsAt = d.state.endsAt || null;
             done = !!d.state.done;
+            if (typeof d.state.soundEnabled === "boolean") soundEnabled = d.state.soundEnabled;
             if (running && endsAt) {
               remainingMs = Math.max(0, endsAt - Date.now());
               if (remainingMs <= 0) {
@@ -455,6 +531,19 @@
       startBtn.addEventListener("click", start);
       pauseBtn.addEventListener("click", pause);
       resetBtn.addEventListener("click", reset);
+
+      soundToggle.addEventListener("click", function () {
+        soundEnabled = !soundEnabled;
+        persist();
+        logChain("sound", soundEnabled ? "timer sound on" : "timer sound off", { soundEnabled: soundEnabled });
+        updateSoundUi();
+        if (soundEnabled) armAudio();
+      });
+      soundTest.addEventListener("click", function () {
+        armAudio().then(function () {
+          playDoneSound("timer.test");
+        });
+      });
 
       minsEl.addEventListener("change", function () {
         if (running) return;

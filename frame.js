@@ -745,6 +745,7 @@ window.FRAME = (function () {
   var DEFAULT_CAPS = [
     "calc.write", "calc.read",
     "timer.write", "timer.read",
+    "sound.play",
     "wallet.write", "wallet.export", "wallet.import",
     "frame.rename", "frame.clone", "frame.export",
     "identity.switch", "identity.create", "identity.export", "identity.import",
@@ -958,6 +959,116 @@ window.FRAME = (function () {
     return d;
   }
 
+  /* --- Sound capability (Web Audio; gated by sound.play) --- */
+  var audioCtx = null;
+
+  function getAudioContext() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      if (!audioCtx) audioCtx = new Ctx();
+      return audioCtx;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /** Call from a user gesture so browsers allow later alarm playback. */
+  function unlockAudio() {
+    var ctx = getAudioContext();
+    if (!ctx) return Promise.resolve(false);
+    if (ctx.state === "suspended") {
+      return ctx.resume().then(function () { return true; }).catch(function () { return false; });
+    }
+    return Promise.resolve(true);
+  }
+
+  function scheduleTone(ctx, freq, when, dur, opts) {
+    opts = opts || {};
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    var filter = ctx.createBiquadFilter();
+    o.type = opts.type || "sine";
+    o.frequency.setValueAtTime(freq, when);
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(opts.filter || 4200, when);
+    var peak = opts.gain != null ? opts.gain : 0.09;
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(peak, when + 0.018);
+    g.gain.exponentialRampToValueAtTime(Math.max(peak * 0.35, 0.0002), when + dur * 0.45);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    o.connect(filter);
+    filter.connect(g);
+    g.connect(ctx.destination);
+    o.start(when);
+    o.stop(when + dur + 0.03);
+  }
+
+  /**
+   * Play a capability-gated system sound.
+   * kind: "timer.done" | "timer.test" | "ui.tick"
+   */
+  function playSound(args) {
+    args = args || {};
+    var kind = String(args.kind || "timer.done");
+    try {
+      requireCapability("sound.play");
+    } catch (err) {
+      return Promise.reject(err);
+    }
+    var ctx = getAudioContext();
+    if (!ctx) return Promise.reject(new Error("sound: Web Audio unavailable"));
+
+    function run() {
+      var t0 = ctx.currentTime + 0.04;
+      if (kind === "ui.tick") {
+        scheduleTone(ctx, 880, t0, 0.06, { gain: 0.04, type: "triangle" });
+        return 0.12;
+      }
+      // Timer done: two rising chime phrases + sustained final note (alarm-like).
+      // C5 E5 G5 · C5 E5 G5 · C6
+      var phrase = [523.25, 659.25, 783.99];
+      var cursor = t0;
+      for (var p = 0; p < 2; p++) {
+        for (var i = 0; i < phrase.length; i++) {
+          scheduleTone(ctx, phrase[i], cursor, 0.22, {
+            gain: 0.1,
+            type: i === 2 ? "triangle" : "sine",
+            filter: 5000
+          });
+          // Soft harmonic for body
+          scheduleTone(ctx, phrase[i] * 2, cursor, 0.18, { gain: 0.025, type: "sine", filter: 6000 });
+          cursor += 0.2;
+        }
+        cursor += 0.12;
+      }
+      scheduleTone(ctx, 1046.5, cursor, 0.55, { gain: 0.12, type: "triangle", filter: 5500 });
+      scheduleTone(ctx, 1318.5, cursor + 0.02, 0.45, { gain: 0.04, type: "sine", filter: 7000 });
+      cursor += 0.65;
+      // Echo phrase quieter
+      for (var j = 0; j < phrase.length; j++) {
+        scheduleTone(ctx, phrase[j], cursor, 0.18, { gain: 0.05, type: "sine" });
+        cursor += 0.16;
+      }
+      return cursor - t0 + 0.05;
+    }
+
+    return unlockAudio().then(function () {
+      var dur = run();
+      return appendReceipt({
+        action: "sound.play",
+        dapp: args.dapp || "frame.system.sound",
+        title: "sound · " + kind,
+        payload: { kind: kind },
+        result: { ok: true, durationSec: Math.round(dur * 100) / 100 }
+      }).then(function (entry) {
+        return { ok: true, kind: kind, durationSec: dur, receipt: entry };
+      }).catch(function () {
+        return { ok: true, kind: kind, durationSec: dur };
+      });
+    });
+  }
+
   function localStorageEntries() {
     var out = [];
     try {
@@ -1093,6 +1204,8 @@ window.FRAME = (function () {
     projectCalculatorState: projectCalculatorState,
     projectWalletState: projectWalletState,
     syncDappJob: syncDappJob,
+    unlockAudio: unlockAudio,
+    playSound: playSound,
     DEFAULT_CAPS: DEFAULT_CAPS
   };
 })();
