@@ -149,6 +149,8 @@ window.FRAME = (function () {
           recoveryKey: randomAlnum(17),
           passcode: null,
           label: null,
+          wallets: [],
+          activeWalletId: null,
           settings: { maxAttempts: 5, onLimit: "lock" },
           failedAttempts: 0,
           locked: false,
@@ -216,6 +218,8 @@ window.FRAME = (function () {
         privateKey: ident.privateKey || null,
         recoveryKey: ident.recoveryKey || null,
         label: ident.label || null,
+        wallets: Array.isArray(ident.wallets) ? ident.wallets : [],
+        activeWalletId: ident.activeWalletId || null,
         settings: ident.settings || { maxAttempts: 5, onLimit: "lock" },
         createdAt: ident.createdAt || new Date().toISOString()
       }
@@ -243,6 +247,8 @@ window.FRAME = (function () {
       recoveryKey: src.recoveryKey || randomAlnum(17),
       passcode: null,
       label: src.label || null,
+      wallets: Array.isArray(src.wallets) ? src.wallets : [],
+      activeWalletId: src.activeWalletId || null,
       settings: src.settings || { maxAttempts: 5, onLimit: "lock" },
       failedAttempts: 0,
       locked: false,
@@ -250,6 +256,61 @@ window.FRAME = (function () {
     };
     addIdentity(obj);
     return Promise.resolve(obj);
+  }
+
+  /* FRAME instance package: the clonable shell (no identity secrets). */
+  function exportFrame() {
+    var active = getActive();
+    var dapps = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!k || k.indexOf("frame.dapp.") !== 0) continue;
+        var raw = localStorage.getItem(k);
+        var parsed = null;
+        try { parsed = JSON.parse(raw); } catch (e) { parsed = { raw: raw }; }
+        // Strip signatures tied to a specific signer; clone gets fresh identity/signing.
+        if (parsed && typeof parsed === "object") {
+          delete parsed.signature;
+          delete parsed.signedBy;
+          delete parsed.sigAlg;
+          delete parsed.sigScheme;
+        }
+        dapps.push({ key: k, value: parsed });
+      }
+    } catch (e) {}
+    return {
+      format: "frame.instance.v1",
+      exportedAt: new Date().toISOString(),
+      frame: {
+        label: (active && active.label) ? active.label : "Frame:1",
+        note: "A FRAME is a clonable instance. Opening a clone creates or attaches a separate identity; identity secrets and crypto keys are not included."
+      },
+      dapps: dapps
+    };
+  }
+  function importFrame(raw) {
+    var data = raw;
+    if (typeof raw === "string") {
+      try { data = JSON.parse(raw); } catch (e) { return Promise.reject(new Error("invalid JSON")); }
+    }
+    if (!data || data.format !== "frame.instance.v1") {
+      return Promise.reject(new Error("unsupported FRAME package"));
+    }
+    try {
+      if (data.frame && data.frame.label && getActive()) {
+        var a = getActive();
+        a.label = data.frame.label;
+        updateIdentity(a);
+      }
+      (data.dapps || []).forEach(function (row) {
+        if (!row || !row.key || row.key.indexOf("frame.dapp.") !== 0) return;
+        localStorage.setItem(row.key, JSON.stringify(row.value || {}));
+      });
+    } catch (e) {
+      return Promise.reject(new Error("could not import FRAME"));
+    }
+    return Promise.resolve(data);
   }
 
   /* --- Page gate: ensure an unlocked active identity, else redirect --- */
@@ -454,6 +515,8 @@ window.FRAME = (function () {
     setPasscode: setPasscode,
     exportIdentity: exportIdentity,
     importIdentity: importIdentity,
+    exportFrame: exportFrame,
+    importFrame: importFrame,
     gate: gate,
     sha256Bytes: sha256Bytes,
     signDigest: signDigest,

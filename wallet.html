@@ -278,24 +278,29 @@
 
   <main class="panel">
     <h2 class="title">Wallet</h2>
-    <p class="subtitle">Wallets, receipts, jobs, and tasks, one place.</p>
+    <p class="subtitle">Your FRAME instance, the identity using it, and the keys that identity holds.</p>
     <div class="divider"></div>
 
     <nav class="tabs" role="tablist">
-      <button class="tab on" data-tab="wallets" type="button">Wallets</button>
+      <button class="tab on" data-tab="wallets" type="button">FRAME</button>
       <button class="tab" data-tab="receipts" type="button">Receipts</button>
       <button class="tab" data-tab="jobs" type="button">Jobs</button>
       <button class="tab" data-tab="tasks" type="button">Tasks</button>
     </nav>
 
-    <!-- WALLETS -->
+    <!-- FRAME + identity + crypto -->
     <section class="pane on" id="pane-wallets">
       <div class="ident-card glance-card">
-        <h3>This FRAME at a glance</h3>
+        <h3>This FRAME</h3>
+        <p class="sec-desc" style="margin-top:0">The whole instance: shell, dApps, and storage. Clone it so someone else can open a copy; they get their own identity on that copy.</p>
         <div class="frameline">
           <span class="frame-name" id="frameName">Frame:1</span>
           <button class="edit-btn" id="editName" type="button" title="Rename this FRAME" aria-label="Rename this FRAME"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
           <span class="verified" id="framePill"><svg id="pillIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span id="pillText">Verified</span></span>
+        </div>
+        <div class="form-actions" style="margin-bottom:10px">
+          <button class="btn sm" id="cloneFrameBtn" type="button">Clone FRAME</button>
+          <button class="btn sm ghost" id="exportFrameBtn" type="button">Export FRAME</button>
         </div>
         <a class="glance-storage" href="/storage.html">
           <span class="glance-st-label">Storage</span>
@@ -310,18 +315,19 @@
           <button class="ident-toggle" id="identToggle" type="button" aria-expanded="false" aria-controls="identBody">
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
             <span class="ident-toggle-text">
-              <h3>FRAME identity accounts</h3>
+              <h3>Identities</h3>
               <div class="ident-summary" id="identSummary">—</div>
             </span>
           </button>
           <div class="ident-head-actions">
-            <button class="btn sm ghost" id="exportIdentBtn" type="button">Export</button>
-            <label class="btn sm ghost import-label" for="importIdentFile">Import</label>
+            <button class="btn sm ghost" id="exportIdentBtn" type="button">Export identity</button>
+            <label class="btn sm ghost import-label" for="importIdentFile">Import identity</label>
             <input id="importIdentFile" type="file" accept="application/json,.json" hidden />
             <button class="btn sm" id="newIdentBtn" type="button">New identity</button>
           </div>
         </div>
         <div class="ident-body" id="identBody">
+          <p class="sec-desc">An identity is who uses this FRAME. It holds personal data: signing keys, passcode, recovery key, and crypto wallets. Cloning a FRAME does not clone an identity.</p>
           <form class="form hidden" id="newIdentForm">
             <label for="newIdentPass">Optional 5-digit passcode</label>
             <input id="newIdentPass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="Leave blank for none" autocomplete="off" />
@@ -339,7 +345,10 @@
       </div>
 
       <div class="toolbar">
-        <span class="summary" id="walletSummary">0 wallets</span>
+        <div>
+          <div class="summary" id="walletSummary">0 wallets</div>
+          <div class="sec-desc" style="margin:2px 0 0">Crypto wallets live on the active identity, not on the FRAME itself.</div>
+        </div>
         <button class="btn" id="addWalletBtn" type="button">Add wallet</button>
       </div>
 
@@ -433,29 +442,54 @@
       };
 
       function load() {
+        refreshActive();
         try {
           var d = JSON.parse(localStorage.getItem(KEY) || "null");
           if (d && d.state) {
-            state.wallets = Array.isArray(d.state.wallets) ? d.state.wallets : [];
             state.jobs = Array.isArray(d.state.jobs) ? d.state.jobs : [];
             state.tasks = Array.isArray(d.state.tasks) ? d.state.tasks : [];
-            state.activeWalletId = d.state.activeWalletId || null;
+            // Legacy: wallets used to live on the FRAME dApp record — migrate onto the active identity.
+            if (active && Array.isArray(d.state.wallets) && d.state.wallets.length && !Array.isArray(active.wallets)) {
+              active.wallets = d.state.wallets;
+              active.activeWalletId = d.state.activeWalletId || null;
+              FRAME.updateIdentity(active);
+              d.state.wallets = [];
+              d.state.activeWalletId = null;
+              localStorage.setItem(KEY, JSON.stringify(d));
+            }
           }
         } catch (e) {}
+        loadWalletsFromIdentity();
+      }
+
+      function loadWalletsFromIdentity() {
+        refreshActive();
+        if (!active) { state.wallets = []; state.activeWalletId = null; return; }
+        if (!Array.isArray(active.wallets)) active.wallets = [];
+        state.wallets = active.wallets;
+        state.activeWalletId = active.activeWalletId || null;
+      }
+
+      function persistWalletsToIdentity() {
+        refreshActive();
+        if (!active) return;
+        active.wallets = state.wallets;
+        active.activeWalletId = state.activeWalletId;
+        FRAME.updateIdentity(active);
       }
 
       function persist() {
+        persistWalletsToIdentity();
         var payload;
         try {
           var d = JSON.parse(localStorage.getItem(KEY) || "null") || {
             name: "Wallet", version: "1.0.0", installedAt: new Date().toISOString()
           };
           d.name = d.name || "Wallet";
+          // Jobs/tasks are FRAME-instance work; crypto wallets live on the identity.
           d.state = {
-            wallets: state.wallets,
             jobs: state.jobs,
-            tasks: state.tasks,
-            activeWalletId: state.activeWalletId
+            tasks: state.tasks
           };
           d.updatedAt = new Date().toISOString();
           payload = JSON.stringify(d.state);
@@ -787,7 +821,7 @@
             var activeId = FRAME.getActiveId() || (idents[0] && idents[0].frameId) || "";
             var short = activeId.length > 22 ? activeId.slice(0, 22) + "\u2026" : activeId;
             sum.textContent = idents.length + " identity" + (idents.length === 1 ? "" : "ies") +
-              (short ? " \u00b7 active " + short : "");
+              (short ? " \u00b7 active " + short : "") + " \u00b7 holds keys & wallets";
           }
         }
         list.innerHTML = "";
@@ -833,8 +867,10 @@
             }
             if (ident && !ident.passcode) FRAME.markUnlocked(id);
             refreshActive();
+            loadWalletsFromIdentity();
             renderIdents();
             renderGlance();
+            renderWallets();
             ensureAllDappsSigned();
           });
         });
@@ -917,8 +953,10 @@
           FRAME.markUnlocked(created.frameId);
           passInput.value = "";
           refreshActive();
+          loadWalletsFromIdentity();
           renderIdents();
           renderGlance();
+          renderWallets();
           ensureAllDappsSigned();
         }).catch(function () {
           alert("Could not create identity.");
@@ -930,17 +968,31 @@
         });
       });
 
+      function downloadJson(obj, filename) {
+        var blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 500);
+      }
+
+      document.getElementById("cloneFrameBtn").addEventListener("click", function () {
+        var pkg = FRAME.exportFrame();
+        downloadJson(pkg, (pkg.frame && pkg.frame.label ? pkg.frame.label : "frame") + ".clone.frame.json");
+        alert("FRAME clone package downloaded.\n\nIt includes the instance (dApps/shell state) but not identity secrets or crypto wallets. Whoever opens the clone gets their own identity.");
+      });
+      document.getElementById("exportFrameBtn").addEventListener("click", function () {
+        var pkg = FRAME.exportFrame();
+        downloadJson(pkg, (pkg.frame && pkg.frame.label ? pkg.frame.label : "frame") + ".frame.json");
+      });
+
       document.getElementById("exportIdentBtn").addEventListener("click", function () {
         refreshActive();
         if (!active) { alert("No active identity to export."); return; }
         var pkg = FRAME.exportIdentity(active.frameId);
         if (!pkg) { alert("Could not export identity."); return; }
-        var blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
-        var a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = active.frameId + ".frame.identity.json";
-        a.click();
-        setTimeout(function () { URL.revokeObjectURL(a.href); }, 500);
+        downloadJson(pkg, active.frameId + ".frame.identity.json");
       });
 
       document.getElementById("importIdentFile").addEventListener("change", function (e) {
@@ -953,8 +1005,10 @@
             FRAME.setActiveId(imported.frameId);
             FRAME.markUnlocked(imported.frameId);
             refreshActive();
+            loadWalletsFromIdentity();
             renderIdents();
             renderGlance();
+            renderWallets();
             ensureAllDappsSigned();
           }).catch(function (err) {
             alert((err && err.message) ? err.message : "Could not import identity.");
@@ -1003,7 +1057,7 @@
         document.getElementById("walletSummary").textContent = state.wallets.length + " wallet" + (state.wallets.length === 1 ? "" : "s");
         list.innerHTML = "";
         if (state.wallets.length === 0) {
-          list.innerHTML = '<div class="empty">No crypto wallets yet. Add Bitcoin, Ethereum, Solana, FRAME, or a custom address.</div>';
+          list.innerHTML = '<div class="empty">No crypto wallets on this identity yet. Add Bitcoin, Ethereum, Solana, FRAME, or a custom address — they stay with this identity.</div>';
           return;
         }
         state.wallets.forEach(function (w) {
