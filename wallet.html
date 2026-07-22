@@ -153,7 +153,27 @@
     .empty { border: 1px dashed #cccccc; border-radius: 14px; padding: 28px; text-align: center; color: #888888; font-size: 0.92rem; }
     .ident-card { border: 1px solid #e6e6e6; border-radius: 14px; padding: clamp(12px, 2vw, 16px); margin-bottom: 16px; background: #fafafa; }
     .ident-card h3 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 0.95rem; margin: 0; }
-    .ident-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .ident-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 0; flex-wrap: wrap; }
+    .ident-card.collapsed .ident-head { margin-bottom: 0; }
+    .ident-card:not(.collapsed) .ident-head { margin-bottom: 10px; }
+    .ident-toggle {
+      display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0;
+      background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+      font-family: inherit; color: inherit;
+    }
+    .ident-toggle .chev {
+      width: 18px; height: 18px; flex: 0 0 auto; color: #666666;
+      transition: transform 0.15s ease;
+    }
+    .ident-card:not(.collapsed) .ident-toggle .chev { transform: rotate(90deg); }
+    .ident-toggle-text { min-width: 0; flex: 1 1 auto; }
+    .ident-summary {
+      font-family: 'Space Mono', monospace; font-size: 0.72rem; color: #888888;
+      margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ident-body { display: block; }
+    .ident-card.collapsed .ident-body { display: none; }
+    .ident-card.collapsed .ident-head-actions { display: none; }
     .ident-list { display: flex; flex-direction: column; gap: 6px; }
     .ident-row {
       display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center;
@@ -285,9 +305,15 @@
         </a>
       </div>
 
-      <div class="ident-card">
+      <div class="ident-card collapsed" id="identCard">
         <div class="ident-head">
-          <h3>FRAME identity accounts</h3>
+          <button class="ident-toggle" id="identToggle" type="button" aria-expanded="false" aria-controls="identBody">
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+            <span class="ident-toggle-text">
+              <h3>FRAME identity accounts</h3>
+              <div class="ident-summary" id="identSummary">—</div>
+            </span>
+          </button>
           <div class="ident-head-actions">
             <button class="btn sm ghost" id="exportIdentBtn" type="button">Export</button>
             <label class="btn sm ghost import-label" for="importIdentFile">Import</label>
@@ -295,18 +321,20 @@
             <button class="btn sm" id="newIdentBtn" type="button">New identity</button>
           </div>
         </div>
-        <form class="form hidden" id="newIdentForm">
-          <label for="newIdentPass">Optional 5-digit passcode</label>
-          <input id="newIdentPass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="Leave blank for none" autocomplete="off" />
-          <div class="form-actions">
-            <button class="btn sm" type="submit">Create</button>
-            <button class="btn sm ghost" id="cancelNewIdent" type="button">Cancel</button>
+        <div class="ident-body" id="identBody">
+          <form class="form hidden" id="newIdentForm">
+            <label for="newIdentPass">Optional 5-digit passcode</label>
+            <input id="newIdentPass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="Leave blank for none" autocomplete="off" />
+            <div class="form-actions">
+              <button class="btn sm" type="submit">Create</button>
+              <button class="btn sm ghost" id="cancelNewIdent" type="button">Cancel</button>
+            </div>
+          </form>
+          <div class="ident-list" id="identList"></div>
+          <div class="ident-details hidden" id="identDetails"></div>
+          <div class="ident-foot">
+            <a href="/connect.html">Connect to existing identity &rarr;</a>
           </div>
-        </form>
-        <div class="ident-list" id="identList"></div>
-        <div class="ident-details hidden" id="identDetails"></div>
-        <div class="ident-foot">
-          <a href="/connect.html">Connect to existing identity &rarr;</a>
         </div>
       </div>
 
@@ -752,6 +780,16 @@
         refreshActive();
         var list = document.getElementById("identList");
         var idents = FRAME.getIdentities();
+        var sum = document.getElementById("identSummary");
+        if (sum) {
+          if (idents.length === 0) sum.textContent = "No identities";
+          else {
+            var activeId = FRAME.getActiveId() || (idents[0] && idents[0].frameId) || "";
+            var short = activeId.length > 22 ? activeId.slice(0, 22) + "\u2026" : activeId;
+            sum.textContent = idents.length + " identity" + (idents.length === 1 ? "" : "ies") +
+              (short ? " \u00b7 active " + short : "");
+          }
+        }
         list.innerHTML = "";
         if (idents.length === 0) {
           list.innerHTML = '<div class="empty" style="padding:16px">No identities. Create one to continue.</div>';
@@ -843,6 +881,13 @@
       }
 
       var newIdentForm = document.getElementById("newIdentForm");
+      document.getElementById("identToggle").addEventListener("click", function () {
+        var card = document.getElementById("identCard");
+        var open = card.classList.contains("collapsed");
+        card.classList.toggle("collapsed", !open);
+        document.getElementById("identToggle").setAttribute("aria-expanded", open ? "true" : "false");
+      });
+
       document.getElementById("newIdentBtn").addEventListener("click", function () {
         newIdentForm.classList.toggle("hidden");
         if (!newIdentForm.classList.contains("hidden")) {
