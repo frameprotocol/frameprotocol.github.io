@@ -454,12 +454,17 @@ window.FRAME = (function () {
   function humanBytesLong(n) {
     if (n === null || n === undefined || isNaN(n)) return "unknown";
     var units = ["bytes", "kilobytes", "megabytes", "gigabytes", "terabytes", "petabytes"];
-    var i = 0, v = n;
+    var i = 0, v = Number(n);
+    if (!isFinite(v) || v < 0) v = 0;
     while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-    var dp = (v >= 100 || i === 0) ? 0 : (v >= 10 ? 1 : 2);
-    var val = v.toFixed(dp);
-    var unit = units[i];
-    if (i === 0 && Number(val) === 1) unit = "byte";
+    var val, unit = units[i];
+    if (i === 0) {
+      val = String(Math.round(Number(n) || 0));
+      if (Number(val) === 1) unit = "byte";
+    } else {
+      // Always show two decimals for KB+ so tiny usage vs large quota stays precise.
+      val = v.toFixed(2);
+    }
     return val + " " + unit;
   }
 

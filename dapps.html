@@ -41,19 +41,70 @@
     .app.hidden { display: none; }
 
     .sec-label { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #999999; margin: clamp(18px, 3vh, 26px) 0 12px; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: clamp(14px, 3vw, 24px); justify-items: center; }
-    .app {
-      display: flex; flex-direction: column; align-items: center; gap: 9px;
-      text-decoration: none; color: #000000; width: 84px; background: none; border: 0; padding: 0; cursor: pointer;
-      transition: transform 0.15s ease; font-family: inherit;
+    .cards {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+      gap: clamp(16px, 3.2vw, 28px); justify-items: center;
+      padding-bottom: 48px;
     }
-    .app:hover { transform: translateY(-3px); }
+    .app {
+      position: relative; display: block; text-decoration: none; color: #000000;
+      width: 96px; height: 96px; background: none; border: 0; padding: 0; cursor: pointer;
+      font-family: inherit; z-index: 1;
+    }
+    .app .shell {
+      position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+      width: 96px; min-height: 96px;
+      display: flex; flex-direction: column; align-items: center; gap: 9px;
+      padding: 8px 10px 12px; border-radius: 18px;
+      background: transparent; border: 1.5px solid transparent;
+      transition:
+        width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+        min-height 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+        padding 0.22s ease,
+        background 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.22s ease,
+        transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform-origin: top center;
+    }
     .app .ic {
       width: 58px; height: 58px; display: flex; align-items: center; justify-content: center;
       border-radius: 15px; background: #f4f4f5; color: #000000; flex: 0 0 auto;
+      transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.22s ease, height 0.22s ease;
     }
-    .app .ic svg { width: 30px; height: 30px; display: block; }
-    .app .name { font-weight: 600; font-size: clamp(0.78rem, 2.4vw, 0.9rem); text-align: center; line-height: 1.15; }
+    .app .ic svg { width: 30px; height: 30px; display: block; transition: width 0.22s ease, height 0.22s ease; }
+    .app .ic.term-ic {
+      background: #0a0a0a; color: #3ddc84;
+    }
+    .app .name {
+      font-weight: 600; font-size: clamp(0.78rem, 2.4vw, 0.9rem);
+      text-align: center; line-height: 1.15;
+      transition: font-size 0.18s ease;
+    }
+    .app .info {
+      display: none; width: 100%; margin-top: 2px;
+      font-family: 'Space Mono', monospace; font-size: 0.68rem; line-height: 1.35;
+      color: #555555; text-align: left;
+      opacity: 0; max-height: 0; overflow: hidden;
+      transition: opacity 0.18s ease 0.04s, max-height 0.22s ease;
+    }
+    .app .info .k { color: #999999; }
+    .app:hover, .app:focus-within { z-index: 8; }
+    .app:hover .shell, .app:focus-within .shell {
+      width: 210px; min-height: 150px;
+      background: #ffffff; border-color: #000000;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.14);
+      transform: translateX(-50%) translateY(-6px) scale(1.04);
+      padding: 12px 14px 14px;
+    }
+    .app:hover .ic, .app:focus-within .ic {
+      width: 64px; height: 64px; transform: scale(1.06);
+    }
+    .app:hover .ic svg, .app:focus-within .ic svg { width: 34px; height: 34px; }
+    .app:hover .name, .app:focus-within .name { font-size: 0.95rem; }
+    .app:hover .info, .app:focus-within .info {
+      display: block; opacity: 1; max-height: 120px;
+    }
 
     .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
     .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
@@ -125,42 +176,86 @@
       var IC = {
         calc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="15" x2="16" y2="18"/><line x1="8" y1="18" x2="12" y2="18"/></svg>',
         home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
-        tasks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
-        term: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></svg>',
+        term: '<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2.5" fill="#0a0a0a"/><path d="M7.2 8.2 L11 12 L7.2 15.8" stroke="#3ddc84" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M12.5 15.5 H17" stroke="#3ddc84" stroke-width="2.2" stroke-linecap="round"/></svg>',
         storage: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
-        net: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>',
-        jobs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>',
-        receipt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z"/><path d="M9 8h6M9 12h6"/></svg>',
         wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="14" r="1.3"/></svg>',
         grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
-        package: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
-        cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 010-8 5 5 0 019.6-1.5A3.5 3.5 0 0117 18H7z"/></svg>',
-        ai: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/><circle cx="12" cy="12" r="2.5"/></svg>',
-        builder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-9 9-4 1 1-4 8-8z"/><path d="M13 7l4 4"/></svg>'
+        cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 010-8 5 5 0 019.6-1.5A3.5 3.5 0 0117 18H7z"/></svg>'
       };
 
-      // Installed user dApps (persist to your FRAME storage).
       var installed = [
         { id: "frame.dapp.calculator", name: "Calculator", href: "/calculator.html", color: "#ff8a00", icon: IC.calc },
-        { id: "frame.dapp.wallet", name: "Wallet", href: "/wallet.html", color: "#b45309", icon: IC.wallet }
+        { id: "frame.system.welcome", name: "Welcome", href: "/", color: "#1a73e8", icon: IC.home },
+        { id: "frame.system.command", name: "Command", href: "/command.html", color: "#3ddc84", icon: IC.term, term: true }
       ];
 
-      // Only ship tiles that actually work (no "Coming soon").
       var system = [
-        { id: "frame.system.welcome", name: "Welcome", href: "/", color: "#1a73e8", icon: IC.home },
+        { id: "frame.dapp.wallet", name: "Wallet", href: "/wallet.html", color: "#b45309", icon: IC.wallet },
         { id: "frame.system.storage_explorer", name: "Storage", href: "/storage.html", color: "#0891b2", icon: IC.storage },
         { id: "frame.system.dapp_manager", name: "dApp Manager", href: "/dapps.html", color: "#e11d48", icon: IC.grid },
         { id: "frame.system.personal_cloud", name: "Personal Cloud", href: "/cloud.html", color: "#0ea5e9", icon: IC.cloud }
       ];
 
+      function readJson(key) {
+        try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; }
+      }
+
+      function infoFor(d) {
+        var lines = [];
+        if (d.id === "frame.dapp.calculator") {
+          var c = readJson("frame.dapp.calculator");
+          var display = (c && c.state && c.state.display != null) ? c.state.display : "0";
+          lines.push('<span class="k">display</span> ' + escapeHtml(String(display)));
+          if (c && c.updatedAt) lines.push('<span class="k">updated</span> ' + escapeHtml(String(c.updatedAt).slice(0, 10)));
+        } else if (d.id === "frame.dapp.wallet") {
+          var w = readJson("frame.dapp.wallet");
+          var st = (w && w.state) || {};
+          var ids = [];
+          try { ids = FRAME.getIdentities(); } catch (e) {}
+          lines.push('<span class="k">identities</span> ' + ids.length);
+          lines.push('<span class="k">wallets</span> ' + ((st.wallets || []).length));
+          lines.push('<span class="k">tasks</span> ' + ((st.tasks || []).length) + ' · <span class="k">jobs</span> ' + ((st.jobs || []).length));
+        } else if (d.id === "frame.system.command") {
+          try {
+            var shell = FRAME.getFrame();
+            lines.push('<span class="k">id</span> ' + escapeHtml(shell.id));
+            lines.push('<span class="k">uid</span> ' + escapeHtml(String(shell.uid).slice(0, 16)) + "…");
+          } catch (e) {
+            lines.push("FRAME shell");
+          }
+        } else if (d.id === "frame.system.welcome") {
+          lines.push("Start here · FRAME home");
+        } else if (d.id === "frame.system.storage_explorer") {
+          var bytes = FRAME.localStorageBytes();
+          lines.push('<span class="k">local</span> ' + escapeHtml(FRAME.humanBytesLong(bytes)));
+          lines.push(FRAME.localStorageEntries().length + " keys");
+        } else if (d.id === "frame.system.dapp_manager") {
+          lines.push("Browse & open dApps");
+        } else if (d.id === "frame.system.personal_cloud") {
+          lines.push("Sync & cloud storage");
+        } else {
+          lines.push(escapeHtml(d.id));
+        }
+        return lines.join("<br>");
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
       function tile(d) {
         var el = document.createElement("a");
         el.className = "app";
         el.href = d.href;
-        el.title = d.id;
+        el.title = d.name;
         el.setAttribute("data-search", (d.name + " " + d.id).toLowerCase());
-        el.innerHTML = '<span class="ic" style="color:' + d.color + '">' + d.icon + '</span>' +
-          '<span class="name">' + d.name + '</span>';
+        var icClass = d.term ? "ic term-ic" : "ic";
+        el.innerHTML =
+          '<span class="shell">' +
+            '<span class="' + icClass + '" style="color:' + d.color + '">' + d.icon + "</span>" +
+            '<span class="name">' + d.name + "</span>" +
+            '<span class="info">' + infoFor(d) + "</span>" +
+          "</span>";
         return el;
       }
 
@@ -169,7 +264,6 @@
       var sysEl = document.getElementById("system");
       system.forEach(function (d) { sysEl.appendChild(tile(d)); });
 
-      // Local search across dApps + identities + wallet state.
       function collectHits(q) {
         q = (q || "").trim().toLowerCase();
         var hits = [];
@@ -213,7 +307,6 @@
           a.classList.toggle("hidden", !ok);
           if (ok) shown++;
         });
-        // Soft-match identities/tasks etc by navigating hint in empty state
         var extra = q ? collectHits(q) : [];
         if (q && shown === 0 && extra.length === 0) {
           searchEmpty.style.display = "block";

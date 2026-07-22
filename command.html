@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000; -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+    .panel { width: min(92vw, 640px); }
+    .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.5rem, 6vw, 2.1rem); margin: 0; text-align: center; }
+    .subtitle { color: #666666; font-weight: 500; text-align: center; margin: 8px 0 0; font-size: clamp(0.9rem, 3.2vw, 1rem); }
+    .divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: clamp(16px, 3vh, 22px) 0; }
+
+    .term {
+      background: #0a0a0a; color: #e8e8e8; border-radius: 12px;
+      border: 1.5px solid #000000; overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+    }
+    .term-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; background: #141414; border-bottom: 1px solid #222;
+      font-family: 'Space Mono', monospace; font-size: 0.72rem; color: #888;
+    }
+    .term-dot { width: 10px; height: 10px; border-radius: 50%; background: #333; }
+    .term-dot.r { background: #ff5f57; }
+    .term-dot.y { background: #febc2e; }
+    .term-dot.g { background: #28c840; }
+    .term-body {
+      padding: 14px 14px 10px; min-height: 320px; max-height: 52vh; overflow-y: auto;
+      font-family: 'Space Mono', monospace; font-size: 0.84rem; line-height: 1.45;
+    }
+    .line { white-space: pre-wrap; word-break: break-word; margin: 0 0 6px; }
+    .line.out { color: #cfcfcf; }
+    .line.err { color: #ff6b6b; }
+    .line.ok { color: #3ddc84; }
+    .prompt-row { display: flex; align-items: flex-start; gap: 8px; margin-top: 4px; }
+    .prompt { color: #3ddc84; font-weight: 700; flex: 0 0 auto; user-select: none; }
+    .cmd {
+      flex: 1 1 auto; min-width: 0; border: 0; outline: none; background: transparent;
+      color: #ffffff; font-family: inherit; font-size: inherit; padding: 0; caret-color: #3ddc84;
+    }
+    .back { display: block; text-align: center; margin-top: 16px; color: #000000; font-weight: 600; font-size: 0.85rem; text-decoration: underline; }
+
+    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      FRAME.gate().then(function (active) { if (!active) return; });
+    })();
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel">
+    <h2 class="title">Command</h2>
+    <p class="subtitle">Shell for this FRAME instance.</p>
+    <div class="divider"></div>
+
+    <div class="term">
+      <div class="term-bar">
+        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+        <span>frame — command</span>
+      </div>
+      <div class="term-body" id="termBody">
+        <div class="prompt-row">
+          <span class="prompt">&gt;</span>
+          <input class="cmd" id="cmd" type="text" autocomplete="off" spellcheck="false" aria-label="Command" />
+        </div>
+      </div>
+    </div>
+    <a class="back" href="/dapps.html">Back to dApps</a>
+  </main>
+
+  <script>
+    (function () {
+      var body = document.getElementById("termBody");
+      var input = document.getElementById("cmd");
+      var history = [];
+      var histIdx = -1;
+
+      function scrollBottom() { body.scrollTop = body.scrollHeight; }
+
+      function write(text, cls) {
+        var row = input.parentNode;
+        var line = document.createElement("div");
+        line.className = "line " + (cls || "out");
+        line.textContent = text;
+        body.insertBefore(line, row);
+        scrollBottom();
+      }
+
+      function echoCmd(cmd) {
+        var row = input.parentNode;
+        var line = document.createElement("div");
+        line.className = "line out";
+        line.innerHTML = '<span style="color:#3ddc84;font-weight:700">&gt;</span> ' + escapeHtml(cmd);
+        body.insertBefore(line, row);
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function help() {
+        write("Commands:");
+        write("  help                 show this list");
+        write("  id / frame           show FRAME instance id");
+        write("  whoami / identity    show active identity");
+        write("  identities           list identities on this FRAME");
+        write("  storage              local storage usage");
+        write("  dapps                list installed dApp keys");
+        write("  open <name>          open a dApp (wallet, calc, storage…)");
+        write("  clear                clear the screen");
+      }
+
+      function run(raw) {
+        var line = String(raw || "").trim();
+        if (!line) return;
+        history.push(line);
+        histIdx = history.length;
+        echoCmd(line);
+        var parts = line.split(/\s+/);
+        var cmd = parts[0].toLowerCase();
+        var arg = parts.slice(1).join(" ");
+
+        if (cmd === "help" || cmd === "?") { help(); return; }
+        if (cmd === "clear" || cmd === "cls") {
+          Array.prototype.slice.call(body.querySelectorAll(".line")).forEach(function (n) { n.remove(); });
+          return;
+        }
+        if (cmd === "id" || cmd === "frame") {
+          try {
+            var shell = FRAME.getFrame();
+            write("FRAME id:  " + shell.id, "ok");
+            write("uid:       " + shell.uid);
+            if (shell.createdAt) write("created:   " + shell.createdAt);
+          } catch (e) { write("no FRAME instance", "err"); }
+          return;
+        }
+        if (cmd === "whoami" || cmd === "identity") {
+          var active = FRAME.getActive();
+          if (!active) { write("no active identity", "err"); return; }
+          write(active.frameId, "ok");
+          write("alg: " + (FRAME.keyAlgLabel(active.publicKey) || "—"));
+          return;
+        }
+        if (cmd === "identities") {
+          var ids = FRAME.getIdentities();
+          if (!ids.length) { write("none"); return; }
+          ids.forEach(function (id, i) {
+            write((i + 1) + ". " + id.frameId + (FRAME.getActive() && FRAME.getActive().frameId === id.frameId ? "  *" : ""));
+          });
+          return;
+        }
+        if (cmd === "storage") {
+          var bytes = FRAME.localStorageBytes();
+          write(FRAME.humanBytesLong(bytes) + " in localStorage (" + FRAME.localStorageEntries().length + " keys)");
+          if (navigator.storage && navigator.storage.estimate) {
+            navigator.storage.estimate().then(function (est) {
+              var u = est.usage || 0, q = est.quota || 0;
+              write("browser: " + FRAME.humanBytesLong(u) + " used of " + FRAME.humanBytesLong(q) +
+                " · " + FRAME.humanBytesLong(Math.max(0, q - u)) + " free");
+            });
+          }
+          return;
+        }
+        if (cmd === "dapps") {
+          var n = 0;
+          FRAME.localStorageEntries().forEach(function (e) {
+            if (e.name.indexOf("frame.dapp.") !== 0) return;
+            n++;
+            var d = null; try { d = JSON.parse(localStorage.getItem(e.name)); } catch (x) {}
+            write(e.name + (d && d.name ? "  (" + d.name + ")" : ""));
+          });
+          if (!n) write("no dApp data yet");
+          return;
+        }
+        if (cmd === "open") {
+          var map = {
+            wallet: "/wallet.html", calc: "/calculator.html", calculator: "/calculator.html",
+            storage: "/storage.html", cloud: "/cloud.html", dapps: "/dapps.html",
+            command: "/command.html", welcome: "/", home: "/"
+          };
+          var key = (arg || "").toLowerCase();
+          if (map[key]) { write("opening " + key + "…", "ok"); window.location.href = map[key]; }
+          else write("unknown target. try: wallet, calc, storage, cloud, dapps, welcome", "err");
+          return;
+        }
+        write("unknown command: " + cmd + "  (type help)", "err");
+      }
+
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          var v = input.value;
+          input.value = "";
+          run(v);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (!history.length) return;
+          histIdx = Math.max(0, histIdx - 1);
+          input.value = history[histIdx] || "";
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          histIdx = Math.min(history.length, histIdx + 1);
+          input.value = histIdx >= history.length ? "" : (history[histIdx] || "");
+        }
+      });
+
+      write("FRAME command shell. Type help.");
+      try {
+        var shell = FRAME.getFrame();
+        write("instance " + shell.id + " · " + shell.uid);
+      } catch (e) {}
+      input.focus();
+      document.addEventListener("click", function () { input.focus(); });
+    })();
+  </script>
+</body>
+</html>

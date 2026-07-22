@@ -10,62 +10,119 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Share+Tech+Mono&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    @font-face {
+      font-family: "DSEG7";
+      src: url("https://cdn.jsdelivr.net/gh/keshikan/DSEG@v0.46/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2") format("woff2");
+      font-weight: 700; font-style: normal; font-display: swap;
+    }
     * { box-sizing: border-box; }
-    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    html, body { margin: 0; min-height: 100%; }
     body {
-      color: #000000; -webkit-font-smoothing: antialiased;
-      font-family: 'Space Grotesk', sans-serif;
+      color: #14fd70; -webkit-font-smoothing: antialiased;
+      font-family: 'Share Tech Mono', 'Space Grotesk', monospace;
+      background: #0b1a0b;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(20, 253, 112, 0.08), transparent 55%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0 1px, transparent 1px 3px);
       display: flex; align-items: center; justify-content: center;
       padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
     }
     .home-link { color: inherit; text-decoration: none; }
     .brand {
       position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
-      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #14fd70;
       font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+      text-shadow: 0 0 12px rgba(20, 253, 112, 0.35);
     }
-    .calc { width: min(92vw, 360px); }
-    .title { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.03em; font-size: clamp(1.3rem, 5vw, 1.7rem); margin: 0 0 4px; text-align: center; }
-    .saved-note { text-align: center; color: #17a34a; font-size: 0.74rem; font-weight: 600; margin-bottom: 14px; }
-
-    .sig { margin: -2px 0 14px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: #777777; }
-    .sig .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-weight: 700; }
-    .sig .pill svg { width: 12px; height: 12px; }
-    .sig .pill.ok { background: #e9f7ef; color: #0f7a3d; }
-    .sig .pill.bad { background: #fdecec; color: #c0392b; }
-    .sig .pill.pending { background: #fff7e0; color: #a97400; }
-    .sig .hash { color: #9a9a9a; word-break: break-all; text-align: center; }
+    .calc {
+      width: min(92vw, 380px);
+      border: 2px solid #14fd70;
+      border-radius: 6px;
+      padding: 18px 16px 16px;
+      background: rgba(6, 18, 6, 0.92);
+      box-shadow:
+        0 0 0 1px rgba(20, 253, 112, 0.25),
+        0 0 28px rgba(20, 253, 112, 0.12),
+        inset 0 0 40px rgba(20, 253, 112, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+    .calc::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+      background: repeating-linear-gradient(
+        180deg,
+        rgba(20, 253, 112, 0.03) 0 1px,
+        transparent 1px 4px
+      );
+    }
+    .title {
+      font-family: 'Share Tech Mono', monospace; font-weight: 700;
+      letter-spacing: 0.18em; font-size: clamp(0.95rem, 3.6vw, 1.15rem);
+      margin: 0 0 4px; text-align: center; color: #14fd70;
+      text-transform: uppercase;
+    }
+    .saved-note {
+      text-align: center; color: #3d9a55; font-size: 0.72rem;
+      letter-spacing: 0.06em; margin-bottom: 14px; text-transform: uppercase;
+    }
 
     .display {
-      border: 1.5px solid #000000; border-radius: 14px;
-      padding: 18px 18px 14px; text-align: right; margin-bottom: 14px;
-      background: #ffffff; overflow: hidden;
+      border: 1.5px solid #14fd70; border-radius: 4px;
+      padding: 14px 14px 10px; text-align: right; margin-bottom: 14px;
+      background: #031406;
+      box-shadow: inset 0 0 18px rgba(20, 253, 112, 0.12);
+      position: relative; z-index: 1;
     }
-    .expr { font-family: 'Space Mono', monospace; color: #999999; font-size: 0.9rem; min-height: 1.1em; word-break: break-all; }
-    .result { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(2rem, 9vw, 2.8rem); word-break: break-all; }
+    .expr {
+      font-family: 'Share Tech Mono', monospace; color: #2f8f48;
+      font-size: 0.85rem; min-height: 1.1em; word-break: break-all;
+      letter-spacing: 0.04em;
+    }
+    .result {
+      font-family: "DSEG7", "Share Tech Mono", monospace;
+      font-weight: 700;
+      font-size: clamp(1.7rem, 8vw, 2.4rem);
+      word-break: break-all;
+      color: #14fd70;
+      text-shadow: 0 0 10px rgba(20, 253, 112, 0.45);
+      letter-spacing: 0.04em;
+      line-height: 1.25;
+      margin-top: 4px;
+    }
 
-    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; position: relative; z-index: 1; }
     .key {
-      border: 1.5px solid #000000; border-radius: 14px; background: #ffffff; color: #000000;
-      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
-      font-size: clamp(1.1rem, 4.6vw, 1.4rem); padding: clamp(14px, 3.6vw, 20px) 0;
-      cursor: pointer; transition: background 0.12s ease, color 0.12s ease;
+      border: 1.5px solid #14fd70; border-radius: 4px;
+      background: #0a1f0a; color: #14fd70;
+      font-family: 'Share Tech Mono', monospace; font-weight: 700;
+      font-size: clamp(1.05rem, 4.2vw, 1.25rem); padding: clamp(12px, 3.2vw, 16px) 0;
+      cursor: pointer; transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
       -webkit-user-select: none; user-select: none;
+      box-shadow: inset 0 0 8px rgba(20, 253, 112, 0.08);
     }
-    .key:hover { background: #000000; color: #ffffff; }
+    .key:hover {
+      background: #14fd70; color: #031406;
+      box-shadow: 0 0 14px rgba(20, 253, 112, 0.35);
+    }
     .key:active { transform: translateY(1px); }
-    .key.op { background: #f2f2f2; }
-    .key.op.active { background: #000000; color: #ffffff; }
-    .key.eq { background: #000000; color: #ffffff; }
-    .key.eq:hover { background: #ffffff; color: #000000; }
-    .key.fn { color: #666666; }
-    .key.wide { grid-column: span 2; text-align: left; padding-left: 26px; }
+    .key.op { background: #0e2a10; }
+    .key.op.active { background: #14fd70; color: #031406; }
+    .key.eq { background: #146b2e; color: #b8ffc8; }
+    .key.eq:hover { background: #14fd70; color: #031406; }
+    .key.fn { color: #3d9a55; }
+    .key.wide { grid-column: span 2; text-align: left; padding-left: 22px; }
 
-    .back { display: block; text-align: center; margin-top: 16px; color: #000000; font-weight: 600; font-size: 0.85rem; text-decoration: underline; }
+    .back {
+      display: block; text-align: center; margin-top: 16px;
+      color: #14fd70; font-weight: 600; font-size: 0.82rem;
+      text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase;
+      position: relative; z-index: 1;
+    }
+    .back:hover { text-shadow: 0 0 10px rgba(20, 253, 112, 0.5); }
 
-    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000000; border-style: solid; border-width: 0; pointer-events: none; }
+    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #14fd70; border-style: solid; border-width: 0; pointer-events: none; }
     .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
     .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
     .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
@@ -86,15 +143,11 @@
   <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
 
   <main class="calc">
-    <h2 class="title">Calculator</h2>
+    <h2 class="title">RobCo Calc</h2>
     <div class="saved-note">Saved in your FRAME storage</div>
     <div class="display">
       <div class="expr" id="expr"></div>
       <div class="result" id="result">0</div>
-    </div>
-    <div class="sig" id="sig">
-      <span class="pill pending" id="sigPill">signing&hellip;</span>
-      <span class="hash" id="sigHash"></span>
     </div>
     <div class="grid">
       <button class="key fn" data-act="clear">AC</button>
@@ -129,56 +182,32 @@
       var KEY = "frame.dapp.calculator";
       var exprEl = document.getElementById("expr");
       var resultEl = document.getElementById("result");
-      var sigPill = document.getElementById("sigPill");
-      var sigHash = document.getElementById("sigHash");
 
       var ident = null;
       try { ident = FRAME.getActive(); } catch (e) {}
-      var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
       var sigSeq = 0;
 
-      // Sign the dApp state with the active identity key (FRAME_SIGNATURE_V1) and verify it.
       function refreshSig(payload) {
-        if (!ident || !ident.privateKey || !ident.publicKey) {
-          sigPill.className = "pill pending";
-          sigPill.textContent = "unsigned";
-          sigHash.textContent = "no identity key on this device";
-          return;
-        }
+        if (!ident || !ident.privateKey || !ident.publicKey) return;
         var mySeq = ++sigSeq;
-        sigPill.className = "pill pending";
-        sigPill.textContent = "signing\u2026";
-        sigHash.textContent = "";
         var alg = FRAME.keyAlgLabel(ident.publicKey);
         FRAME.signData(ident.privateKey, payload).then(function (sig) {
           return FRAME.verifyData(ident.publicKey, payload, sig).then(function (ok) {
-            if (mySeq !== sigSeq) return; // a newer state superseded this one
+            if (mySeq !== sigSeq || !ok) return;
             try {
               var d = JSON.parse(localStorage.getItem(KEY) || "null") || {};
               d.signature = sig; d.signedBy = ident.frameId; d.sigAlg = alg; d.sigScheme = "FRAME_SIGNATURE_V1";
               d.digest = "SHA-256"; d.encoding = "base64"; d.signedOver = "raw digest bytes";
               localStorage.setItem(KEY, JSON.stringify(d));
             } catch (e) {}
-            if (ok) {
-              sigPill.className = "pill ok";
-              sigPill.innerHTML = CHECK + "verified";
-              sigHash.textContent = "FRAME_SIGNATURE_V1 \u00b7 " + alg + " \u00b7 " + ident.frameId.slice(0, 12) + "\u2026 \u00b7 sig " + sig.slice(0, 14) + "\u2026";
-            } else {
-              sigPill.className = "pill bad";
-              sigPill.textContent = "verification failed";
-            }
           });
-        }).catch(function () {
-          if (mySeq !== sigSeq) return;
-          sigPill.className = "pill bad";
-          sigPill.textContent = "sign error";
-        });
+        }).catch(function () {});
       }
 
-      var current = "0";   // string shown
-      var stored = null;   // previous operand (number)
-      var op = null;       // pending operator
-      var replace = true;  // next digit replaces display
+      var current = "0";
+      var stored = null;
+      var op = null;
+      var replace = true;
 
       function load() {
         try {
