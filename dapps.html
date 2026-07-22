@@ -175,8 +175,8 @@
         var hits = [];
         if (!q) return hits;
         FRAME.getIdentities().forEach(function (id) {
-          var blob = [id.frameId, id.label, id.publicKey].join(" ").toLowerCase();
-          if (blob.indexOf(q) >= 0) hits.push({ kind: "identity", label: id.label || id.frameId, href: "/wallet.html" });
+          var blob = [id.frameId, id.publicKey].join(" ").toLowerCase();
+          if (blob.indexOf(q) >= 0) hits.push({ kind: "identity", label: id.frameId, href: "/wallet.html" });
         });
         try {
           var w = JSON.parse(localStorage.getItem("frame.dapp.wallet") || "null");

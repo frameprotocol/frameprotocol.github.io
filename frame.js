@@ -1,9 +1,10 @@
-/* FRAME identity model — stored in the browser (localStorage). */
+/* FRAME instance + identity model — stored in the browser (localStorage). */
 window.FRAME = (function () {
   var LS_IDS = "frame.identities";
   var LS_ACTIVE = "frame.activeId";
-  var SS_UNLOCKED = "frame.unlocked"; // sessionStorage: frameId unlocked this session
-  var LS_OLD = "frame.instance";      // legacy single-instance key
+  var SS_UNLOCKED = "frame.unlocked"; // sessionStorage: identity id unlocked this session
+  var LS_OLD = "frame.instance";      // legacy single-identity key
+  var LS_FRAME = "frame.shell";       // this FRAME instance (renamable id + stable uid)
 
   function readJSON(store, key) {
     try { return JSON.parse(store.getItem(key) || "null"); } catch (e) { return null; }
@@ -86,6 +87,45 @@ window.FRAME = (function () {
     return out;
   }
 
+  /* --- This FRAME (instance): own renamable id + stable uid --- */
+  function saveFrame(f) {
+    try { localStorage.setItem(LS_FRAME, JSON.stringify(f)); } catch (e) {}
+  }
+  function getFrame() {
+    var f = readJSON(localStorage, LS_FRAME);
+    if (f && typeof f.uid === "string" && typeof f.id === "string" && f.uid && f.id) return f;
+    // Migrate old "label on active identity" into a real FRAME record.
+    var active = null;
+    try { active = getActive(); } catch (e) {}
+    var migratedId = (active && active.label) ? String(active.label) : "Frame:1";
+    f = {
+      uid: "frame_" + randomAlnum(20).toLowerCase(),
+      id: migratedId,
+      createdAt: new Date().toISOString()
+    };
+    saveFrame(f);
+    // Clear identity labels — FRAME name is no longer stored on identities.
+    try {
+      getIdentities().forEach(function (ident) {
+        if (ident && ident.label != null) {
+          delete ident.label;
+          updateIdentity(ident);
+        }
+      });
+    } catch (e) {}
+    return f;
+  }
+  function setFrameId(newId) {
+    newId = String(newId || "").trim();
+    if (!newId) throw new Error("FRAME id cannot be empty");
+    if (newId.length > 48) newId = newId.slice(0, 48);
+    var f = getFrame();
+    f.id = newId;
+    f.updatedAt = new Date().toISOString();
+    saveFrame(f);
+    return f;
+  }
+
   /* --- Real cryptographic identity (mirrors frame ui/src/crypto.ts) --- */
   function bufToB64(buf) {
     var a = new Uint8Array(buf), s = "";
@@ -148,7 +188,6 @@ window.FRAME = (function () {
           privateKey: kp.privateKey,
           recoveryKey: randomAlnum(17),
           passcode: null,
-          label: null,
           wallets: [],
           activeWalletId: null,
           settings: { maxAttempts: 5, onLimit: "lock" },
@@ -217,7 +256,6 @@ window.FRAME = (function () {
         publicKey: ident.publicKey || null,
         privateKey: ident.privateKey || null,
         recoveryKey: ident.recoveryKey || null,
-        label: ident.label || null,
         wallets: Array.isArray(ident.wallets) ? ident.wallets : [],
         activeWalletId: ident.activeWalletId || null,
         settings: ident.settings || { maxAttempts: 5, onLimit: "lock" },
@@ -246,7 +284,6 @@ window.FRAME = (function () {
       privateKey: src.privateKey || null,
       recoveryKey: src.recoveryKey || randomAlnum(17),
       passcode: null,
-      label: src.label || null,
       wallets: Array.isArray(src.wallets) ? src.wallets : [],
       activeWalletId: src.activeWalletId || null,
       settings: src.settings || { maxAttempts: 5, onLimit: "lock" },
@@ -260,7 +297,7 @@ window.FRAME = (function () {
 
   /* FRAME instance package: the clonable shell (no identity secrets). */
   function exportFrame() {
-    var active = getActive();
+    var shell = getFrame();
     var dapps = [];
     try {
       for (var i = 0; i < localStorage.length; i++) {
@@ -269,7 +306,6 @@ window.FRAME = (function () {
         var raw = localStorage.getItem(k);
         var parsed = null;
         try { parsed = JSON.parse(raw); } catch (e) { parsed = { raw: raw }; }
-        // Strip signatures tied to a specific signer; clone gets fresh identity/signing.
         if (parsed && typeof parsed === "object") {
           delete parsed.signature;
           delete parsed.signedBy;
@@ -283,8 +319,10 @@ window.FRAME = (function () {
       format: "frame.instance.v1",
       exportedAt: new Date().toISOString(),
       frame: {
-        label: (active && active.label) ? active.label : "Frame:1",
-        note: "A FRAME is a clonable instance. Opening a clone creates or attaches a separate identity; identity secrets and crypto keys are not included."
+        uid: shell.uid,
+        id: shell.id,
+        createdAt: shell.createdAt || null,
+        note: "A FRAME has its own renamable id. Cloning does not copy identities; identity ids (fid_…) are permanent and hold keys/wallets."
       },
       dapps: dapps
     };
@@ -298,10 +336,14 @@ window.FRAME = (function () {
       return Promise.reject(new Error("unsupported FRAME package"));
     }
     try {
-      if (data.frame && data.frame.label && getActive()) {
-        var a = getActive();
-        a.label = data.frame.label;
-        updateIdentity(a);
+      var shell = getFrame();
+      if (data.frame) {
+        if (data.frame.id) shell.id = String(data.frame.id).trim() || shell.id;
+        // Keep local uid unless missing; clone should get a new uid so it's a new instance.
+        shell.uid = "frame_" + randomAlnum(20).toLowerCase();
+        shell.updatedAt = new Date().toISOString();
+        if (data.frame.createdAt) shell.clonedFrom = data.frame.uid || data.frame.id;
+        saveFrame(shell);
       }
       (data.dapps || []).forEach(function (row) {
         if (!row || !row.key || row.key.indexOf("frame.dapp.") !== 0) return;
@@ -513,6 +555,8 @@ window.FRAME = (function () {
     isHashedPasscode: isHashedPasscode,
     verifyPasscode: verifyPasscode,
     setPasscode: setPasscode,
+    getFrame: getFrame,
+    setFrameId: setFrameId,
     exportIdentity: exportIdentity,
     importIdentity: importIdentity,
     exportFrame: exportFrame,
