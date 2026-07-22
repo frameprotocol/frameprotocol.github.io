@@ -240,6 +240,7 @@
           }).catch(function () {});
         }
         ensureDapp("frame.dapp.calculator", "Calculator", { display: "0" });
+        ensureDapp("frame.dapp.timer", "Timer", { totalMs: 300000, remainingMs: 300000, running: false, done: false });
         ensureDapp("frame.dapp.wallet", "Wallet", { jobs: [], tasks: [] });
       });
     })();
@@ -292,6 +293,7 @@
         term: '<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2.5" fill="#0a0a0a"/><path d="M7.2 8.2 L11 12 L7.2 15.8" stroke="#3ddc84" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M12.5 15.5 H17" stroke="#3ddc84" stroke-width="2.2" stroke-linecap="round"/></svg>',
         storage: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
         wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="14" r="1.3"/></svg>',
+        timer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M9 2h6"/><path d="M12 2v2"/></svg>',
         cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 010-8 5 5 0 019.6-1.5A3.5 3.5 0 0117 18H7z"/></svg>'
       };
 
@@ -299,6 +301,10 @@
         "frame.dapp.calculator": {
           blurb: "Signed calculator state and equation receipts on the chain.",
           caps: ["calc.read", "calc.write"]
+        },
+        "frame.dapp.timer": {
+          blurb: "Countdown timer with start, pause, and reset — logged to the chain.",
+          caps: ["timer.read", "timer.write"]
         },
         "frame.system.welcome": {
           blurb: "Landing surface for this FRAME instance.",
@@ -324,6 +330,7 @@
 
       var installed = [
         { id: "frame.dapp.calculator", name: "Calculator", href: "/calculator.html", color: "#ff8a00", icon: IC.calc },
+        { id: "frame.dapp.timer", name: "Timer", href: "/timer.html", color: "#e11d48", icon: IC.timer },
         { id: "frame.system.welcome", name: "Welcome", href: "/", color: "#1a73e8", icon: IC.home },
         { id: "frame.system.command", name: "Command", href: "/command.html", color: "#3ddc84", icon: IC.term, term: true }
       ];
@@ -347,6 +354,16 @@
           if (c && c.updatedAt && FRAME.formatLocalDateTime) {
             lines.push('<span class="k">updated</span> ' + escapeHtml(FRAME.formatLocalDateTime(c.updatedAt)));
           }
+        } else if (d.id === "frame.dapp.timer") {
+          var t = readJson("frame.dapp.timer");
+          var st = (t && t.state) || {};
+          var ms = st.remainingMs != null ? st.remainingMs : (st.totalMs || 0);
+          var sec = Math.max(0, Math.ceil(ms / 1000));
+          var mm = Math.floor(sec / 60);
+          var ss = sec % 60;
+          var clock = (mm < 10 ? "0" : "") + mm + ":" + (ss < 10 ? "0" : "") + ss;
+          lines.push('<span class="k">time</span> ' + clock);
+          lines.push('<span class="k">status</span> ' + (st.done ? "done" : st.running ? "running" : "ready"));
         } else if (d.id === "frame.dapp.wallet") {
           var w = readJson("frame.dapp.wallet");
           var st = (w && w.state) || {};

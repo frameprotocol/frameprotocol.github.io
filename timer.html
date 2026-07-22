@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>frame</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: "DSEG7 Classic";
+      src: url("/fonts/dseg7-classic-bold.woff2") format("woff2");
+      font-weight: 700; font-style: normal; font-display: block;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #ffffff; min-height: 100%; }
+    body {
+      color: #000000; -webkit-font-smoothing: antialiased;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: clamp(64px, 12vh, 96px) 0 clamp(48px, 8vh, 72px);
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .brand {
+      position: fixed; top: 8px; left: 8px; margin: 0; z-index: 6;
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #000000;
+      font-size: clamp(18px, 5vw, 40px); letter-spacing: 0.08em; line-height: 1;
+    }
+    .panel { width: min(92vw, 380px); }
+    .title {
+      font-family: 'Chakra Petch', sans-serif; font-weight: 700;
+      letter-spacing: 0.03em; font-size: clamp(1.4rem, 5vw, 1.8rem);
+      margin: 0; text-align: center;
+    }
+    .subtitle { color: #666666; text-align: center; margin: 6px 0 18px; font-size: 0.88rem; }
+
+    .display {
+      border: 1.5px solid #000000; border-radius: 16px;
+      padding: 22px 18px 16px; text-align: center; margin-bottom: 14px;
+      background: #fafafa;
+    }
+    .status {
+      font-family: 'Space Mono', monospace; font-size: 0.72rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #888888;
+      margin-bottom: 8px;
+    }
+    .status.run { color: #0f7a3d; }
+    .status.done { color: #c0392b; }
+    .time {
+      font-family: "DSEG7 Classic", 'Space Mono', monospace;
+      font-weight: 700; font-size: clamp(2.4rem, 12vw, 3.2rem);
+      letter-spacing: 0.06em; line-height: 1.2;
+    }
+    .preset-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; justify-content: center;
+    }
+    .preset {
+      border: 1.5px solid #cccccc; border-radius: 999px; background: #ffffff;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.8rem;
+      padding: 7px 12px; cursor: pointer; color: #333;
+    }
+    .preset:hover, .preset.on { border-color: #000; background: #000; color: #fff; }
+
+    .setters {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+    }
+    .setters label {
+      display: block; font-size: 0.72rem; font-weight: 600; color: #666; margin-bottom: 4px;
+    }
+    .setters input {
+      width: 100%; border: 1.5px solid #000; border-radius: 12px;
+      padding: 12px; font-family: 'Space Mono', monospace; font-size: 1.1rem;
+      text-align: center; background: #fff;
+    }
+    .setters input:disabled { opacity: 0.45; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn {
+      border: 1.5px solid #000; border-radius: 14px; background: #fff; color: #000;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem;
+      padding: 14px 0; cursor: pointer;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .btn:hover { background: #000; color: #fff; }
+    .btn.primary { background: #000; color: #fff; }
+    .btn.primary:hover { background: #fff; color: #000; }
+    .btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+    .btn.wide { grid-column: 1 / -1; }
+
+    .back {
+      display: block; text-align: center; margin-top: 16px;
+      color: #000; font-weight: 600; font-size: 0.85rem; text-decoration: underline;
+    }
+
+    .ringing .display {
+      animation: pulse 0.7s ease infinite;
+      border-color: #c0392b; background: #fff5f5;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    .corner { position: fixed; width: clamp(28px, 6vw, 56px); height: clamp(28px, 6vw, 56px); border-color: #000; border-style: solid; border-width: 0; pointer-events: none; }
+    .corner.tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; }
+  </style>
+</head>
+<body>
+  <script src="/frame.js"></script>
+  <script>
+    (function () {
+      FRAME.gate().then(function (active) { if (!active) return; });
+    })();
+  </script>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+
+  <main class="panel" id="panel">
+    <h2 class="title">Timer</h2>
+    <p class="subtitle">Set a countdown. Saved on your FRAME.</p>
+
+    <div class="display">
+      <div class="status" id="status">Ready</div>
+      <div class="time" id="time">00:00</div>
+    </div>
+
+    <div class="preset-row" id="presets">
+      <button class="preset" type="button" data-sec="60">1 min</button>
+      <button class="preset" type="button" data-sec="300">5 min</button>
+      <button class="preset" type="button" data-sec="600">10 min</button>
+      <button class="preset" type="button" data-sec="1500">25 min</button>
+      <button class="preset" type="button" data-sec="3600">60 min</button>
+    </div>
+
+    <div class="setters">
+      <div>
+        <label for="mins">Minutes</label>
+        <input id="mins" type="number" min="0" max="999" step="1" value="5" inputmode="numeric" />
+      </div>
+      <div>
+        <label for="secs">Seconds</label>
+        <input id="secs" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="startBtn" type="button">Start</button>
+      <button class="btn" id="pauseBtn" type="button" disabled>Pause</button>
+      <button class="btn wide" id="resetBtn" type="button">Reset</button>
+    </div>
+
+    <a class="back" href="/dapps.html">Back to dApps</a>
+  </main>
+
+  <script>
+    (function () {
+      var KEY = "frame.dapp.timer";
+      var timeEl = document.getElementById("time");
+      var statusEl = document.getElementById("status");
+      var minsEl = document.getElementById("mins");
+      var secsEl = document.getElementById("secs");
+      var startBtn = document.getElementById("startBtn");
+      var pauseBtn = document.getElementById("pauseBtn");
+      var resetBtn = document.getElementById("resetBtn");
+      var panel = document.getElementById("panel");
+
+      var ident = null;
+      try { ident = FRAME.getActive(); } catch (e) {}
+
+      var totalMs = 5 * 60 * 1000;
+      var remainingMs = totalMs;
+      var running = false;
+      var endsAt = null;
+      var tickTimer = null;
+      var done = false;
+
+      function pad(n) { n = Math.max(0, Math.floor(n)); return n < 10 ? "0" + n : String(n); }
+
+      function fmt(ms) {
+        var s = Math.ceil(ms / 1000);
+        if (s < 0) s = 0;
+        var m = Math.floor(s / 60);
+        var r = s % 60;
+        return pad(m) + ":" + pad(r);
+      }
+
+      function snapshot() {
+        return {
+          totalMs: totalMs,
+          remainingMs: remainingMs,
+          running: running,
+          endsAt: endsAt,
+          done: done
+        };
+      }
+
+      function refreshSig(payload) {
+        if (!ident || !ident.privateKey || !ident.publicKey) return;
+        var alg = FRAME.keyAlgLabel(ident.publicKey);
+        FRAME.signData(ident.privateKey, payload).then(function (sig) {
+          return FRAME.verifyData(ident.publicKey, payload, sig).then(function (ok) {
+            if (!ok) return;
+            try {
+              var d = JSON.parse(localStorage.getItem(KEY) || "null") || {};
+              d.signature = sig; d.signedBy = ident.frameId; d.sigAlg = alg;
+              d.sigScheme = "FRAME_SIGNATURE_V1";
+              d.digest = "SHA-256"; d.encoding = "base64"; d.signedOver = "raw digest bytes";
+              localStorage.setItem(KEY, JSON.stringify(d));
+            } catch (e) {}
+          });
+        }).catch(function () {});
+      }
+
+      function persist() {
+        var payload;
+        try {
+          var d = JSON.parse(localStorage.getItem(KEY) || "null") || {
+            name: "Timer", version: "1.0.0", installedAt: new Date().toISOString()
+          };
+          d.name = "Timer";
+          d.state = snapshot();
+          d.updatedAt = new Date().toISOString();
+          payload = JSON.stringify(d.state);
+          localStorage.setItem(KEY, JSON.stringify(d));
+        } catch (e) {}
+        if (payload !== undefined) refreshSig(payload);
+      }
+
+      function logChain(action, title, payload) {
+        if (!FRAME.mutate) return;
+        FRAME.mutate({
+          capability: "timer.write",
+          action: "timer." + action,
+          dapp: KEY,
+          title: title || ("timer." + action),
+          payload: payload || null,
+          result: snapshot()
+        }).catch(function () {});
+      }
+
+      function setInputsEnabled(on) {
+        minsEl.disabled = !on;
+        secsEl.disabled = !on;
+        document.querySelectorAll(".preset").forEach(function (b) { b.disabled = !on; });
+      }
+
+      function render() {
+        timeEl.textContent = fmt(remainingMs);
+        panel.classList.toggle("ringing", done);
+        if (done) {
+          statusEl.textContent = "Done";
+          statusEl.className = "status done";
+          startBtn.textContent = "Start";
+          startBtn.disabled = false;
+          pauseBtn.disabled = true;
+          setInputsEnabled(true);
+        } else if (running) {
+          statusEl.textContent = "Running";
+          statusEl.className = "status run";
+          startBtn.textContent = "Resume";
+          startBtn.disabled = true;
+          pauseBtn.disabled = false;
+          setInputsEnabled(false);
+        } else if (remainingMs > 0 && remainingMs < totalMs) {
+          statusEl.textContent = "Paused";
+          statusEl.className = "status";
+          startBtn.textContent = "Resume";
+          startBtn.disabled = false;
+          pauseBtn.disabled = true;
+          setInputsEnabled(false);
+        } else {
+          statusEl.textContent = "Ready";
+          statusEl.className = "status";
+          startBtn.textContent = "Start";
+          startBtn.disabled = remainingMs <= 0;
+          pauseBtn.disabled = true;
+          setInputsEnabled(true);
+        }
+        var sec = Math.round(totalMs / 1000);
+        document.querySelectorAll(".preset").forEach(function (b) {
+          b.classList.toggle("on", Number(b.getAttribute("data-sec")) === sec && !running && remainingMs === totalMs);
+        });
+      }
+
+      function applyFromInputs() {
+        var m = Math.max(0, Math.min(999, parseInt(minsEl.value, 10) || 0));
+        var s = Math.max(0, Math.min(59, parseInt(secsEl.value, 10) || 0));
+        minsEl.value = String(m);
+        secsEl.value = String(s);
+        totalMs = (m * 60 + s) * 1000;
+        remainingMs = totalMs;
+        done = false;
+        endsAt = null;
+      }
+
+      function syncInputsFromTotal() {
+        var s = Math.round(totalMs / 1000);
+        minsEl.value = String(Math.floor(s / 60));
+        secsEl.value = String(s % 60);
+      }
+
+      function stopTick() {
+        if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+      }
+
+      function finish() {
+        running = false;
+        remainingMs = 0;
+        endsAt = null;
+        done = true;
+        stopTick();
+        render();
+        persist();
+        logChain("done", "timer done · " + fmt(totalMs), { totalMs: totalMs });
+        try {
+          if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 200]);
+        } catch (e) {}
+        try {
+          var Ctx = window.AudioContext || window.webkitAudioContext;
+          if (Ctx) {
+            var ctx = new Ctx();
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.type = "sine"; o.frequency.value = 880;
+            g.gain.value = 0.04;
+            o.connect(g); g.connect(ctx.destination);
+            o.start();
+            setTimeout(function () { o.stop(); ctx.close(); }, 500);
+          }
+        } catch (e) {}
+      }
+
+      function tick() {
+        if (!running || endsAt == null) return;
+        remainingMs = Math.max(0, endsAt - Date.now());
+        render();
+        if (remainingMs <= 0) finish();
+      }
+
+      function start() {
+        if (running) return;
+        if (done || remainingMs <= 0) {
+          applyFromInputs();
+          if (totalMs <= 0) return;
+        }
+        done = false;
+        running = true;
+        endsAt = Date.now() + remainingMs;
+        stopTick();
+        tickTimer = setInterval(tick, 200);
+        render();
+        persist();
+        logChain("start", "timer start · " + fmt(remainingMs), { remainingMs: remainingMs, totalMs: totalMs });
+        tick();
+      }
+
+      function pause() {
+        if (!running) return;
+        tick();
+        running = false;
+        endsAt = null;
+        stopTick();
+        render();
+        persist();
+        logChain("pause", "timer pause · " + fmt(remainingMs), { remainingMs: remainingMs });
+      }
+
+      function reset() {
+        stopTick();
+        running = false;
+        done = false;
+        endsAt = null;
+        applyFromInputs();
+        if (totalMs <= 0) {
+          totalMs = 5 * 60 * 1000;
+          remainingMs = totalMs;
+          syncInputsFromTotal();
+        }
+        render();
+        persist();
+        logChain("reset", "timer reset · " + fmt(totalMs), { totalMs: totalMs });
+      }
+
+      function load() {
+        try {
+          var d = JSON.parse(localStorage.getItem(KEY) || "null");
+          if (d && d.state) {
+            totalMs = Number(d.state.totalMs) || totalMs;
+            remainingMs = Number(d.state.remainingMs);
+            if (!isFinite(remainingMs)) remainingMs = totalMs;
+            running = !!d.state.running;
+            endsAt = d.state.endsAt || null;
+            done = !!d.state.done;
+            if (running && endsAt) {
+              remainingMs = Math.max(0, endsAt - Date.now());
+              if (remainingMs <= 0) {
+                running = false;
+                done = true;
+                endsAt = null;
+              } else {
+                tickTimer = setInterval(tick, 200);
+              }
+            } else {
+              running = false;
+              endsAt = null;
+            }
+          }
+        } catch (e) {}
+        syncInputsFromTotal();
+        if (!running && !done && remainingMs === totalMs) applyFromInputs();
+        render();
+      }
+
+      startBtn.addEventListener("click", start);
+      pauseBtn.addEventListener("click", pause);
+      resetBtn.addEventListener("click", reset);
+
+      minsEl.addEventListener("change", function () {
+        if (running) return;
+        applyFromInputs(); render(); persist();
+        logChain("set", "timer set · " + fmt(totalMs), { totalMs: totalMs });
+      });
+      secsEl.addEventListener("change", function () {
+        if (running) return;
+        applyFromInputs(); render(); persist();
+        logChain("set", "timer set · " + fmt(totalMs), { totalMs: totalMs });
+      });
+
+      document.getElementById("presets").addEventListener("click", function (e) {
+        var b = e.target.closest(".preset");
+        if (!b || running) return;
+        var sec = Number(b.getAttribute("data-sec"));
+        totalMs = sec * 1000;
+        remainingMs = totalMs;
+        done = false;
+        syncInputsFromTotal();
+        render();
+        persist();
+        logChain("set", "timer set · " + fmt(totalMs), { totalMs: totalMs, preset: sec });
+      });
+
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden && running && endsAt) tick();
+      });
+
+      load();
+      persist();
+    })();
+  </script>
+</body>
+</html>

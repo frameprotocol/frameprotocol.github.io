@@ -744,6 +744,7 @@ window.FRAME = (function () {
   var LS_GRANTS = "frame.grants.v1";
   var DEFAULT_CAPS = [
     "calc.write", "calc.read",
+    "timer.write", "timer.read",
     "wallet.write", "wallet.export", "wallet.import",
     "frame.rename", "frame.clone", "frame.export",
     "identity.switch", "identity.create", "identity.export", "identity.import",
@@ -824,9 +825,16 @@ window.FRAME = (function () {
     var id = identityId || getActiveId();
     if (!id) return;
     var store = getGrantStore();
-    if (Array.isArray(store.grants[id]) && store.grants[id].length) return;
-    store.grants[id] = DEFAULT_CAPS.slice();
-    saveGrantStore(store);
+    if (!Array.isArray(store.grants[id])) store.grants[id] = [];
+    var list = store.grants[id];
+    var changed = list.length === 0;
+    DEFAULT_CAPS.forEach(function (c) {
+      if (list.indexOf(c) < 0) { list.push(c); changed = true; }
+    });
+    if (changed) {
+      store.grants[id] = list;
+      saveGrantStore(store);
+    }
   }
 
   function requireCapability(capability) {
