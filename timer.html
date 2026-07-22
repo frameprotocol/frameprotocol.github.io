@@ -249,6 +249,31 @@
         }).catch(function () {});
       }
 
+      function syncTimerJob(status) {
+        if (!FRAME.syncDappJob) return;
+        if (status === "remove") {
+          FRAME.syncDappJob({ id: "job_timer", status: "remove", source: KEY });
+          return;
+        }
+        var label = done ? "done" : running ? "running" : (remainingMs > 0 && remainingMs < totalMs ? "paused" : "ready");
+        var title = "Timer · " + fmt(remainingMs) + (label === "ready" ? "" : " · " + label);
+        FRAME.syncDappJob({
+          id: "job_timer",
+          title: title,
+          status: status,
+          source: KEY
+        });
+      }
+
+      var lastJobSync = 0;
+      function maybeSyncTimerJobTitle() {
+        if (!running) return;
+        var now = Date.now();
+        if (now - lastJobSync < 900) return;
+        lastJobSync = now;
+        syncTimerJob("running");
+      }
+
       function setInputsEnabled(on) {
         minsEl.disabled = !on;
         secsEl.disabled = !on;
@@ -323,6 +348,7 @@
         render();
         persist();
         logChain("done", "timer done · " + fmt(totalMs), { totalMs: totalMs });
+        syncTimerJob("done");
         try {
           if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 200]);
         } catch (e) {}
@@ -345,6 +371,7 @@
         if (!running || endsAt == null) return;
         remainingMs = Math.max(0, endsAt - Date.now());
         render();
+        maybeSyncTimerJobTitle();
         if (remainingMs <= 0) finish();
       }
 
@@ -362,6 +389,7 @@
         render();
         persist();
         logChain("start", "timer start · " + fmt(remainingMs), { remainingMs: remainingMs, totalMs: totalMs });
+        syncTimerJob("running");
         tick();
       }
 
@@ -374,6 +402,7 @@
         render();
         persist();
         logChain("pause", "timer pause · " + fmt(remainingMs), { remainingMs: remainingMs });
+        syncTimerJob("queued");
       }
 
       function reset() {
@@ -390,6 +419,7 @@
         render();
         persist();
         logChain("reset", "timer reset · " + fmt(totalMs), { totalMs: totalMs });
+        syncTimerJob("remove");
       }
 
       function load() {
@@ -456,6 +486,8 @@
 
       load();
       persist();
+      if (running) syncTimerJob("running");
+      else if (done) syncTimerJob("done");
     })();
   </script>
 </body>

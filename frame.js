@@ -905,6 +905,59 @@ window.FRAME = (function () {
     return null;
   }
 
+  var LS_WALLET_DAPP = "frame.dapp.wallet";
+
+  /**
+   * Upsert a cross-dApp job into Wallet jobs list (Calculator/Timer → Jobs pane).
+   * status: "running" | "queued" | "done" | "remove"
+   */
+  function syncDappJob(args) {
+    args = args || {};
+    var id = String(args.id || "").trim();
+    if (!id) return null;
+    var status = String(args.status || "running");
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(LS_WALLET_DAPP) || "null"); } catch (e) {}
+    if (!d || typeof d !== "object") {
+      d = { name: "Wallet", version: "1.0.0", installedAt: new Date().toISOString(), state: { jobs: [], tasks: [] } };
+    }
+    if (!d.state || typeof d.state !== "object") d.state = { jobs: [], tasks: [] };
+    if (!Array.isArray(d.state.jobs)) d.state.jobs = [];
+    if (!Array.isArray(d.state.tasks)) d.state.tasks = [];
+
+    if (status === "remove") {
+      d.state.jobs = d.state.jobs.filter(function (j) { return j.id !== id; });
+    } else {
+      var now = new Date().toISOString();
+      var next = {
+        id: id,
+        title: String(args.title || id),
+        status: status === "queued" || status === "done" || status === "running" ? status : "running",
+        source: args.source || null,
+        createdAt: now,
+        updatedAt: now
+      };
+      var found = false;
+      d.state.jobs = d.state.jobs.map(function (j) {
+        if (j.id !== id) return j;
+        found = true;
+        return {
+          id: id,
+          title: next.title,
+          status: next.status,
+          source: next.source || j.source || null,
+          createdAt: j.createdAt || now,
+          updatedAt: now
+        };
+      });
+      if (!found) d.state.jobs.unshift(next);
+    }
+    d.name = d.name || "Wallet";
+    d.updatedAt = new Date().toISOString();
+    try { localStorage.setItem(LS_WALLET_DAPP, JSON.stringify(d)); } catch (e) {}
+    return d;
+  }
+
   function localStorageEntries() {
     var out = [];
     try {
@@ -1039,6 +1092,7 @@ window.FRAME = (function () {
     projectFromChain: projectFromChain,
     projectCalculatorState: projectCalculatorState,
     projectWalletState: projectWalletState,
+    syncDappJob: syncDappJob,
     DEFAULT_CAPS: DEFAULT_CAPS
   };
 })();

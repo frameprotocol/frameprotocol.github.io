@@ -253,6 +253,23 @@
         }).catch(function () {});
       }
 
+      function calcJobTitle() {
+        if (op !== null && stored !== null) {
+          return "Calculator · " + fmt(stored) + " " + opLabel(op) + (replace ? "" : " " + current);
+        }
+        return "Calculator · " + current;
+      }
+
+      function syncCalcJob(status, title) {
+        if (!FRAME.syncDappJob) return;
+        FRAME.syncDappJob({
+          id: "job_calc",
+          title: title || calcJobTitle(),
+          status: status,
+          source: KEY
+        });
+      }
+
       function fmt(n) {
         if (!isFinite(n)) return "Error";
         var r = Math.round((n + Number.EPSILON) * 1e10) / 1e10;
@@ -269,6 +286,7 @@
         else { if (current === "0") current = d; else current += d; }
         render(); persist();
         logChain("input", { kind: "digit", digit: d, before: before }, { display: current }, "input " + d + " → " + current);
+        if (op !== null) syncCalcJob("running");
       }
       function inputDot() {
         var before = current;
@@ -277,22 +295,26 @@
         else return;
         render(); persist();
         logChain("input", { kind: "dot", before: before }, { display: current }, "input . → " + current);
+        if (op !== null) syncCalcJob("running");
       }
       function clearAll() {
         var before = { display: current, stored: stored, op: op };
         current = "0"; stored = null; op = null; replace = true; render(); persist();
         logChain("clear", before, { display: current }, "clear");
+        syncCalcJob("remove");
       }
       function sign() {
         var before = current;
         if (current !== "0") current = current.charAt(0) === "-" ? current.slice(1) : "-" + current;
         render(); persist();
         logChain("sign", { before: before }, { display: current }, "+/− → " + current);
+        if (op !== null) syncCalcJob("running");
       }
       function percent() {
         var before = current;
         current = fmt(parseFloat(current) / 100); replace = true; render(); persist();
         logChain("percent", { before: before }, { display: current }, "% → " + current);
+        if (op !== null) syncCalcJob("running");
       }
 
       function compute(a, b, o) {
@@ -316,6 +338,7 @@
           ? (fmt(partial.left) + " " + opLabel(partial.op) + " " + fmt(partial.right) + " = " + current + " · then " + opLabel(o))
           : (current + " " + opLabel(o));
         logChain("op", before, { display: current, stored: stored, op: op, partial: partial }, title);
+        syncCalcJob("running", "Calculator · " + fmt(stored) + " " + opLabel(op));
       }
       function equals() {
         if (op === null || stored === null) return;
@@ -326,6 +349,7 @@
         highlight(null);
         var eq = fmt(left) + " " + opLabel(o) + " " + fmt(right) + " = " + current;
         logChain("equals", { left: left, op: o, right: right }, { value: current, equation: eq }, eq);
+        syncCalcJob("done", "Calculator · " + eq);
       }
 
       function highlight(o) {
