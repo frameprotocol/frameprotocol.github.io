@@ -13,9 +13,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Share+Tech+Mono&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     @font-face {
-      font-family: "DSEG7";
-      src: url("https://cdn.jsdelivr.net/gh/keshikan/DSEG@v0.46/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2") format("woff2");
-      font-weight: 700; font-style: normal; font-display: swap;
+      font-family: "DSEG7 Classic";
+      src: url("/fonts/dseg7-classic-bold.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: block;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
@@ -81,15 +83,17 @@
       letter-spacing: 0.04em;
     }
     .result {
-      font-family: "DSEG7", "Share Tech Mono", monospace;
+      font-family: "DSEG7 Classic", monospace !important;
       font-weight: 700;
-      font-size: clamp(1.7rem, 8vw, 2.4rem);
+      font-style: normal;
+      font-size: clamp(1.85rem, 8.5vw, 2.6rem);
       word-break: break-all;
       color: #14fd70;
       text-shadow: 0 0 10px rgba(20, 253, 112, 0.45);
-      letter-spacing: 0.04em;
-      line-height: 1.25;
-      margin-top: 4px;
+      letter-spacing: 0.08em;
+      line-height: 1.35;
+      margin-top: 6px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; position: relative; z-index: 1; }
