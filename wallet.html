@@ -165,9 +165,14 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     #receiptList .rcpt-sub {
+      display: flex; align-items: center; gap: 5px;
       font-family: 'Space Mono', monospace; font-size: 0.68rem; color: #888888;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;
     }
+    #receiptList .rcpt-tick {
+      width: 11px; height: 11px; flex: 0 0 auto; color: #17a34a;
+    }
+    #receiptList .rcpt-tick[hidden] { display: none; }
     #receiptList .pill { margin-left: 0; font-size: 0.66rem; padding: 3px 9px; }
     #receiptList .rcpt-body {
       display: none !important; padding: 0 10px 10px; border-top: 1px solid #f0f0f0;
@@ -1238,7 +1243,10 @@
                   '<svg class="rcpt-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>' +
                   '<div class="rcpt-main">' +
                     '<div class="card-name"></div>' +
-                    '<div class="rcpt-sub" data-f="sub"></div>' +
+                    '<div class="rcpt-sub">' +
+                      '<svg class="rcpt-tick" data-f="tick" hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' +
+                      '<span data-f="when"></span>' +
+                    '</div>' +
                   '</div>' +
                   '<span class="pill pending">verifying\u2026</span>' +
                 '</div>' +
@@ -1275,9 +1283,10 @@
             if (matches) visible++;
 
             card.querySelector(".card-name").textContent = title;
-            card.querySelector('[data-f="sub"]').textContent =
-              info.scheme + (info.alg !== "—" ? " · " + info.alg : "") +
-              (d.updatedAt ? " · " + shorten(d.updatedAt, 19) : "");
+            var whenEl = card.querySelector('[data-f="when"]');
+            var tickEl = card.querySelector('[data-f="tick"]');
+            whenEl.textContent = d.updatedAt ? String(d.updatedAt).slice(0, 10) : "—";
+            tickEl.hidden = true;
             card.querySelector('[data-f="dapp"]').textContent = rec.key;
             card.querySelector('[data-f="scheme"]').textContent = info.scheme;
             card.querySelector('[data-f="alg"]').textContent = info.alg;
@@ -1315,6 +1324,7 @@
             if (!hasSig) {
               pill.className = "pill unsigned";
               pill.textContent = "unsigned";
+              tickEl.hidden = true;
               unsignedCount++;
               done();
               return;
@@ -1322,6 +1332,7 @@
             if (!pubKey) {
               pill.className = "pill bad";
               pill.textContent = "signer not found";
+              tickEl.hidden = true;
               done();
               return;
             }
@@ -1331,16 +1342,19 @@
               if (ok) {
                 pill.className = "pill ok";
                 pill.innerHTML = CHECK + "verified";
+                tickEl.hidden = false;
                 verifiedCount++;
               } else {
                 pill.className = "pill bad";
                 pill.textContent = "invalid";
+                tickEl.hidden = true;
               }
               done();
             }).catch(function () {
               if (mySeq !== receiptSeq) return;
               pill.className = "pill bad";
               pill.textContent = "error";
+              tickEl.hidden = true;
               done();
             });
           });
@@ -1379,9 +1393,9 @@
           var visible = 0;
           cards.forEach(function (card) {
             var name = (card.querySelector(".card-name") || {}).textContent || "";
-            var sub = (card.querySelector('[data-f="sub"]') || {}).textContent || "";
+            var when = (card.querySelector('[data-f="when"]') || {}).textContent || "";
             var dapp = (card.querySelector('[data-f="dapp"]') || {}).textContent || "";
-            var blob = (name + " " + sub + " " + dapp).toLowerCase();
+            var blob = (name + " " + when + " " + dapp).toLowerCase();
             var ok = !q || blob.indexOf(q) >= 0;
             card.classList.toggle("rcpt-hidden", !ok);
             if (ok) visible++;
