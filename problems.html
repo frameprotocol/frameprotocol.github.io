@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>frame - problems solved</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: #ffffff;
+      color: #000000;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 84px;
+      background: linear-gradient(to bottom, #ffffff 55%, rgba(255, 255, 255, 0));
+      pointer-events: none;
+      z-index: 6;
+    }
+    .brand {
+      position: fixed;
+      top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px));
+      margin: 0;
+      z-index: 8;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      color: #000000;
+      font-size: clamp(18px, 5vw, 40px);
+      letter-spacing: 0.08em;
+      line-height: 1;
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .hl-orange, .hl-gray, .hl-green, .hl-yellow, .hl-xpblue,
+    .hl-blue-w, .hl-rainbow, .hl-purple, .hl-black-w,
+    .hl-sandbox, .hl-verify, .hl-security, .hl-design,
+    .hl-surf, .hl-local, .hl-first, .hl-litegray, .hl-truth, .hl-goal,
+    .hl-ltblue, .hl-reality, .hl-rose {
+      color: #000000;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      padding: 0.02em 0.12em;
+    }
+    .no-pl { padding-left: 0 !important; }
+    .no-pr { padding-right: 0 !important; }
+    .hl-orange { background: #ff8a00; }
+    .hl-gray { background: #d0d0d0; }
+    .hl-green { background: #4caf50; }
+    .hl-yellow { background: #ffe600; }
+    .hl-xpblue { background: #245edc; }
+    .hl-blue-w { background: #1a73e8; color: #ffffff; }
+    .hl-purple { background: #9b59b6; color: #000000; }
+    .hl-black-w { background: #000000; color: #ffffff; }
+    .hl-sandbox { background: #000000; color: #ffe600; }
+    .hl-verify { background: #ffffff; color: #1a9e3f; }
+    .hl-security { background: #000000; color: #ff3b30; }
+    .hl-design { background: #bdbdbd; color: #5aa9ff; }
+    .hl-local { background: #ffe600; color: #1a73e8; }
+    .hl-first { background: #000000; color: #ffffff; }
+    .hl-litegray { background: #e6e6e6; }
+    .hl-truth { background: #0b4d2a; color: #7cfa8a; }
+    .hl-goal { background: #f4f4ef; color: #17a34a; }
+    .hl-ltblue { background: #9ecbff; }
+    .hl-reality { background: #000000; color: #a34bff; }
+    .hl-rose { background: #ffb3c1; }
+    .hl-rainbow {
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      color: #ffffff;
+      animation: hue-move 6s linear infinite;
+    }
+    .hl-surf {
+      background: linear-gradient(90deg,#25d366,#00e0ff,#1a73e8,#25d366);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: hue-move 4s linear infinite;
+    }
+    @keyframes hue-move { to { background-position: 200% center; } }
+
+    .corner {
+      position: fixed;
+      width: clamp(28px, 6vw, 56px);
+      height: clamp(28px, 6vw, 56px);
+      border-color: #000000;
+      border-style: solid;
+      border-width: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .corner.tl { top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: env(safe-area-inset-bottom, 0px); right: env(safe-area-inset-right, 0px); border-bottom-width: 2.5px; border-right-width: 2.5px; }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: max(88px, calc(env(safe-area-inset-top, 0px) + 72px)) max(16px, env(safe-area-inset-right, 0px), clamp(16px, 6vw, 48px)) max(96px, calc(env(safe-area-inset-bottom, 0px) + 64px)) max(16px, env(safe-area-inset-left, 0px), clamp(16px, 6vw, 48px));
+    }
+
+    .sec { margin: 0 0 clamp(40px, 7vh, 64px); }
+    .sec-head {
+      display: flex;
+      align-items: flex-end;
+      column-gap: clamp(12px, 2vw, 20px);
+      margin-left: calc(-1 * clamp(24px, 6vw, 96px));
+      padding-left: 0;
+    }
+    .sec-head h2 {
+      margin: 0;
+      flex: 0 1 auto;
+      text-align: left;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.4rem, 4.5vw, 2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+    .sec-head .hline {
+      flex: 1 1 24px;
+      min-width: 24px;
+      height: 0;
+      border-top: 1px solid #000000;
+      margin-bottom: 0;
+    }
+    .sec-body {
+      border-right: 1px solid #000000;
+      text-align: left;
+      padding: clamp(16px, 2.6vh, 24px) clamp(16px, 3vw, 28px) clamp(24px, 3.8vh, 36px) 0;
+    }
+
+    .lede .sec-head h2 {
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      line-height: 1.05;
+    }
+
+    p {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      font-weight: 400;
+      line-height: 1.7;
+      margin: 0 0 clamp(14px, 2vh, 20px);
+    }
+    p.lead {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.15rem, 3vw, 1.5rem);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      margin: 0 0 clamp(16px, 2.6vh, 24px);
+    }
+    .sec-body > *:last-child { margin-bottom: 0; }
+    p.spaced { margin-bottom: clamp(10px, 1.4vh, 14px); }
+    ul {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      line-height: 1.7;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+      padding-left: 1.3em;
+      list-style-position: outside;
+    }
+    ul li { margin-bottom: 6px; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(16px, 3vw, 28px);
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .split-col {
+      border: 1px solid #e2e2e2;
+      background: #fafafa;
+      padding: clamp(14px, 2.2vw, 20px);
+      border-radius: 10px;
+    }
+    .split-col.frame {
+      background: #f5f5f5;
+      border-color: #000000;
+    }
+    .split-label {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.78rem, 1.8vw, 0.9rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 0 0 clamp(10px, 1.6vh, 14px);
+      opacity: 0.55;
+    }
+    .split-col.frame .split-label { opacity: 1; color: #000000; }
+    .split-col ul {
+      margin: 0;
+      padding-left: 1.15em;
+    }
+    .split-col p { margin: 0; font-size: clamp(0.98rem, 2.2vw, 1.1rem); }
+    .split-col p + p { margin-top: 8px; }
+
+    .num {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.75rem, 1.7vw, 0.88rem);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.45;
+      margin: 0 0 6px;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin: clamp(48px, 8vh, 80px) 0 0;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      line-height: 1.4;
+    }
+
+    .site-footer {
+      border-top: 1px solid #000000;
+      padding: clamp(40px, 7vh, 88px) clamp(24px, 6vw, 64px) clamp(64px, 10vh, 120px);
+    }
+    .foot-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .foot-kicker {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      margin: 0 0 clamp(12px, 2vh, 18px);
+    }
+    .foot-tag {
+      max-width: 620px;
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+      font-weight: 400;
+      line-height: 1.6;
+      margin: 0 0 clamp(28px, 5vh, 48px);
+    }
+    .foot-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 3vw, 36px);
+      margin: 0 0 clamp(36px, 7vh, 72px);
+    }
+    .flink {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #000000;
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.72;
+      transition: opacity 0.15s ease;
+    }
+    .flink:hover { opacity: 1; }
+    .foot-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 24px;
+      padding-top: clamp(16px, 2.4vh, 22px);
+      border-top: 1px solid #000000;
+      font-size: clamp(0.82rem, 1.9vw, 0.95rem);
+      letter-spacing: 0.02em;
+      opacity: 0.72;
+    }
+
+    html { overflow-x: hidden; }
+    @media (max-width: 640px) {
+      .split { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .sec-head { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+
+  <main>
+    <section class="sec lede">
+      <div class="sec-head"><h2>Problems Solved</h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">FRAME isn't trying to replace every app. It's trying to end the fragmentation of digital meaning.</p>
+        <p>Today every platform invents its own little universe. Moving information between them means adapters, exports, APIs, and endless conversion.</p>
+        <p>FRAME's ambition is simpler and larger: make those islands into perspectives over one shared computational graph.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Software </span><span class="hl-rose">Fragmentation</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">01</p>
+        <p class="lead">Files, apps, plugins, APIs, extensions, and packages shouldn't be different kingdoms.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Today</p>
+            <ul>
+              <li>Files</li>
+              <li>Apps</li>
+              <li>Plugins</li>
+              <li>APIs</li>
+              <li>Extensions</li>
+              <li>Packages</li>
+            </ul>
+            <p>Each is a separate concept with its own rules, tools, and mental model.</p>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">FRAME</p>
+            <p>Everything becomes a FRAME.</p>
+            <p>One abstraction. One way to reason about capability, identity, and composition.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-litegray">Data Locked Inside </span><span class="hl-blue-w">Applications</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">02</p>
+        <p class="lead">Your data shouldn't belong to the tool that happens to render it.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Today</p>
+            <p>Your work lives inside Photoshop, Figma, Blender, Word, MetaMask — each with its own vault and exit tax.</p>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">FRAME</p>
+            <p>Data exists independently. Applications become perspectives — ways of seeing and acting on the same underlying reality.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">AI </span><span class="hl-reality">Integration</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">03</p>
+        <p class="lead">Every AI integration shouldn't start as a custom one-off.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Today</p>
+            <p>Each product wires AI through bespoke APIs, prompts, and context glue. Scaling means more adapters.</p>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">FRAME</p>
+            <p>AI reasons over one graph — not five hundred APIs. Context, tools, and history share the same model.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Universal </span><span class="hl-orange">Interoperability</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">04</p>
+        <p class="lead">Every product inventing its own format is the tax we keep paying.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Today</p>
+            <p>New formats, schemas, and export pipelines appear with every platform.</p>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">FRAME</p>
+            <p>Everything shares one computational universe. Interop is the default, not a feature request.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Better </span><span class="hl-green">Collaboration</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">05</p>
+        <p class="lead">Version control, comments, review, and history shouldn't be four disconnected systems.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Today</p>
+            <ul>
+              <li>Version control is separate</li>
+              <li>Comments are separate</li>
+              <li>Review is separate</li>
+              <li>History is separate</li>
+            </ul>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">FRAME</p>
+            <p>They're FRAMEs — first-class objects in the same graph, linked to the work they describe.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray">Universal </span><span class="hl-truth">History</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">06</p>
+        <p class="lead">Every meaningful action can be a first-class object.</p>
+        <p>Edits, transactions, reviews, merges, and automation runs don't have to live as opaque logs. Each can become a FRAME — inspectable, linkable, and reusable.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Multiple </span><span class="hl-reality">Perspectives</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">07</p>
+        <p class="lead">One reality. Many views.</p>
+        <p>Desktop, terminal, VR, graph, mind map, 3D world, IDE, filesystem — all can observe the same graph without each inventing a private copy of the world.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-litegray">No Vendor </span><span class="hl-black-w">Lock-In</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">08</p>
+        <p class="lead">Your data shouldn't be trapped inside apps.</p>
+        <p>The FRAME remains. Perspectives change. Switching tools means choosing a new way to look at the same underlying objects — not starting over.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Universal </span><span class="hl-xpblue" style="color:#ffffff">Identity</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">09</p>
+        <p class="lead">One identity across the surfaces you already use.</p>
+        <p>AI, marketplace, collaboration, documents, transactions, and worlds can share a single capability-based identity instead of a new account for every silo.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">AI </span><span class="hl-verify">Explainability</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">10</p>
+        <p class="lead">AI shouldn't return magic. It should return structure.</p>
+        <p>Reasoning, evidence, relationships, and confidence can all be exposed as FRAMEs — objects you can inspect, challenge, and reuse instead of opaque text blobs.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Marketplace </span><span class="hl-purple">Evolution</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">11</p>
+        <p class="lead">Stop selling only apps. Publish what software is made of.</p>
+        <ul>
+          <li>FRAMEs</li>
+          <li>Behaviors</li>
+          <li>Perspectives</li>
+          <li>Policies</li>
+          <li>Protocols</li>
+          <li>AI</li>
+        </ul>
+        <p>Composition becomes the product, not just the installer.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Better </span><span class="hl-security">Security</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">12</p>
+        <p class="lead">Policies, permissions, trust, and review shouldn't hide in product code.</p>
+        <p>When they become FRAMEs, they are inspectable, shareable, and auditable. Nothing critical stays buried in an app's private logic.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Digital </span><span class="hl-ltblue">Twins</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">13</p>
+        <p class="lead">Cars, homes, factories, cities, and robots can share one ontology.</p>
+        <p>Instead of every twin inventing its own world model, they reference the same computational graph with domain-specific perspectives on top.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Blockchain </span><span class="hl-yellow">UX</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">14</p>
+        <p class="lead">Wallet, explorer, portfolio, DEX, and NFT viewer don't need to be separate universes.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Today</p>
+            <p>Each tool reimplements identity, history, and presentation around the same chain data.</p>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">FRAME</p>
+            <p><code>Transaction.frame</code> — every tool is simply a different perspective on the same object.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Internet </span><span class="hl-design">Documents</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">15</p>
+        <p class="lead">PDF, DOCX, PNG, GLB, OBJ — formats as islands.</p>
+        <p>Instead of treating every file type as a closed world, everything becomes a FRAME: structured, linkable, and open to multiple perspectives.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Better </span><span class="hl-local">Development</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">16</p>
+        <p class="lead">Developers stop asking for another API and start asking for another FRAME.</p>
+        <p>New capability means composing objects in the shared graph — not inventing yet another private integration surface.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-litegray">Long-Term </span><span class="hl-first">Compatibility</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">17</p>
+        <p class="lead">Applications disappear. FRAMEs remain.</p>
+        <p>New perspectives can keep working against the same underlying objects long after any one app is gone.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">AI-Native </span><span class="hl-surf">Computing</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">18</p>
+        <p class="lead">FRAME is naturally AI-readable.</p>
+        <p>Reflection, relationships, capabilities, protocols, history, intent, and policy are all part of the same model — ready for machines to reason over without scraping a dozen backends.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Self-Describing </span><span class="hl-sandbox">Systems</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">19</p>
+        <p class="lead">Software can document itself.</p>
+        <p>Reflection FRAMEs become documentation. A separate wiki is optional — the system carries its own explanation.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Distributed </span><span class="hl-blue-w">Computing</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">20</p>
+        <p class="lead">Same ontology. Different providers.</p>
+        <p>Offline, LAN, internet, datacenter, or P2P — the model stays consistent while the transport and hosting change underneath.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Universal </span><span class="hl-orange">Automation</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">21</p>
+        <p class="lead">Automation shouldn't be tied to apps.</p>
+        <p>It operates over FRAMEs — so workflows survive when the UI on top of them changes.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Better </span><span class="hl-green">Search</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">22</p>
+        <p class="lead">Search relationships, intent, meaning, capabilities, and history — not just filenames.</p>
+        <p>When everything lives in one graph, retrieval can follow structure instead of guessing from strings.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Knowledge </span><span class="hl-reality">Representation</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">23</p>
+        <p class="lead">A research paper, a CAD model, an equation, a simulation, a blockchain transaction, and a video can live in one graph.</p>
+        <p>Different media, same computational neighborhood — linked by identity and relationships instead of export folders.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Richer </span><span class="hl-yellow">Transactions</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">24</p>
+        <p class="lead">A financial transaction is more than <code>0x8d…</code></p>
+        <p>History, simulation, AI explanation, 3D visualization, compliance, reviews, annotations, policies, and education can all attach to the same identity — one object, many perspectives.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Software </span><span class="hl-rainbow">Evolves</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">25</p>
+        <p class="lead">FRAMEs can describe, improve, generate, review, and publish FRAMEs.</p>
+        <p>The system is reflexive: software that can talk about itself, change itself, and ship itself using the same primitives.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">The Biggest Thing FRAME Could </span><span class="hl-goal">Solve</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Not files. Not apps. Not operating systems. The fragmentation of digital meaning.</p>
+        <p>Right now every platform creates its own little universe:</p>
+        <ul>
+          <li>GitHub has one model</li>
+          <li>Google Drive has another</li>
+          <li>Ethereum has another</li>
+          <li>CAD software has another</li>
+          <li>AI tools have another</li>
+          <li>Desktop operating systems have another</li>
+        </ul>
+        <p>Moving information between them requires adapters, exports, APIs, and conversions.</p>
+        <p>The ambition of FRAME is to make those things different perspectives over a shared computational graph instead of disconnected islands. If that vision proves practical, the payoff wouldn't be "a better desktop" — it would be reducing the translation and duplication that define today's software ecosystem.</p>
+        <p>That's an ambitious goal. Whether it succeeds depends on whether developers find the abstractions useful, whether the runtime stays as disciplined as envisioned, and whether the ecosystem converges on common protocols.</p>
+        <p>The architecture is aimed at a broad interoperability problem — not at replacing any single application.</p>
+      </div>
+    </section>
+
+    <p class="footer-note">Islands of meaning become perspectives<br />on one shared graph.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <p class="foot-kicker">Contribute</p>
+      <p class="foot-tag">We're building a shared foundation where software speaks the same language. Come build on it.</p>
+      <nav class="foot-links">
+        <a class="flink" href="/why.html">Why FRAME</a>
+        <a class="flink" href="/how.html">How it works</a>
+        <a class="flink" href="/problems.html">Problems solved</a>
+        <a class="flink" href="/start.html">Start</a>
+        <a class="flink" href="https://github.com/frameprotocol" target="_blank" rel="noopener">GitHub</a>
+        <a class="flink" href="https://x.com/frame_protocol" target="_blank" rel="noopener">X</a>
+      </nav>
+      <div class="foot-bottom">
+        <span>Open source &middot; Local-first &middot; Verifiable</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

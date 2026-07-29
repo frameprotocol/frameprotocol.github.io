@@ -59,7 +59,8 @@
       font-size: clamp(1.4rem, 4vw, 2rem);
       text-align: right;
     }
-    .nav .nav-how { margin-top: clamp(24px, 5vh, 44px); }
+    .nav .nav-how,
+    .nav .nav-problems { margin-top: clamp(24px, 5vh, 44px); }
     .nav .side:hover { text-decoration: underline; }
 
     .begin-wrap {
@@ -138,7 +139,8 @@
     @media (max-height: 560px), (max-width: 400px) {
       .nav { top: auto; bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 72px)); }
       .nav .side { font-size: clamp(1.15rem, 5vw, 1.5rem); margin-right: max(16px, env(safe-area-inset-right, 0px)); }
-      .nav .nav-how { margin-top: 14px; }
+      .nav .nav-how,
+      .nav .nav-problems { margin-top: 14px; }
       .nav-begin { font-size: clamp(2.2rem, 10vw, 3rem); }
       .stage { margin-top: max(48px, calc(env(safe-area-inset-top, 0px) + 40px)); padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
     }
@@ -157,6 +159,7 @@
   <nav class="nav">
     <a class="side nav-why" href="/why.html">Why?</a>
     <a class="side nav-how" href="/how.html">How it works</a>
+    <a class="side nav-problems" href="/problems.html">Problems Solved</a>
   </nav>
   <div class="begin-wrap">
     <a class="nav-begin" href="/dapps.html">Start</a>
