@@ -613,6 +613,29 @@
     </section>
 
     <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray no-pr">Native </span><span class="hl-ltblue">Simulation</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="num">26</p>
+        <p class="lead">Software today is terrible at simulation. FRAME makes it a provider swap.</p>
+        <p>Suppose your <code>WeatherStation</code> declares that it requires a <code>TemperatureSensor</code>.</p>
+        <p>You don't own the hardware. No problem.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Requirement</p>
+            <p><code>WeatherStation.frame</code></p>
+            <p>requires: <code>TemperatureSensor</code></p>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">Marketplace</p>
+            <p>Drop in <code>SimulationTemperature.frame</code>.</p>
+            <p>Done. The exact same <code>WeatherStation.frame</code> runs — only the provider changes.</p>
+          </div>
+        </div>
+        <p>That is a huge win for testing: real hardware and simulated providers speak the same contract.</p>
+      </div>
+    </section>
+
+    <section class="sec">
       <div class="sec-head"><h2><span class="hl-gray no-pr">The Biggest Thing FRAME Could </span><span class="hl-goal">Solve</span></h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">Not files. Not apps. Not operating systems. The fragmentation of digital meaning.</p>

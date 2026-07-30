@@ -286,6 +286,73 @@
       font-weight: 700;
     }
 
+    .tree {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+      letter-spacing: 0.01em;
+      line-height: 1.55;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+      padding: clamp(14px, 2.2vw, 20px);
+      border: 1px solid #e2e2e2;
+      background: #fafafa;
+      border-radius: 10px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .tree.frame {
+      border-color: #000000;
+      background: #f5f5f5;
+    }
+
+    .levels {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      letter-spacing: 0.02em;
+      line-height: 1.45;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .levels p { margin: 0; font-family: inherit; font-weight: inherit; font-size: inherit; line-height: inherit; }
+    .levels .flow-arrow { margin: 2px 0; }
+
+    .pitch {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.25rem, 3.5vw, 1.7rem);
+      line-height: 1.3;
+      letter-spacing: 0.01em;
+      margin: 0 0 clamp(16px, 2.4vh, 22px);
+      padding: clamp(14px, 2vw, 18px) 0;
+      border-top: 1px solid #e6e6e6;
+      border-bottom: 1px solid #e6e6e6;
+    }
+
+    .defs {
+      display: grid;
+      gap: clamp(12px, 2vw, 16px);
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .def {
+      border: 1px solid #e2e2e2;
+      background: #fafafa;
+      padding: clamp(14px, 2.2vw, 18px);
+      border-radius: 10px;
+    }
+    .def.frame {
+      border-color: #000000;
+      background: #f5f5f5;
+    }
+    .def-term {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 0 0 6px;
+    }
+    .def p { margin: 0; }
+
     .footer-note {
       text-align: center;
       margin: clamp(48px, 8vh, 80px) 0 0;
@@ -389,6 +456,7 @@
       <div class="sec-head"><h2>Apps become optional</h2><span class="hline"></span></div>
       <div class="sec-body">
         <p class="lead">FRAME turns your computer from a collection of apps into a collection of things.</p>
+        <p class="lead">FRAME is a computer where you work with things instead of apps.</p>
       </div>
     </section>
 
@@ -595,10 +663,553 @@
         <p>If I had to explain FRAME to someone in a coffee shop, I’d say:</p>
         <p class="lead">FRAME is a computer where everything is an intelligent object that knows what it is, how it relates to everything else, why it’s in its current state, and can work together with every other object—without being trapped inside separate apps.</p>
         <p>That’s really the core idea. Apps become optional. The focus shifts from launching software to interacting directly with the things you care about.</p>
+        <p>One tiny refinement:</p>
+        <p class="lead">FRAME is a computer where you work with things instead of apps.</p>
       </div>
     </section>
 
-    <p class="footer-note">Interact with things.<br />Apps are optional.</p>
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-orange">What do</span><span class="hl-litegray"> you mean?</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Imagine buying a house.</p>
+        <p>Today your computer would make you open:</p>
+        <ul class="plain">
+          <li>Zillow</li>
+          <li>Google Drive</li>
+          <li>Gmail</li>
+          <li>Calendar</li>
+          <li>Notes</li>
+          <li>Bank app</li>
+          <li>PDF viewer</li>
+          <li>ChatGPT</li>
+        </ul>
+        <p>…just to manage one thing.</p>
+        <p>With FRAME, there is simply:</p>
+        <div class="nest">
+          <p class="nest-title">My House</p>
+          <p>Open it. Inside are:</p>
+          <ul class="plain">
+            <li>Photos</li>
+            <li>Documents</li>
+            <li>Mortgage</li>
+            <li>Insurance</li>
+            <li>Repairs</li>
+            <li>Notes</li>
+            <li>AI Assistant</li>
+            <li>Family members</li>
+            <li>Smart home devices</li>
+            <li>History</li>
+            <li>Permissions</li>
+          </ul>
+        </div>
+        <p>Everything about your house lives together.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-green">Or start</span><span class="hl-litegray"> a business</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Instead of opening 15 websites… there’s simply:</p>
+        <div class="nest">
+          <p class="nest-title">My Business</p>
+          <ul class="plain">
+            <li>Employees</li>
+            <li>Files</li>
+            <li>Website</li>
+            <li>AI</li>
+            <li>Accounting</li>
+            <li>Servers</li>
+            <li>Customers</li>
+            <li>Tasks</li>
+            <li>Inventory</li>
+            <li>History</li>
+          </ul>
+        </div>
+        <p class="lead">The business becomes the thing you interact with—not the apps.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-blue-w">Or even</span><span class="hl-litegray"> your car</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Instead of</p>
+            <ul class="plain">
+              <li>OBD app</li>
+              <li>Maintenance notes</li>
+              <li>Photos</li>
+              <li>Insurance</li>
+              <li>Registration PDF</li>
+              <li>AI chatbot</li>
+              <li>Calendar reminders</li>
+            </ul>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">You have</p>
+            <p class="object-name">My Malibu</p>
+            <p>Open it. Everything is there.</p>
+          </div>
+        </div>
+        <p>The AI already knows the car.</p>
+        <p>The maintenance history is already connected.</p>
+        <p>The diagnostic reports are already there.</p>
+        <p class="lead">Everything belongs to the car.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-black-w">Things</span><span class="hl-litegray"> instead of apps</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>That’s why the phrase “things instead of apps” is so powerful. Everyone already organizes their lives around things:</p>
+        <ul>
+          <li>My house</li>
+          <li>My car</li>
+          <li>My company</li>
+          <li>My family</li>
+          <li>My vacation</li>
+          <li>My project</li>
+          <li>My drone</li>
+          <li>My website</li>
+        </ul>
+        <p>Apps are just tools people are forced to jump between to manage those things.</p>
+        <p>FRAME flips that around.</p>
+        <p class="lead">The thing becomes the center. The tools become invisible.</p>
+        <p class="pitch">Stop opening apps. Start opening the things that matter.</p>
+        <p class="pitch">Your computer shouldn’t ask what app you want. It should ask what you’re trying to do.</p>
+        <p>Those capture the vision better than talking about graphs, FRAMEs, or evaluation engines. All of that is what makes the experience possible—but the user only needs to understand that their computer is finally organized around their world, not around software.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-xpblue" style="color:#ffffff">Governance</span><span class="hl-litegray">, simply</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Most people hear “governance” and think politics.</p>
+        <p>FRAME governance is much simpler.</p>
+        <p class="lead">Governance is just the rules for making decisions.</p>
+        <p>Imagine you have a shared family photo album. The rules might be:</p>
+        <ul>
+          <li>Anyone can add photos.</li>
+          <li>Only Mom can delete photos.</li>
+          <li>If someone wants to delete the whole album, everyone has to agree.</li>
+        </ul>
+        <p>That’s governance. Nothing more.</p>
+        <p>FRAME just lets you make those rules for anything.</p>
+        <p>Imagine a business. You might decide:</p>
+        <ul>
+          <li>Employees can edit documents.</li>
+          <li>Managers can approve purchases.</li>
+          <li>The owner can change company settings.</li>
+        </ul>
+        <p>Those are governance rules. FRAME remembers them and follows them automatically.</p>
+        <p>Or imagine you own a website. You could make a rule:</p>
+        <div class="nest">
+          <p>If the AI wants to deploy a new version…</p>
+          <p class="nest-arrow">↓</p>
+          <p>…two people must review it first.</p>
+        </div>
+        <p>Again—that’s governance.</p>
+        <p class="lead">It’s simply: who can do what, and under what conditions?</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-purple">Exchange</span><span class="hl-litegray"> Space</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>“Exchange Space” is a much better explanation than “marketplace.”</p>
+        <p>A marketplace makes people think “buying and selling.”</p>
+        <p class="lead">An Exchange Space is a place where people, AI, and information come together to work on something.</p>
+        <p>Imagine creating:</p>
+        <div class="nest">
+          <p class="nest-title">Website Project</p>
+          <ul class="plain">
+            <li>Files</li>
+            <li>Team members</li>
+            <li>AI</li>
+            <li>Chat</li>
+            <li>Tasks</li>
+            <li>Permissions</li>
+            <li>Money</li>
+            <li>History</li>
+          </ul>
+        </div>
+        <p>That’s an Exchange Space.</p>
+        <p>Another example: buying a car.</p>
+        <p>Instead of texting, emailing PDFs, wiring money, signing papers, and using five websites… there is one Exchange Space.</p>
+        <div class="nest">
+          <p class="nest-title">Inside it</p>
+          <ul class="plain">
+            <li>Car</li>
+            <li>Buyer</li>
+            <li>Seller</li>
+            <li>Payment</li>
+            <li>Title</li>
+            <li>Contract</li>
+            <li>AI helper</li>
+          </ul>
+        </div>
+        <p>Everything happens there. When you’re done… the space simply closes.</p>
+        <p>Another example: hiring someone.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Instead of</p>
+            <ul class="plain">
+              <li>LinkedIn</li>
+              <li>Gmail</li>
+              <li>Google Docs</li>
+              <li>Zoom</li>
+              <li>Dropbox</li>
+              <li>DocuSign</li>
+            </ul>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">One Hiring Exchange Space</p>
+            <ul class="plain">
+              <li>Applicant</li>
+              <li>Resume</li>
+              <li>Interview</li>
+              <li>AI Notes</li>
+              <li>Offer Letter</li>
+              <li>Contract</li>
+              <li>Messages</li>
+            </ul>
+          </div>
+        </div>
+        <p>Everything stays together forever.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-goal">The simplest</span><span class="hl-litegray"> definitions</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <div class="defs">
+          <div class="def frame">
+            <p class="def-term">FRAME</p>
+            <p>The things in your digital life.</p>
+          </div>
+          <div class="def">
+            <p class="def-term">Governance</p>
+            <p>The rules that decide how those things work.</p>
+          </div>
+          <div class="def">
+            <p class="def-term">Exchange Space</p>
+            <p>A shared place where people, AI, and things work together.</p>
+          </div>
+        </div>
+        <p>Imagine telling someone:</p>
+        <p class="lead">FRAME organizes your digital life around the things that matter. Governance decides the rules for those things. Exchange Spaces are where people and AI come together to work with those things.</p>
+        <p>People don’t need to know about graphs, evaluation, proofs, or relationships. Those are the engine under the hood. From a user’s perspective:</p>
+        <ul>
+          <li>FRAME = the thing.</li>
+          <li>Governance = the rules.</li>
+          <li>Exchange Space = the place where collaboration happens.</li>
+        </ul>
+        <p>That’s a mental model most people can understand in under a minute.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-yellow">U.S. governance</span><span class="hl-litegray"> as an example</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Remember: governance = the rules for making decisions.</p>
+        <p class="lead">The U.S. government is simply a very large governance system.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray">Level 1 —</span><span class="hl-litegray"> The People</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">The foundation is the people.</p>
+        <ul>
+          <li>You vote for your mayor.</li>
+          <li>You vote for your governor.</li>
+          <li>You vote for the President.</li>
+          <li>You vote for members of Congress.</li>
+        </ul>
+        <p>The people are the original source of authority.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray">Level 2 —</span><span class="hl-black-w"> The Constitution</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Think of this as the master rulebook.</p>
+        <p>It says things like:</p>
+        <ul>
+          <li>Everyone has free speech.</li>
+          <li>Government has limited powers.</li>
+          <li>There are three branches.</li>
+          <li>States have certain powers.</li>
+          <li>Rights cannot simply be taken away.</li>
+        </ul>
+        <p>Everything underneath must follow it.</p>
+        <div class="levels">
+          <p>United States</p>
+          <span class="flow-arrow">↓</span>
+          <p>Governance Rules</p>
+          <span class="flow-arrow">↓</span>
+          <p>Constitution</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray">Level 3 —</span><span class="hl-blue-w"> Federal Government</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>The Constitution creates three branches.</p>
+        <p class="lead">Executive Branch — President</p>
+        <p>Example decisions:</p>
+        <ul>
+          <li>Signs bills into law</li>
+          <li>Commands the military</li>
+          <li>Runs federal agencies</li>
+          <li>Responds to disasters</li>
+        </ul>
+        <p class="lead">Legislative Branch — Congress</p>
+        <p>Congress writes laws. Congress has two parts.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Senate — 100 senators</p>
+            <ul>
+              <li>Approves treaties</li>
+              <li>Confirms Supreme Court judges</li>
+              <li>Votes on laws</li>
+            </ul>
+          </div>
+          <div class="split-col">
+            <p class="split-label">House — 435 representatives</p>
+            <ul>
+              <li>Creates spending bills</li>
+              <li>Votes on laws</li>
+              <li>Represents local districts</li>
+            </ul>
+          </div>
+        </div>
+        <p class="lead">Judicial Branch — the courts</p>
+        <p>Someone argues: “This law violates free speech.” The courts decide. The Supreme Court has the final interpretation.</p>
+        <p class="lead">Federal Agencies</p>
+        <p>These carry out specific jobs:</p>
+        <ul>
+          <li>IRS → taxes</li>
+          <li>FAA → aviation</li>
+          <li>NASA → space</li>
+          <li>EPA → environment</li>
+          <li>FBI → federal investigations</li>
+          <li>National Park Service → parks</li>
+        </ul>
+        <p>Each agency has its own governance.</p>
+        <div class="levels">
+          <p>FAA</p>
+          <span class="flow-arrow">↓</span>
+          <p>Pilots</p>
+          <span class="flow-arrow">↓</span>
+          <p>Aircraft Rules</p>
+          <span class="flow-arrow">↓</span>
+          <p>Air Traffic</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray">State,</span><span class="hl-orange"> county, city</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">State Government</p>
+        <p>Each state has its own government. Arizona has a Governor, Legislature, and State Courts. They make rules for things like:</p>
+        <ul>
+          <li>driver’s licenses</li>
+          <li>schools</li>
+          <li>state highways</li>
+          <li>state taxes</li>
+          <li>professional licenses</li>
+        </ul>
+        <p class="lead">County Government — Pima County</p>
+        <p>The county governs things like:</p>
+        <ul>
+          <li>Sheriff’s Office</li>
+          <li>County roads</li>
+          <li>Property records</li>
+          <li>Elections</li>
+          <li>Public health</li>
+        </ul>
+        <p class="lead">City Government — Tucson</p>
+        <p>The city governs:</p>
+        <ul>
+          <li>Police</li>
+          <li>Fire Department</li>
+          <li>Parks</li>
+          <li>Trash collection</li>
+          <li>Local streets</li>
+          <li>Zoning</li>
+        </ul>
+        <p class="lead">Neighborhood — HOA</p>
+        <p>Sometimes even smaller. An HOA might set rules for:</p>
+        <ul>
+          <li>Grass height</li>
+          <li>House colors</li>
+          <li>Community pool</li>
+          <li>Parking</li>
+        </ul>
+        <p>That’s governance too.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-rose">A real</span><span class="hl-litegray"> example</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Imagine someone wants to build a restaurant. Who decides?</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Federal</p>
+            <ul>
+              <li>Health regulations</li>
+              <li>Labor laws</li>
+              <li>Taxes</li>
+              <li>ADA accessibility</li>
+            </ul>
+          </div>
+          <div class="split-col">
+            <p class="split-label">State</p>
+            <ul>
+              <li>Business license</li>
+              <li>Food safety</li>
+              <li>Alcohol license</li>
+              <li>Employment rules</li>
+            </ul>
+          </div>
+        </div>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">County</p>
+            <ul>
+              <li>Health inspection</li>
+              <li>Property records</li>
+              <li>Environmental permits</li>
+            </ul>
+          </div>
+          <div class="split-col">
+            <p class="split-label">City</p>
+            <ul>
+              <li>Building permit</li>
+              <li>Zoning approval</li>
+              <li>Parking requirements</li>
+              <li>Fire inspection</li>
+            </ul>
+          </div>
+        </div>
+        <div class="nest">
+          <p class="nest-title">HOA (if applicable)</p>
+          <ul>
+            <li>Building appearance</li>
+            <li>Signs</li>
+            <li>Landscaping</li>
+          </ul>
+        </div>
+        <p>Notice something. Every level has:</p>
+        <div class="levels">
+          <p>Rules</p>
+          <span class="flow-arrow">↓</span>
+          <p>Evidence</p>
+          <span class="flow-arrow">↓</span>
+          <p>Decision</p>
+          <span class="flow-arrow">↓</span>
+          <p>Action</p>
+        </div>
+        <p class="lead">Exactly like FRAME.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-reality">FRAME</span><span class="hl-litegray"> version</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Imagine “United States” were a FRAME.</p>
+        <div class="tree frame">United States
+├── Constitution
+├── Congress
+├── President
+├── Supreme Court
+├── States
+├── Federal Agencies
+└── Citizens</div>
+        <p>Click Arizona:</p>
+        <div class="tree">Arizona
+├── Governor
+├── Legislature
+├── Courts
+├── Counties
+└── Agencies</div>
+        <p>Click Pima County:</p>
+        <div class="tree">Pima County
+├── Sheriff
+├── Recorder
+├── Elections
+├── Roads
+├── Health
+└── Courts</div>
+        <p>Click Tucson:</p>
+        <div class="tree">City of Tucson
+├── Mayor
+├── City Council
+├── Police
+├── Fire
+├── Parks
+├── Roads
+└── Utilities</div>
+        <p>You can keep drilling down forever.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-verify">The cool</span><span class="hl-litegray"> part</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Imagine asking FRAME:</p>
+        <p class="lead">Why wasn’t my building permit approved?</p>
+        <p>Instead of hunting through departments… FRAME could show:</p>
+        <div class="levels">
+          <p>Building Permit</p>
+          <span class="flow-arrow">↓</span>
+          <p>Denied</p>
+          <span class="flow-arrow">↓</span>
+          <p>Reason — Fire inspection incomplete</p>
+          <span class="flow-arrow">↓</span>
+          <p>Depends On — Electrical inspection</p>
+          <span class="flow-arrow">↓</span>
+          <p>Depends On — Submitted plans missing emergency exit</p>
+        </div>
+        <p>It literally explains the reasoning.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-truth">The simplest way</span><span class="hl-litegray"> to think about government</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Government isn’t one giant thing. It’s layers of governance, each responsible for different decisions.</p>
+        <div class="levels">
+          <p>People</p>
+          <span class="flow-arrow">↓</span>
+          <p>Constitution</p>
+          <span class="flow-arrow">↓</span>
+          <p>Federal Government</p>
+          <span class="flow-arrow">↓</span>
+          <p>State Government</p>
+          <span class="flow-arrow">↓</span>
+          <p>County Government</p>
+          <span class="flow-arrow">↓</span>
+          <p>City Government</p>
+          <span class="flow-arrow">↓</span>
+          <p>Neighborhood / HOA</p>
+        </div>
+        <p>Each layer has:</p>
+        <ul>
+          <li>things it owns,</li>
+          <li>rules it follows,</li>
+          <li>decisions it can make,</li>
+          <li>and limits on its authority.</li>
+        </ul>
+        <p>That’s exactly why “governance” is such a useful word for FRAME. It doesn’t mean politics—it simply means how decisions are made within a system. Whether that system is a country, a company, a family photo album, or a shared software project, governance defines who can decide what, under which conditions, and how those decisions are carried out.</p>
+      </div>
+    </section>
+
+    <p class="footer-note">Stop opening apps.<br />Start opening the things that matter.</p>
     <a class="start-cta" href="/dapps.html">Start</a>
   </main>
 
