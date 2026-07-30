@@ -10,84 +10,35 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    * { box-sizing: border-box; }
     html, body {
-      height: 100%;
       margin: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-    body {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
       background: #ffffff;
       color: #000000;
+      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
-    .stage {
-      margin-top: clamp(56px, 9vh, 76px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: clamp(2px, 0.4vh, 6px);
-      padding: 0 24px;
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    .home-link {
-      color: inherit;
-      text-decoration: none;
-    }
-    .nav {
+
+    .topbar {
       position: fixed;
-      top: calc(50% - 1in);
+      top: 0;
       left: 0;
       right: 0;
-      display: flex;
-      flex-direction: column;
+      height: 84px;
+      background: linear-gradient(to bottom, #ffffff 55%, rgba(255, 255, 255, 0));
+      pointer-events: none;
+      z-index: 6;
     }
-    .nav a {
-      font-family: 'Chakra Petch', sans-serif;
-      font-weight: 700;
-      color: #000000;
-      letter-spacing: 0.05em;
-      text-decoration: none;
-    }
-    .nav .side {
-      align-self: flex-end;
-      margin-right: clamp(24px, 6vw, 72px);
-      font-size: clamp(1.4rem, 4vw, 2rem);
-      text-align: right;
-    }
-    .nav .nav-how,
-    .nav .nav-problems { margin-top: clamp(24px, 5vh, 44px); }
-    .nav .side:hover { text-decoration: underline; }
-
-    .begin-wrap {
-      position: fixed;
-      left: 50%;
-      bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 12px));
-      transform: translateX(-50%);
-    }
-    .nav-begin {
-      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-decoration: none;
-      font-size: clamp(2.8rem, 8vw, 4.2rem);
-      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-      animation: rainbow-move 6s linear infinite;
-    }
-    @keyframes rainbow-move { to { background-position: 200% center; } }
     .brand {
       position: fixed;
       top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px));
       margin: 0;
+      z-index: 8;
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
       color: #000000;
@@ -95,26 +46,55 @@
       letter-spacing: 0.08em;
       line-height: 1;
     }
-    .typewriter {
-      font-family: 'Chakra Petch', sans-serif;
-      font-weight: 400;
+    .home-link { color: inherit; text-decoration: none; }
+    .hl-orange, .hl-gray, .hl-green, .hl-yellow, .hl-xpblue,
+    .hl-blue-w, .hl-rainbow, .hl-purple, .hl-black-w,
+    .hl-sandbox, .hl-verify, .hl-security, .hl-design,
+    .hl-surf, .hl-local, .hl-first, .hl-litegray, .hl-truth, .hl-goal,
+    .hl-ltblue, .hl-reality, .hl-rose {
       color: #000000;
-      font-size: clamp(1.2rem, 4vw, 1.8rem);
-      letter-spacing: 0.03em;
-      line-height: 1.4;
-      text-align: center;
-      min-height: 1.4em;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      padding: 0.02em 0.12em;
     }
-    .typewriter .cursor {
-      display: inline-block;
-      width: 1px;
-      background: #000000;
-      margin-left: 2px;
-      animation: blink 1s steps(1) infinite;
+    .no-pl { padding-left: 0 !important; }
+    .no-pr { padding-right: 0 !important; }
+    .hl-orange { background: #ff8a00; }
+    .hl-gray { background: #d0d0d0; }
+    .hl-green { background: #4caf50; }
+    .hl-yellow { background: #ffe600; }
+    .hl-xpblue { background: #245edc; }
+    .hl-blue-w { background: #1a73e8; color: #ffffff; }
+    .hl-purple { background: #9b59b6; color: #000000; }
+    .hl-black-w { background: #000000; color: #ffffff; }
+    .hl-sandbox { background: #000000; color: #ffe600; }
+    .hl-verify { background: #ffffff; color: #1a9e3f; }
+    .hl-security { background: #000000; color: #ff3b30; }
+    .hl-design { background: #bdbdbd; color: #5aa9ff; }
+    .hl-local { background: #ffe600; color: #1a73e8; }
+    .hl-first { background: #000000; color: #ffffff; }
+    .hl-litegray { background: #e6e6e6; }
+    .hl-truth { background: #0b4d2a; color: #7cfa8a; }
+    .hl-goal { background: #f4f4ef; color: #17a34a; }
+    .hl-ltblue { background: #9ecbff; }
+    .hl-reality { background: #000000; color: #a34bff; }
+    .hl-rose { background: #ffb3c1; }
+    .hl-rainbow {
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      color: #ffffff;
+      animation: hue-move 6s linear infinite;
     }
-    @keyframes blink {
-      50% { opacity: 0; }
+    .hl-surf {
+      background: linear-gradient(90deg,#25d366,#00e0ff,#1a73e8,#25d366);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: hue-move 4s linear infinite;
     }
+    @keyframes hue-move { to { background-position: 200% center; } }
 
     .corner {
       position: fixed;
@@ -123,101 +103,521 @@
       border-color: #000000;
       border-style: solid;
       border-width: 0;
+      z-index: 10;
+      pointer-events: none;
     }
     .corner.tl { top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); border-top-width: 2.5px; border-left-width: 2.5px; }
     .corner.tr { top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); border-top-width: 2.5px; border-right-width: 2.5px; }
     .corner.bl { bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); border-bottom-width: 2.5px; border-left-width: 2.5px; }
     .corner.br { bottom: env(safe-area-inset-bottom, 0px); right: env(safe-area-inset-right, 0px); border-bottom-width: 2.5px; border-right-width: 2.5px; }
-  
-    /* mobile: safe-area, overflow, touch */
-    html { overflow-x: hidden; }
-    @media (max-width: 480px) {
-      .row { grid-template-columns: minmax(72px, 34%) 1fr !important; }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: max(88px, calc(env(safe-area-inset-top, 0px) + 72px)) max(16px, env(safe-area-inset-right, 0px), clamp(16px, 6vw, 48px)) max(96px, calc(env(safe-area-inset-bottom, 0px) + 64px)) max(16px, env(safe-area-inset-left, 0px), clamp(16px, 6vw, 48px));
     }
 
-  
-    @media (max-height: 560px), (max-width: 400px) {
-      .nav { top: auto; bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 72px)); }
-      .nav .side { font-size: clamp(1.15rem, 5vw, 1.5rem); margin-right: max(16px, env(safe-area-inset-right, 0px)); }
-      .nav .nav-how,
-      .nav .nav-problems { margin-top: 14px; }
-      .nav-begin { font-size: clamp(2.2rem, 10vw, 3rem); }
-      .stage { margin-top: max(48px, calc(env(safe-area-inset-top, 0px) + 40px)); padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+    .sec { margin: 0 0 clamp(40px, 7vh, 64px); }
+    .sec-head {
+      display: flex;
+      align-items: flex-end;
+      column-gap: clamp(12px, 2vw, 20px);
+      margin-left: calc(-1 * clamp(24px, 6vw, 96px));
+      padding-left: 0;
     }
-    /* index mobile */
+    .sec-head h2 {
+      margin: 0;
+      flex: 0 1 auto;
+      text-align: left;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.4rem, 4.5vw, 2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+    .sec-head .hline {
+      flex: 1 1 24px;
+      min-width: 24px;
+      height: 0;
+      border-top: 1px solid #000000;
+      margin-bottom: 0;
+    }
+    .sec-body {
+      border-right: 1px solid #000000;
+      text-align: left;
+      padding: clamp(16px, 2.6vh, 24px) clamp(16px, 3vw, 28px) clamp(24px, 3.8vh, 36px) 0;
+    }
+
+    .lede .sec-head h2 {
+      font-size: clamp(1.6rem, 5.5vw, 2.6rem);
+      line-height: 1.1;
+    }
+
+    p {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      font-weight: 400;
+      line-height: 1.7;
+      margin: 0 0 clamp(14px, 2vh, 20px);
+    }
+    p.lead {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.15rem, 3vw, 1.5rem);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      margin: 0 0 clamp(16px, 2.6vh, 24px);
+    }
+    .sec-body > *:last-child { margin-bottom: 0; }
+    ul {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      line-height: 1.7;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+      padding-left: 1.3em;
+      list-style-position: outside;
+    }
+    ul li { margin-bottom: 6px; }
+    ul.plain {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul.plain li { margin-bottom: 4px; }
+
+    .flow {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .flow-step { margin: 0; }
+    .flow-arrow {
+      display: block;
+      opacity: 0.35;
+      margin: 4px 0;
+      font-weight: 400;
+    }
+
+    .say {
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .say-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin: 0 0 clamp(14px, 2vh, 18px);
+    }
+    .say-label {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.78rem, 1.8vw, 0.9rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.45;
+      margin: 0;
+    }
+    .say-old {
+      margin: 0;
+      opacity: 0.55;
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+    }
+    .say-new {
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(16px, 3vw, 28px);
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .split-col {
+      border: 1px solid #e2e2e2;
+      background: #fafafa;
+      padding: clamp(14px, 2.2vw, 20px);
+      border-radius: 10px;
+    }
+    .split-col.frame {
+      background: #f5f5f5;
+      border-color: #000000;
+    }
+    .split-label {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.78rem, 1.8vw, 0.9rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 0 0 clamp(10px, 1.6vh, 14px);
+      opacity: 0.55;
+    }
+    .split-col.frame .split-label { opacity: 1; color: #000000; }
+    .split-col ul {
+      margin: 0;
+      padding-left: 1.15em;
+    }
+    .split-col ul.plain { padding-left: 0; }
+    .split-col p { margin: 0; font-size: clamp(0.98rem, 2.2vw, 1.1rem); }
+    .split-col p + p { margin-top: 8px; }
+    .split-col .object-name {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.15rem, 2.8vw, 1.35rem);
+      margin: 0 0 10px;
+    }
+
+    .nest {
+      border-left: 2px solid #000000;
+      padding-left: clamp(14px, 2.5vw, 22px);
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .nest .nest-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.15rem, 2.8vw, 1.35rem);
+      margin: 0 0 10px;
+    }
+    .nest ul { margin-bottom: 0; }
+    .nest-arrow {
+      opacity: 0.35;
+      margin: 8px 0;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin: clamp(48px, 8vh, 80px) 0 0;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      line-height: 1.4;
+    }
+
+    .start-cta {
+      display: block;
+      text-align: center;
+      margin: clamp(36px, 6vh, 56px) 0 0;
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      font-size: clamp(2.4rem, 7vw, 3.6rem);
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: hue-move 6s linear infinite;
+    }
+
+    .site-footer {
+      border-top: 1px solid #000000;
+      padding: clamp(40px, 7vh, 88px) clamp(24px, 6vw, 64px) clamp(64px, 10vh, 120px);
+    }
+    .foot-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .foot-kicker {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      margin: 0 0 clamp(12px, 2vh, 18px);
+    }
+    .foot-tag {
+      max-width: 620px;
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+      font-weight: 400;
+      line-height: 1.6;
+      margin: 0 0 clamp(28px, 5vh, 48px);
+    }
+    .foot-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 3vw, 36px);
+      margin: 0 0 clamp(36px, 7vh, 72px);
+    }
+    .flink {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #000000;
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.72;
+      transition: opacity 0.15s ease;
+    }
+    .flink:hover { opacity: 1; }
+    .foot-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 24px;
+      padding-top: clamp(16px, 2.4vh, 22px);
+      border-top: 1px solid #000000;
+      font-size: clamp(0.82rem, 1.9vw, 0.95rem);
+      letter-spacing: 0.02em;
+      opacity: 0.72;
+    }
+
+    html { overflow-x: hidden; }
+    @media (max-width: 640px) {
+      .split { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .sec-head { margin-left: 0; }
+    }
   </style>
 </head>
 <body>
+  <div class="topbar"></div>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
   <span class="corner tl"></span>
   <span class="corner tr"></span>
   <span class="corner bl"></span>
   <span class="corner br"></span>
-  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
-  <div class="stage">
-    <div class="typewriter"><span id="tw-text"></span><span class="cursor">&nbsp;</span></div>
-  </div>
-  <nav class="nav">
-    <a class="side nav-why" href="/why.html">Why?</a>
-    <a class="side nav-how" href="/how.html">How it works</a>
-    <a class="side nav-problems" href="/problems.html">Problems Solved</a>
-  </nav>
-  <div class="begin-wrap">
-    <a class="nav-begin" href="/dapps.html">Start</a>
-  </div>
-  <script>
-    (function () {
-      const phrases = [
-        "No more passwords.",
-        "Own your digital life.",
-        "Take back control.",
-        "Your data stays yours.",
-        "Privacy by default.",
-        "Permission instead of passwords.",
-        "Everything connected.",
-        "Every app speaks the same language.",
-        "What the internet should've been from the beginning.",
-        "The internet, reinvented.",
-        "Secure by design.",
-        "Verifiable code.",
-        "Verifiable truth.",
-        "Fully open source.",
-        "Local-first.",
-        "Runs on bare metal.",
-        "Native Rust.",
-        "Built for the future."
-      ];
-      const el = document.getElementById("tw-text");
-      const typeSpeed = 65;
-      const deleteSpeed = 25;
-      const holdAfterType = 1400;
-      const holdAfterDelete = 250;
-      let phraseIndex = 0;
-      let charIndex = 0;
-      let deleting = false;
 
-      function tick() {
-        const current = phrases[phraseIndex];
-        if (!deleting) {
-          charIndex++;
-          el.textContent = current.slice(0, charIndex);
-          if (charIndex === current.length) {
-            deleting = true;
-            return setTimeout(tick, holdAfterType);
-          }
-          return setTimeout(tick, typeSpeed);
-        } else {
-          charIndex--;
-          el.textContent = current.slice(0, charIndex);
-          if (charIndex === 0) {
-            deleting = false;
-            phraseIndex = (phraseIndex + 1) % phrases.length;
-            return setTimeout(tick, holdAfterDelete);
-          }
-          return setTimeout(tick, deleteSpeed);
-        }
-      }
-      tick();
-    })();
-  </script>
+  <main>
+    <section class="sec lede">
+      <div class="sec-head"><h2>Apps become optional</h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">FRAME turns your computer from a collection of apps into a collection of things.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray">Today,</span><span class="hl-litegray"> computers work like this</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <div class="flow">
+          <p class="flow-step">Open Photoshop</p>
+          <span class="flow-arrow">↓</span>
+          <p class="flow-step">Edit image</p>
+          <span class="flow-arrow">↓</span>
+          <p class="flow-step">Save file</p>
+          <span class="flow-arrow">↓</span>
+          <p class="flow-step">Upload to Google Drive</p>
+          <span class="flow-arrow">↓</span>
+          <p class="flow-step">Share in Discord</p>
+          <span class="flow-arrow">↓</span>
+          <p class="flow-step">Message someone</p>
+        </div>
+        <p class="lead">Everything is trapped inside separate apps.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-blue-w">FRAME</span><span class="hl-litegray"> works differently</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Instead of opening an app… you interact directly with the thing itself.</p>
+        <p>For example, imagine you have a project.</p>
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Instead of</p>
+            <ul class="plain">
+              <li>Slack</li>
+              <li>GitHub</li>
+              <li>Google Drive</li>
+              <li>Notion</li>
+              <li>ChatGPT</li>
+              <li>Dropbox</li>
+            </ul>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">You simply have</p>
+            <p class="object-name">Project Mercury</p>
+            <p>Click it.</p>
+          </div>
+        </div>
+        <p>Inside it are:</p>
+        <div class="nest">
+          <p class="nest-title">Project Mercury</p>
+          <ul class="plain">
+            <li>Files</li>
+            <li>AI</li>
+            <li>Notes</li>
+            <li>Team</li>
+            <li>Permissions</li>
+            <li>History</li>
+            <li>Tasks</li>
+            <li>Storage</li>
+            <li>Wallet</li>
+          </ul>
+        </div>
+        <p>Everything related to that project. They’re all part of one object.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-orange">Think of</span><span class="hl-yellow"> LEGO</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Every piece in FRAME is a building block.</p>
+        <ul>
+          <li>A file is a block.</li>
+          <li>A folder is a block.</li>
+          <li>A person is a block.</li>
+          <li>An AI is a block.</li>
+          <li>A website is a block.</li>
+          <li>A company is a block.</li>
+          <li>A permission is a block.</li>
+        </ul>
+        <p>You snap them together however you want.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-black-w">The biggest</span><span class="hl-litegray"> difference</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <div class="split">
+          <div class="split-col">
+            <p class="split-label">Today your computer asks</p>
+            <p>Which app do you want to use?</p>
+          </div>
+          <div class="split-col frame">
+            <p class="split-label">FRAME asks</p>
+            <p>What are you trying to do?</p>
+          </div>
+        </div>
+        <div class="say">
+          <div class="say-row">
+            <p class="say-label">Instead of</p>
+            <p class="say-old">“Open Photoshop.”</p>
+            <p class="say-label">You say</p>
+            <p class="say-new">“Edit this image.”</p>
+          </div>
+          <div class="say-row">
+            <p class="say-label">Instead of</p>
+            <p class="say-old">“Open Google Drive.”</p>
+            <p class="say-label">You say</p>
+            <p class="say-new">“Share this with Sarah.”</p>
+          </div>
+          <div class="say-row">
+            <p class="say-label">Instead of</p>
+            <p class="say-old">“Open Settings.”</p>
+            <p class="say-label">You say</p>
+            <p class="say-new">“Let my AI access the camera.”</p>
+          </div>
+        </div>
+        <p class="lead">You work with your goals—not with applications.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-reality">AI</span><span class="hl-litegray"> becomes part of the computer</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Today AI is another website or another app.</p>
+        <p class="lead">In FRAME, AI is just another helper that lives with your data.</p>
+        <p>Imagine opening a project and seeing:</p>
+        <div class="nest">
+          <p class="nest-title">Project Mercury</p>
+          <ul class="plain">
+            <li>Files</li>
+            <li>Website</li>
+            <li>Notes</li>
+          </ul>
+          <p class="nest-arrow">↓</p>
+          <p class="nest-title">AI</p>
+        </div>
+        <p>That AI already knows everything about that project because it lives there.</p>
+        <p>You don’t have to upload files or explain context every time.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-verify">Nothing</span><span class="hl-litegray"> is hidden</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Every object can explain itself.</p>
+        <p>Imagine clicking your Wi-Fi connection. Instead of seeing confusing settings, it says:</p>
+        <div class="nest">
+          <p class="nest-title">Connected because:</p>
+          <ul>
+            <li>Password is correct.</li>
+            <li>Signal is strong.</li>
+            <li>Router is available.</li>
+          </ul>
+        </div>
+        <p>Or if something doesn’t work:</p>
+        <div class="nest">
+          <p class="nest-title">Camera unavailable because:</p>
+          <ul>
+            <li>Another app is using it.</li>
+          </ul>
+        </div>
+        <p class="lead">The computer explains why, not just what.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-truth">Everything</span><span class="hl-litegray"> has history</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Imagine accidentally deleting something.</p>
+        <p>Instead of panicking, you simply move backward through its history.</p>
+        <p>You can see:</p>
+        <ul>
+          <li>what changed</li>
+          <li>when it changed</li>
+          <li>why it changed</li>
+          <li>who changed it</li>
+        </ul>
+        <p>Almost like Google Docs history—but for everything on your computer.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-surf">Everything</span><span class="hl-litegray"> is connected</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>Instead of searching through folders, you can ask:</p>
+        <p class="lead">“Show me everything related to my website.”</p>
+        <p>FRAME instantly shows:</p>
+        <ul>
+          <li>the website</li>
+          <li>the domain</li>
+          <li>the SSL certificate</li>
+          <li>the AI that built it</li>
+          <li>the server</li>
+          <li>the storage</li>
+          <li>the people working on it</li>
+          <li>the deployment history</li>
+        </ul>
+        <p>Because it understands relationships, not just filenames.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-rainbow">One</span><span class="hl-litegray"> sentence</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p>If I had to explain FRAME to someone in a coffee shop, I’d say:</p>
+        <p class="lead">FRAME is a computer where everything is an intelligent object that knows what it is, how it relates to everything else, why it’s in its current state, and can work together with every other object—without being trapped inside separate apps.</p>
+        <p>That’s really the core idea. Apps become optional. The focus shifts from launching software to interacting directly with the things you care about.</p>
+      </div>
+    </section>
+
+    <p class="footer-note">Interact with things.<br />Apps are optional.</p>
+    <a class="start-cta" href="/dapps.html">Start</a>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <p class="foot-kicker">Contribute</p>
+      <p class="foot-tag">We're building a shared foundation where software speaks the same language. Come build on it.</p>
+      <nav class="foot-links">
+        <a class="flink" href="/why.html">Why FRAME</a>
+        <a class="flink" href="/how.html">How it works</a>
+        <a class="flink" href="/problems.html">Problems solved</a>
+        <a class="flink" href="/start.html">Start</a>
+        <a class="flink" href="https://github.com/frameprotocol" target="_blank" rel="noopener">GitHub</a>
+        <a class="flink" href="https://x.com/frame_protocol" target="_blank" rel="noopener">X</a>
+      </nav>
+      <div class="foot-bottom">
+        <span>Open source &middot; Local-first &middot; Verifiable</span>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
