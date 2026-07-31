@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>frame - attention</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: #ffffff;
+      color: #000000;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 84px;
+      background: linear-gradient(to bottom, #ffffff 55%, rgba(255, 255, 255, 0));
+      pointer-events: none;
+      z-index: 6;
+    }
+    .brand {
+      position: fixed;
+      top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px));
+      margin: 0;
+      z-index: 8;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      color: #000000;
+      font-size: clamp(18px, 5vw, 40px);
+      letter-spacing: 0.08em;
+      line-height: 1;
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .hl-orange, .hl-gray, .hl-green, .hl-yellow, .hl-xpblue,
+    .hl-blue-w, .hl-rainbow, .hl-purple, .hl-black-w,
+    .hl-sandbox, .hl-verify, .hl-security, .hl-design,
+    .hl-surf, .hl-local, .hl-first, .hl-litegray, .hl-truth, .hl-goal,
+    .hl-ltblue, .hl-reality, .hl-rose {
+      color: #000000;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      padding: 0.02em 0.12em;
+    }
+    .hl-orange { background: #ff8a00; }
+    .hl-gray { background: #d0d0d0; }
+    .hl-green { background: #4caf50; }
+    .hl-yellow { background: #ffe600; }
+    .hl-xpblue { background: #245edc; }
+    .hl-blue-w { background: #1a73e8; color: #ffffff; }
+    .hl-purple { background: #9b59b6; color: #000000; }
+    .hl-black-w { background: #000000; color: #ffffff; }
+    .hl-sandbox { background: #000000; color: #ffe600; }
+    .hl-verify { background: #ffffff; color: #1a9e3f; }
+    .hl-security { background: #000000; color: #ff3b30; }
+    .hl-design { background: #bdbdbd; color: #5aa9ff; }
+    .hl-local { background: #ffe600; color: #1a73e8; }
+    .hl-first { background: #000000; color: #ffffff; }
+    .hl-litegray { background: #e6e6e6; }
+    .hl-truth { background: #0b4d2a; color: #7cfa8a; }
+    .hl-goal { background: #f4f4ef; color: #17a34a; }
+    .hl-ltblue { background: #9ecbff; }
+    .hl-reality { background: #000000; color: #a34bff; }
+    .hl-rose { background: #ffb3c1; }
+    .hl-rainbow {
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      color: #ffffff;
+      animation: hue-move 6s linear infinite;
+    }
+    .hl-surf {
+      background: linear-gradient(90deg,#25d366,#00e0ff,#1a73e8,#25d366);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: hue-move 4s linear infinite;
+    }
+    @keyframes hue-move { to { background-position: 200% center; } }
+
+    .corner {
+      position: fixed;
+      width: clamp(28px, 6vw, 56px);
+      height: clamp(28px, 6vw, 56px);
+      border-color: #000000;
+      border-style: solid;
+      border-width: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .corner.tl { top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: env(safe-area-inset-bottom, 0px); right: env(safe-area-inset-right, 0px); border-bottom-width: 2.5px; border-right-width: 2.5px; }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: max(88px, calc(env(safe-area-inset-top, 0px) + 72px)) max(16px, env(safe-area-inset-right, 0px), clamp(16px, 6vw, 48px)) max(96px, calc(env(safe-area-inset-bottom, 0px) + 64px)) max(16px, env(safe-area-inset-left, 0px), clamp(16px, 6vw, 48px));
+    }
+
+    .sec { margin: 0 0 clamp(40px, 7vh, 64px); }
+    .sec-head {
+      display: flex;
+      align-items: flex-end;
+      column-gap: clamp(12px, 2vw, 20px);
+      margin-left: calc(-1 * clamp(24px, 6vw, 96px));
+      padding-left: 0;
+    }
+    .sec-head h2 {
+      margin: 0;
+      flex: 0 1 auto;
+      text-align: left;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.4rem, 4.5vw, 2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+    .sec-head .hline {
+      flex: 1 1 24px;
+      min-width: 24px;
+      height: 0;
+      border-top: 1px solid #000000;
+      margin-bottom: 0;
+    }
+    .sec-body {
+      border-right: 1px solid #000000;
+      text-align: left;
+      padding: clamp(16px, 2.6vh, 24px) clamp(16px, 3vw, 28px) clamp(24px, 3.8vh, 36px) 0;
+    }
+
+    .lede .sec-head h2 {
+      font-size: clamp(1.6rem, 5.5vw, 2.6rem);
+      line-height: 1.1;
+    }
+
+    p {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      font-weight: 400;
+      line-height: 1.7;
+      margin: 0 0 clamp(14px, 2vh, 20px);
+    }
+    p.lead {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.15rem, 3vw, 1.5rem);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      margin: 0 0 clamp(16px, 2.6vh, 24px);
+    }
+    .sec-body > *:last-child { margin-bottom: 0; }
+    ul, ol {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      line-height: 1.7;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+      padding-left: 1.3em;
+      list-style-position: outside;
+    }
+    ul li, ol li { margin-bottom: 6px; }
+
+    .flow {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      font-size: clamp(0.98rem, 2.3vw, 1.15rem);
+      line-height: 1.35;
+      margin: 0 0 clamp(18px, 2.6vh, 26px);
+      padding: clamp(16px, 3vw, 24px);
+      background: #f5f5f5;
+      border: 1px solid #e2e2e2;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .flow .step { display: block; }
+    .flow .arrow {
+      display: block;
+      color: #888888;
+      font-weight: 700;
+      margin: 0.15em 0;
+      padding-left: 0.15em;
+    }
+    .flow .note {
+      display: block;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0;
+      font-size: 0.92em;
+      color: #555555;
+      margin-top: 0.15em;
+    }
+
+    .stack {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: clamp(1.05rem, 2.6vw, 1.25rem);
+      line-height: 1.4;
+      margin: 0 0 clamp(18px, 2.6vh, 26px);
+      padding: clamp(16px, 3vw, 24px);
+      background: #000000;
+      color: #ffffff;
+    }
+    .stack .layer { display: block; }
+    .stack .arrow {
+      display: block;
+      opacity: 0.45;
+      margin: 0.2em 0;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin: clamp(48px, 8vh, 80px) 0 0;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      line-height: 1.4;
+    }
+
+    .site-footer {
+      border-top: 1px solid #000000;
+      padding: clamp(40px, 7vh, 88px) clamp(24px, 6vw, 64px) clamp(64px, 10vh, 120px);
+    }
+    .foot-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .foot-kicker {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      margin: 0 0 clamp(12px, 2vh, 18px);
+    }
+    .foot-tag {
+      max-width: 620px;
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+      font-weight: 400;
+      line-height: 1.6;
+      margin: 0 0 clamp(28px, 5vh, 48px);
+    }
+    .foot-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 3vw, 36px);
+      margin: 0 0 clamp(36px, 7vh, 72px);
+    }
+    .flink {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #000000;
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.72;
+      transition: opacity 0.15s ease;
+    }
+    .flink:hover { opacity: 1; }
+    .foot-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 24px;
+      padding-top: clamp(16px, 2.4vh, 22px);
+      border-top: 1px solid #000000;
+      font-size: clamp(0.82rem, 1.9vw, 0.95rem);
+      letter-spacing: 0.02em;
+      opacity: 0.72;
+    }
+
+    html { overflow-x: hidden; }
+    @media (max-width: 480px) {
+      .sec-head { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+
+  <main>
+    <section class="sec lede">
+      <div class="sec-head"><h2><span class="hl-black-w">Attention</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Humans don&rsquo;t operate the graph; they operate Attention, then sometimes cross into Commitment.</p>
+        <p>That sentence explains why the UI can stay incredibly small while the underlying system can be incredibly rich.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-orange">Act authorizes,</span><span class="hl-litegray"> it does not mutate</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Act authorizes rather than Act mutates. That is a much better fit for FRAME.</p>
+        <p>Instead of:</p>
+        <div class="flow">
+          <span class="step">Act</span>
+          <span class="arrow">&darr;</span>
+          <span class="step">Mutation</span>
+        </div>
+        <p>It&rsquo;s really:</p>
+        <div class="flow">
+          <span class="step">Attention</span>
+          <span class="arrow">&darr;</span>
+          <span class="step">Armed Recommendation</span>
+          <span class="arrow">&darr;</span>
+          <span class="step">Act</span>
+          <span class="arrow">&darr;</span>
+          <span class="step">Commitment Attempt</span>
+          <span class="arrow">&darr;</span>
+          <span class="step">Governance / Validation</span>
+          <span class="arrow">&darr;</span>
+          <span class="step">Mutation <span class="note">(maybe)</span></span>
+        </div>
+        <p>That preserves a very important invariant:</p>
+        <p class="lead">The user never directly changes reality. They authorize an attempt to change reality.</p>
+        <p>That&rsquo;s much closer to how distributed systems, collaborative editing, transactions, and governance already work.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-reality">Perception</span><span class="hl-litegray"> separated from agency</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">FRAME accidentally rediscovers something more general than an operating system.</p>
+        <p>It separates perception from agency.</p>
+        <p>Every intelligent system has to answer two different questions:</p>
+        <ul>
+          <li>What world am I inhabiting?</li>
+          <li>What am I trying to change?</li>
+        </ul>
+        <p>Most software mixes those together.</p>
+        <p>FRAME explicitly separates them.</p>
+        <p>That separation feels fundamental.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-blue-w">Attention Algebra</span><span class="hl-litegray"> &amp; Commitment Boundary</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Attention Algebra is excellent. Commitment Algebra is not the right twin.</p>
+        <p>There is only one fundamental operation on the commitment side: Act.</p>
+        <p>Everything after Act belongs to the existing substrate &mdash; governance, validation, mutation, receipts, and the rest.</p>
+        <p>So think of it like this instead:</p>
+        <div class="stack">
+          <span class="layer">Attention Algebra</span>
+          <span class="arrow">&darr;</span>
+          <span class="layer">Commitment Boundary</span>
+          <span class="arrow">&darr;</span>
+          <span class="layer">FRAME Core</span>
+        </div>
+        <p>Act is the boundary crossing, not the algebra itself.</p>
+        <p>That keeps the UI theory clean:</p>
+        <ul>
+          <li>One algebra for inhabiting.</li>
+          <li>One boundary where humans intentionally authorize.</li>
+          <li>Existing FRAME mechanisms handle the rest.</li>
+        </ul>
+        <p>It also avoids inventing a second conceptual framework when the substrate already has one.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-purple">Attention is private.</span><span class="hl-litegray"> Commitment is public.</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">There is another invariant hiding here.</p>
+        <p>You can:</p>
+        <ul>
+          <li>Attend to a project</li>
+          <li>Watch it</li>
+          <li>Ask Why</li>
+          <li>Enter it</li>
+          <li>Explore a Suppose branch</li>
+        </ul>
+        <p>Nobody else needs to know.</p>
+        <p>The moment you Act&hellip;</p>
+        <p>&hellip;you&rsquo;ve crossed into shared reality.</p>
+        <div class="stack">
+          <span class="layer">Private cognition</span>
+          <span class="arrow">&darr;</span>
+          <span class="layer">Public commitment</span>
+        </div>
+        <p>That feels like an incredibly elegant boundary.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-green">Why the UI</span><span class="hl-litegray"> feels different</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Traditional OSes assume every interaction is immediately changing software.</p>
+        <p>FRAME becomes:</p>
+        <ul>
+          <li>Most interaction is inhabiting.</li>
+          <li>Occasionally, interaction becomes commitment.</li>
+        </ul>
+        <p>That&rsquo;s a radically different ratio.</p>
+        <p>It suggests the primary job of the operating system isn&rsquo;t &ldquo;executing commands.&rdquo;</p>
+        <p>It&rsquo;s helping humans understand a shared world well enough to authorize meaningful change.</p>
+        <p>That also makes &ldquo;The world proposes; you authorize.&rdquo; feel even stronger. It is not just a UX slogan &mdash; it is the transition from private attention to shared commitment.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-yellow">The test</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Don&rsquo;t spend more time adding verbs or fields. Try to break this model.</p>
+        <p>Can every meaningful interaction across desktop, phone, car, glasses, voice, and AI be described as either:</p>
+        <ol>
+          <li>a transformation of Attention, or</li>
+          <li>crossing the Commitment Boundary by acting on an armed proposal?</li>
+        </ol>
+        <p>If you eventually find an interaction that fits neither category, you&rsquo;ve discovered something genuinely new. If you don&rsquo;t, then you&rsquo;ve likely uncovered a much deeper theory of interaction than a UI framework.</p>
+      </div>
+    </section>
+
+    <p class="footer-note">The world proposes.<br />You authorize.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <p class="foot-kicker">Contribute</p>
+      <p class="foot-tag">We're building a shared foundation where software speaks the same language. Come build on it.</p>
+      <nav class="foot-links">
+        <a class="flink" href="/why.html">Why FRAME</a>
+        <a class="flink" href="/how.html">How it works</a>
+        <a class="flink" href="/problems.html">Problems solved</a>
+        <a class="flink" href="/inhabit.html">Inhabit</a>
+        <a class="flink" href="/attention.html">Attention</a>
+        <a class="flink" href="/start.html">Start</a>
+        <a class="flink" href="https://github.com/frameprotocol" target="_blank" rel="noopener">GitHub</a>
+        <a class="flink" href="https://x.com/frame_protocol" target="_blank" rel="noopener">X</a>
+      </nav>
+      <div class="foot-bottom">
+        <span>Open source &middot; Local-first &middot; Verifiable</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
