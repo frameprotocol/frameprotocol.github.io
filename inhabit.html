@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>frame - inhabit</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: #ffffff;
+      color: #000000;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 84px;
+      background: linear-gradient(to bottom, #ffffff 55%, rgba(255, 255, 255, 0));
+      pointer-events: none;
+      z-index: 6;
+    }
+    .brand {
+      position: fixed;
+      top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px));
+      margin: 0;
+      z-index: 8;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      color: #000000;
+      font-size: clamp(18px, 5vw, 40px);
+      letter-spacing: 0.08em;
+      line-height: 1;
+    }
+    .home-link { color: inherit; text-decoration: none; }
+    .hl-orange, .hl-gray, .hl-green, .hl-yellow, .hl-xpblue,
+    .hl-blue-w, .hl-rainbow, .hl-purple, .hl-black-w,
+    .hl-sandbox, .hl-verify, .hl-security, .hl-design,
+    .hl-surf, .hl-local, .hl-first, .hl-litegray, .hl-truth, .hl-goal,
+    .hl-ltblue, .hl-reality, .hl-rose {
+      color: #000000;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      padding: 0.02em 0.12em;
+    }
+    .no-pl { padding-left: 0 !important; }
+    .no-pr { padding-right: 0 !important; }
+    .hl-orange { background: #ff8a00; }
+    .hl-gray { background: #d0d0d0; }
+    .hl-green { background: #4caf50; }
+    .hl-yellow { background: #ffe600; }
+    .hl-xpblue { background: #245edc; }
+    .hl-blue-w { background: #1a73e8; color: #ffffff; }
+    .hl-purple { background: #9b59b6; color: #000000; }
+    .hl-black-w { background: #000000; color: #ffffff; }
+    .hl-sandbox { background: #000000; color: #ffe600; }
+    .hl-verify { background: #ffffff; color: #1a9e3f; }
+    .hl-security { background: #000000; color: #ff3b30; }
+    .hl-design { background: #bdbdbd; color: #5aa9ff; }
+    .hl-local { background: #ffe600; color: #1a73e8; }
+    .hl-first { background: #000000; color: #ffffff; }
+    .hl-litegray { background: #e6e6e6; }
+    .hl-truth { background: #0b4d2a; color: #7cfa8a; }
+    .hl-goal { background: #f4f4ef; color: #17a34a; }
+    .hl-ltblue { background: #9ecbff; }
+    .hl-reality { background: #000000; color: #a34bff; }
+    .hl-rose { background: #ffb3c1; }
+    .hl-rainbow {
+      background: linear-gradient(90deg,#ff004c,#ff8a00,#ffe600,#25d366,#00e0ff,#3b5bff,#a34bff,#ff004c);
+      background-size: 200% auto;
+      color: #ffffff;
+      animation: hue-move 6s linear infinite;
+    }
+    .hl-surf {
+      background: linear-gradient(90deg,#25d366,#00e0ff,#1a73e8,#25d366);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: hue-move 4s linear infinite;
+    }
+    @keyframes hue-move { to { background-position: 200% center; } }
+
+    .corner {
+      position: fixed;
+      width: clamp(28px, 6vw, 56px);
+      height: clamp(28px, 6vw, 56px);
+      border-color: #000000;
+      border-style: solid;
+      border-width: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .corner.tl { top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); border-top-width: 2.5px; border-left-width: 2.5px; }
+    .corner.tr { top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); border-top-width: 2.5px; border-right-width: 2.5px; }
+    .corner.bl { bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); border-bottom-width: 2.5px; border-left-width: 2.5px; }
+    .corner.br { bottom: env(safe-area-inset-bottom, 0px); right: env(safe-area-inset-right, 0px); border-bottom-width: 2.5px; border-right-width: 2.5px; }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: max(88px, calc(env(safe-area-inset-top, 0px) + 72px)) max(16px, env(safe-area-inset-right, 0px), clamp(16px, 6vw, 48px)) max(96px, calc(env(safe-area-inset-bottom, 0px) + 64px)) max(16px, env(safe-area-inset-left, 0px), clamp(16px, 6vw, 48px));
+    }
+
+    .sec { margin: 0 0 clamp(40px, 7vh, 64px); }
+    .sec-head {
+      display: flex;
+      align-items: flex-end;
+      column-gap: clamp(12px, 2vw, 20px);
+      margin-left: calc(-1 * clamp(24px, 6vw, 96px));
+      padding-left: 0;
+    }
+    .sec-head h2 {
+      margin: 0;
+      flex: 0 1 auto;
+      text-align: left;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.4rem, 4.5vw, 2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+    .sec-head .hline {
+      flex: 1 1 24px;
+      min-width: 24px;
+      height: 0;
+      border-top: 1px solid #000000;
+      margin-bottom: 0;
+    }
+    .sec-body {
+      border-right: 1px solid #000000;
+      text-align: left;
+      padding: clamp(16px, 2.6vh, 24px) clamp(16px, 3vw, 28px) clamp(24px, 3.8vh, 36px) 0;
+    }
+
+    .lede .sec-head h2 {
+      font-size: clamp(1.6rem, 5.5vw, 2.6rem);
+      line-height: 1.1;
+    }
+
+    p {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      font-weight: 400;
+      line-height: 1.7;
+      margin: 0 0 clamp(14px, 2vh, 20px);
+    }
+    p.lead {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.15rem, 3vw, 1.5rem);
+      line-height: 1.35;
+      letter-spacing: 0.01em;
+      margin: 0 0 clamp(16px, 2.6vh, 24px);
+    }
+    .sec-body > *:last-child { margin-bottom: 0; }
+    ul, ol {
+      font-size: clamp(1.02rem, 2.4vw, 1.18rem);
+      line-height: 1.7;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+      padding-left: 1.3em;
+      list-style-position: outside;
+    }
+    ul li, ol li { margin-bottom: 6px; }
+    .verb-list {
+      list-style: none;
+      padding-left: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+      margin: 0 0 clamp(16px, 2.4vh, 24px);
+    }
+    .verb-list li {
+      margin: 0;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+      background: #000000;
+      color: #ffffff;
+      padding: 0.2em 0.55em;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      text-align: left;
+      margin: 0 0 clamp(18px, 2.6vh, 26px);
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: clamp(0.9rem, 2.1vw, 1.05rem);
+      line-height: 1.55;
+      text-align: left;
+    }
+    thead th {
+      text-align: left;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      background: #000000;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    th, td {
+      border: 1px solid #e2e2e2;
+      padding: 10px 14px;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) td { background: #fafafa; }
+    tbody td:first-child {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin: clamp(48px, 8vh, 80px) 0 0;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      line-height: 1.4;
+    }
+
+    .site-footer {
+      border-top: 1px solid #000000;
+      padding: clamp(40px, 7vh, 88px) clamp(24px, 6vw, 64px) clamp(64px, 10vh, 120px);
+    }
+    .foot-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .foot-kicker {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      margin: 0 0 clamp(12px, 2vh, 18px);
+    }
+    .foot-tag {
+      max-width: 620px;
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+      font-weight: 400;
+      line-height: 1.6;
+      margin: 0 0 clamp(28px, 5vh, 48px);
+    }
+    .foot-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 3vw, 36px);
+      margin: 0 0 clamp(36px, 7vh, 72px);
+    }
+    .flink {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #000000;
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.72;
+      transition: opacity 0.15s ease;
+    }
+    .flink:hover { opacity: 1; }
+    .foot-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 24px;
+      padding-top: clamp(16px, 2.4vh, 22px);
+      border-top: 1px solid #000000;
+      font-size: clamp(0.82rem, 1.9vw, 0.95rem);
+      letter-spacing: 0.02em;
+      opacity: 0.72;
+    }
+
+    html { overflow-x: hidden; }
+    @media (max-width: 480px) {
+      .sec-head { margin-left: 0; }
+      tbody td:first-child { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <h1 class="brand"><a class="home-link" href="/">FRAME</a></h1>
+  <span class="corner tl"></span>
+  <span class="corner tr"></span>
+  <span class="corner bl"></span>
+  <span class="corner br"></span>
+
+  <main>
+    <section class="sec lede">
+      <div class="sec-head"><h2><span class="hl-black-w">Inhabit</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">FRAME is already a place. The native experience is not &ldquo;using software.&rdquo; It is inhabiting a live graph of meaningful things, with attention as the only hard UI primitive.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-blue-w">First thing</span><span class="hl-litegray"> you see</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Not a desktop. Not a home screen.</p>
+        <p>You see presence: the world as it currently concerns you.</p>
+        <p>That is a continuous projection of FRAMEs in your ActiveContext &mdash; you, what you are inside, what is pressing on you, what is offering itself. It updates as the graph updates. Nothing &ldquo;launches.&rdquo; The world is already on.</p>
+        <p>If that still feels like a feed, that is residual metaphor. Structurally it is closer to standing in a room that rearranges itself when reality changes.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-orange">What replaces</span><span class="hl-litegray"> apps</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Nothing replaces apps as a category. Apps were containers for disconnected worlds.</p>
+        <p>In FRAME, a &ldquo;thing you can do&rdquo; is either:</p>
+        <ol>
+          <li>a FRAME you are attending, or</li>
+          <li>a recommendation over FRAMEs you are attending (propose an Intent).</li>
+        </ol>
+        <p>Gauge Labs is not an app. It is a FRAME you enter. Diagnostics is not an app. It is a capability-bearing surface of that FRAME, revealed because you are there.</p>
+        <p>The replacement for apps is situated affordance: what this FRAME offers here, now, to you.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-purple">What replaces</span><span class="hl-litegray"> folders</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Folders were a filing fiction: put object X into container Y so humans can find it later.</p>
+        <p>FRAME already has structure: containment, association, membership, location, ownership &mdash; as live relationships, not directories.</p>
+        <p>You do not file a project under Work. You relate to it. Finding it later is not browsing a tree; it is re-entering a neighborhood of the graph you already belong to.</p>
+        <p>If something looks like a folder, it is usually a containment projection &mdash; a view of Contains, not a filesystem.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-green">What &ldquo;opening&rdquo;</span><span class="hl-litegray"> means</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Opening is the wrong word. It implies a sealed package becoming a window.</p>
+        <p>Native verb: enter.</p>
+        <p>Entering a FRAME means:</p>
+        <ul>
+          <li>it becomes ActiveContext (or nested inside it)</li>
+          <li>projection density increases</li>
+          <li>recommendations recompute for this locus</li>
+          <li>the previous locus is not closed; it is beneath / around / behind attention</li>
+        </ul>
+        <p>You do not open Car. You enter Car. The car becomes the world for a while. Ascending does not &ldquo;close the car app&rdquo;; it releases that FRAME as the center of attention.</p>
+        <p>That interaction is hard to fake in old OSes because they do not have one shared world object.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-yellow">What navigation</span><span class="hl-litegray"> means</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Navigation is moving attention through the graph.</p>
+        <p>Not:</p>
+        <ul>
+          <li>go to a URL</li>
+          <li>open a screen</li>
+          <li>switch an app</li>
+        </ul>
+        <p>But:</p>
+        <ul>
+          <li>attend this FRAME</li>
+          <li>enter deeper</li>
+          <li>follow a relation to another FRAME</li>
+          <li>widen (see more of the ambient set)</li>
+          <li>recenter on yourself</li>
+        </ul>
+        <p>Space is semantic, not geometric &mdash; though geometry can be one projection of it. You are never &ldquo;on a page.&rdquo; You are at a locus in the graph.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-ltblue">What stays</span><span class="hl-litegray"> persistent</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">While projections flicker, three things persist:</p>
+        <ol>
+          <li>You as the inhabitant &mdash; the continuous subject of attention (without needing to lecture Identity).</li>
+          <li>The live world &mdash; the same graph keeps revising under you.</li>
+          <li>Your locus &mdash; where attention is currently centered, and the path of enters that got you there.</li>
+        </ol>
+        <p>Everything else is projection. Windows were persistent chrome pretending to be place. Here, place is the FRAME you are in; chrome is optional and non-native.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-reality">Focus</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Focus is not &ldquo;which window is frontmost.&rdquo;</p>
+        <p>Focus is: which FRAME is currently the center of projection.</p>
+        <p>One focus at a time is enough for a human. Multi-focus is possible as split attention, but it is the same primitive twice &mdash; not a window manager.</p>
+        <p>Pointer, voice, gaze, tap &mdash; those are modalities for Attend. Attend is fundamental. Click is not.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-rose">Context</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Context is not a settings panel. It is the ambient filter on what may appear and what may be offered.</p>
+        <p>You entered Gauge Labs &rarr; vehicle tools flood the stream.<br />
+        You are walking &rarr; city / place FRAMEs thicken.<br />
+        You are with Ted &rarr; shared project pressure rises.</p>
+        <p>Context changes what the world presents, not which app is running.</p>
+        <p>Knowing where you are is knowing:</p>
+        <ul>
+          <li>who you are attending as yourself</li>
+          <li>which FRAME is the center</li>
+          <li>what ambient Context is active</li>
+        </ul>
+        <p>That can be as thin as a name + a few pressing neighbors. It does not need a breadcrumb bar. If you show a path, it is the enter-path, not a folder path.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-blue-w">How different</span><span class="hl-litegray"> beings appear</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">They all appear the same way: as FRAMEs entering presence.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Being</th>
+                <th>What you notice first</th>
+                <th>What differs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Person</td>
+                <td>name, shared pressure, invitation to act together</td>
+                <td>social / shared Intents</td>
+              </tr>
+              <tr>
+                <td>AI</td>
+                <td>suggestion, explanation, draft Intent</td>
+                <td>speaks in recommendations and why</td>
+              </tr>
+              <tr>
+                <td>Organization</td>
+                <td>membership, updates, available places inside it</td>
+                <td>scale of containment</td>
+              </tr>
+              <tr>
+                <td>Project</td>
+                <td>status, waiting decisions, collaborators</td>
+                <td>work-shaped recommendations</td>
+              </tr>
+              <tr>
+                <td>City</td>
+                <td>place you are in, services, nearby FRAMEs</td>
+                <td>spatial Context</td>
+              </tr>
+              <tr>
+                <td>Vehicle</td>
+                <td>health, distance, diagnostic offers</td>
+                <td>body-like status + act</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Same verbs: Attend, Enter, Act, Ask why, Watch change.</p>
+        <p>Different content. Same system. That sameness is the discovery. Old OSes needed different apps because they had no shared object model. FRAME does &mdash; so kind is costume; interaction is constant.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-orange">Smallest interaction</span><span class="hl-litegray"> vocabulary</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Strip inheritance. What must exist?</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Verb</th>
+                <th>Meaning</th>
+                <th>Fundamental?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Attend</td>
+                <td>Make this FRAME the focus</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td>Enter</td>
+                <td>Make this FRAME the world (deepen Context)</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td>Widen / Ascend</td>
+                <td>Release depth; return attention outward along enter-path</td>
+                <td>Yes (pair of Enter)</td>
+              </tr>
+              <tr>
+                <td>Act</td>
+                <td>Accept / refuse / edit a recommendation &rarr; Intent</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td>Why</td>
+                <td>Demand explanation / provenance for what you see or are offered</td>
+                <td>Yes &mdash; FRAME-native</td>
+              </tr>
+              <tr>
+                <td>Watch</td>
+                <td>Stay and receive revision of this locus (history as lived time)</td>
+                <td>Yes &mdash; FRAME-native</td>
+              </tr>
+              <tr>
+                <td>Suppose</td>
+                <td>Temporarily inhabit a non-authoritative branch (simulate)</td>
+                <td>Yes &mdash; FRAME-native</td>
+              </tr>
+              <tr>
+                <td>Find</td>
+                <td>Pull distant FRAMEs into attention by query</td>
+                <td>Useful, not sacred</td>
+              </tr>
+              <tr>
+                <td>Click / Back / Home / Search / Desktop</td>
+                <td>Inherited modalities or places</td>
+                <td>Not fundamental</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Back is only fundamental if you treat Enter as a stack. Graph-natively it is Ascend / return along path, not browser Back.</p>
+        <p>Home is only fundamental as recenter on the inhabitant&rsquo;s ambient presence &mdash; not a desktop.</p>
+        <p>Search is a power tool for sparse graphs. Day-to-day inhabitation is presence + follow + recommend, not query boxes.</p>
+        <p>Desktop is not fundamental. It is one Perspective for architects who need to see too much at once. Living does not require it.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-security">Interactions that could not</span><span class="hl-litegray"> exist elsewhere</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">These are not decorations. They fall out of one live graph + projection + intent:</p>
+        <ol>
+          <li>Enter until the object becomes the universe &mdash; then scrub its history and watch the world you are inside change shape.</li>
+          <li>Why? on anything &mdash; not a help page; the object&rsquo;s own causal story.</li>
+          <li>Suppose &mdash; stand in a ghost world that shares ontology with reality but cannot commit until you Act for real.</li>
+          <li>Same object, shift Perspective without leaving &mdash; architect density vs living density vs vehicle density; you did not switch apps; the locus stayed, the projection changed.</li>
+          <li>Presence stream &mdash; the OS continuously projects what matters; you do not open tools to check if the world moved.</li>
+          <li>Act from recommendation &mdash; the primary verb surface is &ldquo;the world proposes; you authorize,&rdquo; not &ldquo;hunt a menu in an application.&rdquo;</li>
+        </ol>
+        <p>If a design cannot express those without bolting on a special app, it is still an old OS wearing FRAME vocabulary.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-gray">When it still resembles</span><span class="hl-litegray"> old OSes</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Resemblance will appear when humans need:</p>
+        <ul>
+          <li>lists (working memory is linear)</li>
+          <li>names (we speak)</li>
+          <li>confirmation (Act has consequence)</li>
+          <li>a way back (attention has a path)</li>
+        </ul>
+        <p>Those are human constraints, not Windows constraints.</p>
+        <p>Danger: dressing those necessities as Dock, Settings App, Files, Notifications Center. That recreates the old OS because designers reach for familiar chrome instead of Attend / Enter / Act / Why / Watch / Suppose.</p>
+        <p>If your &ldquo;FRAME OS&rdquo; has a home grid of icons, you have failed the discovery. You rebuilt application launch.</p>
+        <p>If your &ldquo;FRAME OS&rdquo; has a person, a car, a city, and a project all reachable by the same six verbs, and entering any of them can become the whole world, you have found something that only FRAME can be.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head"><h2><span class="hl-rainbow">The discovery,</span><span class="hl-litegray"> compressed</span></h2><span class="hline"></span></div>
+      <div class="sec-body">
+        <p class="lead">Inhabit = continuous projection of the graph through attention.</p>
+        <p>Persistent: inhabitant + live world + locus.<br />
+        Replace apps: situated affordance.<br />
+        Replace folders: live relation / containment.<br />
+        Open &rarr; Enter.<br />
+        Navigate &rarr; move locus.<br />
+        Focus &rarr; center FRAME.<br />
+        Context &rarr; ambient filter.<br />
+        Others &rarr; same appearance, different pressure.</p>
+        <p>Smallest vocabulary:</p>
+        <ul class="verb-list">
+          <li>Attend</li>
+          <li>Enter</li>
+          <li>Ascend</li>
+          <li>Act</li>
+          <li>Why</li>
+          <li>Watch</li>
+          <li>Suppose</li>
+        </ul>
+        <p>Everything else is modality (finger, voice, gaze) or Perspective density (architect vs walker) &mdash; not a different operating system.</p>
+      </div>
+    </section>
+
+    <p class="footer-note">You do not open apps.<br />You inhabit a live graph.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="foot-inner">
+      <p class="foot-kicker">Contribute</p>
+      <p class="foot-tag">We're building a shared foundation where software speaks the same language. Come build on it.</p>
+      <nav class="foot-links">
+        <a class="flink" href="/why.html">Why FRAME</a>
+        <a class="flink" href="/how.html">How it works</a>
+        <a class="flink" href="/problems.html">Problems solved</a>
+        <a class="flink" href="/inhabit.html">Inhabit</a>
+        <a class="flink" href="/start.html">Start</a>
+        <a class="flink" href="https://github.com/frameprotocol" target="_blank" rel="noopener">GitHub</a>
+        <a class="flink" href="https://x.com/frame_protocol" target="_blank" rel="noopener">X</a>
+      </nav>
+      <div class="foot-bottom">
+        <span>Open source &middot; Local-first &middot; Verifiable</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
